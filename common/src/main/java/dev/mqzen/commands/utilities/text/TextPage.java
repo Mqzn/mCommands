@@ -1,16 +1,12 @@
-package net.versemc.api.utilities.text;
+package dev.mqzen.commands.utilities.text;
 
-import lombok.Data;
 import lombok.NonNull;
 
 import java.util.Iterator;
 import java.util.List;
 
-@Data(staticConstructor = "of")
-public final class TextPage<T extends TextConvertible> implements Iterable<T> {
-
-	private final int pageIndex, capacity;
-	private final List<T> pageItems;
+public record TextPage<S, T extends TextConvertible<S>>(int pageIndex, int capacity,
+                                                        List<T> pageItems) implements Iterable<T> {
 
 	public void add(T obj) {
 		if (pageItems.size() + 1 > capacity) return;

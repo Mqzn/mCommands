@@ -1,4 +1,4 @@
-package net.versemc.api.commands.annotations;
+package dev.mqzen.commands.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,6 +9,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER})
 public @interface Arg {
 
-	String name();
+	String id();
 
+	boolean optional() default false;
 }

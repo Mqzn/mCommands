@@ -1,4 +1,4 @@
-package dev.mqzen.commands.utilities;
+package dev.mqzen.commands;
 
 import lombok.Data;
 

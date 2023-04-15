@@ -1,0 +1,4 @@
+name: mCommands-Spigot-Test
+version: 1.0.0
+main: dev.mqzen.commands.spigot.SpigotPluginTest
+author: Mqzen

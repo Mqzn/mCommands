@@ -16,9 +16,9 @@ public final class ArgumentInteger extends ArgumentNumber<Integer> {
 	}
 
 	@Override
-	public @NotNull <S> List<Integer> suggestions() {
+	public @NotNull List<Integer> suggestions() {
 
-		if(hasMax && hasMin) {
+		if (hasMax && hasMin) {
 			List<Integer> suggestions = new ArrayList<>();
 
 			for (int i = 0; i <= max; i++) {

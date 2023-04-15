@@ -13,9 +13,9 @@ public final class ArgumentLong extends ArgumentNumber<Long> {
 	}
 
 	@Override
-	public @NotNull <S> List<Long> suggestions() {
+	public @NotNull List<Long> suggestions() {
 
-		if(hasMax && hasMin) {
+		if (hasMax && hasMin) {
 			List<Long> suggestions = new ArrayList<>();
 
 			for (long i = 0; i <= max; i++) {

@@ -1,7 +1,8 @@
-package dev.mqzen.commands.exceptions;
+package dev.mqzen.commands.exceptions.types;
 
 import dev.mqzen.commands.base.Command;
 import dev.mqzen.commands.base.syntax.CommandSyntax;
+import dev.mqzen.commands.exceptions.CommandException;
 
 import java.util.Collection;
 import java.util.stream.Collectors;

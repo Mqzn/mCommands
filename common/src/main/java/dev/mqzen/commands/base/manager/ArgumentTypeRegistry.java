@@ -1,4 +1,4 @@
-package dev.mqzen.commands.base.manager.registries;
+package dev.mqzen.commands.base.manager;
 
 import dev.mqzen.commands.arguments.Argument;
 import org.jetbrains.annotations.NotNull;
@@ -13,12 +13,13 @@ public final class ArgumentTypeRegistry {
 	@NotNull
 	private final Map<Class<?>, Function<String, Argument<?>>> argumentCreatorMapper = new HashMap<>();
 
-	public ArgumentTypeRegistry() {
+
+	ArgumentTypeRegistry() {
 
 		//TODO create one for enum
 
-		argumentCreatorMapper.put(Integer.class,Argument::integer);
-		argumentCreatorMapper.put(int.class,Argument::integer);
+		argumentCreatorMapper.put(Integer.class, Argument::integer);
+		argumentCreatorMapper.put(int.class, Argument::integer);
 
 		argumentCreatorMapper.put(Double.class, Argument::Double);
 		argumentCreatorMapper.put(double.class, Argument::Double);
@@ -39,7 +40,7 @@ public final class ArgumentTypeRegistry {
 	@Nullable
 	public Argument<?> convertArgument(@NotNull String id, @NotNull Class<?> clazz) {
 		var mapper = argumentCreatorMapper.get(clazz);
-		if(mapper ==null){
+		if (mapper == null) {
 			return null;
 		}
 		return mapper.apply(id);
@@ -48,5 +49,6 @@ public final class ArgumentTypeRegistry {
 	public void registerArgumentConverter(Class<?> type, Function<String, Argument<?>> mapper) {
 		argumentCreatorMapper.put(type, mapper);
 	}
+
 
 }

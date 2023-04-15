@@ -1,0 +1,49 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
+}
+
+group 'dev.mqzen.commands'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+}
+
+dependencies {
+    implementation 'org.projectlombok:lombok:1.18.26'
+    annotationProcessor 'org.projectlombok:lombok:1.18.26'
+
+    compileOnly 'org.spigotmc:spigot:1.8.8-R0.1-SNAPSHOT'
+
+    implementation project(":common")
+
+    implementation "net.kyori:adventure-api:4.13.1"
+    implementation "net.kyori:adventure-platform-bukkit:4.3.0"
+
+}
+
+def targetJavaVersion = 17
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+
+}
+compileJava {
+    options.encoding = "UTF-8"
+}
+
+
+shadowJar {
+    setArchiveName("mCommands-Spigot-${project.version}.jar")
+}
+
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'

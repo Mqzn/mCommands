@@ -1,6 +1,7 @@
-package dev.mqzen.commands.exceptions;
+package dev.mqzen.commands.exceptions.types;
 
 import dev.mqzen.commands.base.Command;
+import dev.mqzen.commands.exceptions.CommandException;
 import org.jetbrains.annotations.NotNull;
 
 public final class ArgumentParseException extends CommandException {

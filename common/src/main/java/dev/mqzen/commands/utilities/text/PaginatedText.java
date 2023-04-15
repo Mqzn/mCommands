@@ -1,102 +1,104 @@
-package net.versemc.api.utilities.text;
+package dev.mqzen.commands.utilities.text;
 
+import dev.mqzen.commands.help.CommandHelpProvider;
+import dev.mqzen.commands.sender.SenderWrapper;
 import lombok.Getter;
 import lombok.NonNull;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.minestom.server.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public final class PaginatedText<T extends TextConvertible> {
+public final class PaginatedText<S, T extends TextConvertible<S>> {
 
 	public final static int DEFAULT_ITEMS_PER_PAGE = 10;
-	private final @NonNull Set<TextDecoration> headerDecorations = new HashSet<>();
-	private final @Getter int itemsPerPage;
+
+	@NotNull
+	private final SenderWrapper<S> wrapper;
+
+	@Getter
+	private final int itemsPerPage;
+
+	@NotNull
 	private final List<T> textObjects = new ArrayList<>();
-	private final @NonNull Map<Integer, TextPage<T>> pages = new HashMap<>();
-	private @NonNull TextColor primary_color = NamedTextColor.GOLD,
-					secondary_color = NamedTextColor.YELLOW,
-					headerLineColor = NamedTextColor.DARK_GRAY;
+
+	@NotNull
+	private final Map<Integer, TextPage<S, T>> pages = new HashMap<>();
+
+	@NotNull
+	private final CommandHelpProvider provider;
+
+	@NotNull
 	private TextComponent headerLine = Component.text("===========");
-	private @Nullable TextComponent title;
-	private @Nullable ItemPageTextDisplayer<T> displayer;
 
-	private PaginatedText(int itemsPerPage) {
-		this(null, itemsPerPage);
+	@Nullable
+	private ItemPageTextDisplayer<S, T> displayer;
+
+	@NotNull
+	private NamedTextColor primaryColor = NamedTextColor.YELLOW, secondaryColor = NamedTextColor.GOLD;
+
+	private PaginatedText(@NotNull CommandHelpProvider provider,
+	                      @NotNull SenderWrapper<S> wrapper) {
+		this(provider, wrapper, DEFAULT_ITEMS_PER_PAGE);
 	}
 
-	private PaginatedText() {
-		this(DEFAULT_ITEMS_PER_PAGE);
-	}
-
-	private PaginatedText(@Nullable TextComponent title, int itemsPerPage) {
-		this.title = title;
+	private PaginatedText(@NotNull CommandHelpProvider provider,
+	                      @NotNull SenderWrapper<S> wrapper,
+	                      int itemsPerPage) {
+		this.provider = provider;
+		this.wrapper = wrapper;
 		this.itemsPerPage = itemsPerPage;
 	}
 
-	public static <T extends TextConvertible> PaginatedText<T> create() {
-		return new PaginatedText<>();
+	public static <S, T extends TextConvertible<S>> PaginatedText<S, T> create(@NotNull CommandHelpProvider provider,
+	                                                                           @NotNull SenderWrapper<S> wrapper) {
+		return new PaginatedText<>(provider, wrapper);
 	}
 
-	public static <T extends TextConvertible> PaginatedText<T> create(TextComponent title, int itemsPerPage) {
-		return new PaginatedText<>(title, itemsPerPage);
+	public static <S, T extends TextConvertible<S>> PaginatedText<S, T> create(@NotNull CommandHelpProvider provider,
+	                                                                           @NotNull SenderWrapper<S> wrapper,
+	                                                                           int itemsPerPage) {
+		return new PaginatedText<>(provider, wrapper, itemsPerPage);
 	}
 
-	public static <T extends TextConvertible> PaginatedText<T> create(int itemsPerPage) {
-		return new PaginatedText<>(itemsPerPage);
-	}
 
 	public void add(T object) {
 		textObjects.add(object);
 	}
 
-	public PaginatedText<T> remove(T object) {
+	public PaginatedText<S, T> remove(@NotNull T object) {
 		textObjects.remove(object);
 		return this;
 	}
 
-	public PaginatedText<T> withPrimaryColor(TextColor primary) {
-		this.primary_color = primary;
+	public PaginatedText<S, T> withHeaderLine(@NotNull String line) {
+		this.headerLine = Component.text(line);
 		return this;
 	}
 
-	public PaginatedText<T> withSecondaryColor(TextColor secondary) {
-		this.secondary_color = secondary;
+
+	public PaginatedText<S, T> withPrimaryColor(@NotNull NamedTextColor primaryColor) {
+		this.primaryColor = primaryColor;
 		return this;
 	}
 
-	public PaginatedText<T> withHeaderLineColor(TextColor headerLineColor) {
-		this.headerLineColor = headerLineColor;
+	public PaginatedText<S, T> withSecondaryColor(@NotNull NamedTextColor secondaryColor) {
+		this.secondaryColor = secondaryColor;
 		return this;
 	}
 
-	public PaginatedText<T> addHeaderLineDecoration(TextDecoration decoration) {
-		this.headerDecorations.add(decoration);
-		return this;
-	}
-
-	public PaginatedText<T> withTitle(@Nullable TextComponent title) {
-		this.title = title;
-		return this;
-	}
-
-	public PaginatedText<T> withDisplayer(@NonNull ItemPageTextDisplayer<T> displayer) {
+	public PaginatedText<S, T> withDisplayer(@NonNull ItemPageTextDisplayer<S, T> displayer) {
 		this.displayer = displayer;
 		return this;
 	}
 
 	public void paginate() {
-
-		title = title == null ? Component.text("Menu Page", primary_color) : title.append(Component.text(" Menu Page", title.color()));
-		headerLine = headerLine.color(headerLineColor);
-		for (TextDecoration decoration : headerDecorations) {
-			headerLine = headerLine.decorate(decoration);
-		}
 
 		for (int i = 1; i <= textObjects.size(); i++) {
 			T obj = textObjects.get(i - 1);
@@ -107,7 +109,7 @@ public final class PaginatedText<T extends TextConvertible> {
 				if (existingPage == null) {
 					List<T> list = new ArrayList<>(itemsPerPage);
 					list.add(obj);
-					return TextPage.of(page, itemsPerPage, list);
+					return new TextPage<>(page, itemsPerPage, list);
 				}
 
 				existingPage.add(obj);
@@ -118,7 +120,7 @@ public final class PaginatedText<T extends TextConvertible> {
 
 	}
 
-	public @Nullable TextPage<T> getPage(int index) {
+	public @Nullable TextPage<S, T> getPage(int index) {
 		return pages.get(index);
 	}
 
@@ -126,34 +128,36 @@ public final class PaginatedText<T extends TextConvertible> {
 		return pages.size();
 	}
 
-	public void displayPage(@NonNull CommandSender sender, int page) {
+	public void displayPage(@NotNull String label, @NonNull S sender, int page) {
 
 		int maxPages = pages.size();
 		if (page > maxPages || page < 1) {
 			throw new IllegalArgumentException("Page must be in range 1-" + maxPages);
 		}
 
-		if (title == null || headerLine == null || displayer == null) {
+		if (displayer == null) {
 			throw new IllegalStateException("The text menu is not fully ready yet (early access)!!");
 		}
 
-		TextPage<T> textPage = getPage(page);
+		TextPage<S, T> textPage = getPage(page);
 		if (textPage == null) return;
 
-		TextComponent firstLine = Component.empty().append(headerLine)
-						.append(Component.space()).append(Component.space().decorations(new HashMap<>()))
-						.append(Component.text(title.content(), title.color()).decorate(TextDecoration.BOLD))
-						.append(Component.space()).append(Component.space())
-						.append(Component.text("(", NamedTextColor.GRAY))
-						.append(Component.text(page, secondary_color))
-						.append(Component.text("/", primary_color))
-						.append(Component.text(maxPages, secondary_color))
-						.append(Component.text(")", NamedTextColor.GRAY))
-						.append(Component.text(" ", NamedTextColor.WHITE))
-						.append(headerLine);
 
-		sender.sendMessage(firstLine);
-		displayer.display(sender, textPage);
+		TextComponent line = headerLine.style(provider.lineStyle());
+		TextComponent firstLine = Component.empty().append(line)
+						.append(Component.space()).append(Component.space().decorations(new HashMap<>()))
+						.append(provider.header(label))
+						.append(Component.space()).append(Component.space())
+						.append(Component.text("(", secondaryColor))
+						.append(Component.text(page, primaryColor))
+						.append(Component.text("/", secondaryColor))
+						.append(Component.text(maxPages, primaryColor))
+						.append(Component.text(")", secondaryColor))
+						.append(Component.text(" ", NamedTextColor.WHITE))
+						.append(line);
+
+		wrapper.sendMessage(sender, firstLine);
+		displayer.display(wrapper, sender, textPage);
 	}
 
 

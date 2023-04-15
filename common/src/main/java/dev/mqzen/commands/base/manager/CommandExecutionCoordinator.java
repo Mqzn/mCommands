@@ -1,28 +1,37 @@
-package dev.mqzen.commands.base;
+package dev.mqzen.commands.base.manager;
 
-import dev.mqzen.commands.base.manager.CommandManager;
+import dev.mqzen.commands.base.context.CommandContext;
 import dev.mqzen.commands.base.syntax.CommandSyntax;
 import org.jetbrains.annotations.NotNull;
+
 import java.util.concurrent.CompletableFuture;
 
 public abstract class CommandExecutionCoordinator<S> {
 
 	@NotNull
-	protected final CommandManager<? , S> manager;
+	protected final CommandManager<?, S> manager;
 
 	private CommandExecutionCoordinator(@NotNull CommandManager<?, S> manager) {
 		this.manager = manager;
+	}
+
+	static <S> CommandExecutionCoordinator<S> async(@NotNull CommandManager<?, S> manager) {
+		return new AsyncCommandCoordinator<>(manager);
+	}
+
+	static <S> CommandExecutionCoordinator<S> sync(@NotNull CommandManager<?, S> manager) {
+		return new SyncCommandCoordinator<>(manager);
 	}
 
 	public CommandManager<?, S> manager() {
 		return manager;
 	}
 
-	public abstract CoordinatorType type();
+	public abstract Type type();
 
 	public abstract CompletableFuture<ExecutionResult> coordinateExecution(@NotNull S sender,
-	                                                              @NotNull CommandSyntax<S> syntax,
-	                                                              @NotNull CommandContext<S> context);
+	                                                                       @NotNull CommandSyntax<S> syntax,
+	                                                                       @NotNull CommandContext<S> context);
 
 
 	public enum ExecutionResult {
@@ -33,21 +42,10 @@ public abstract class CommandExecutionCoordinator<S> {
 	}
 
 
-	public enum CoordinatorType {
+	public enum Type {
 
 		ASYNC,
 		SYNC;
-	}
-
-
-
-	static <S> CommandExecutionCoordinator<S> async(@NotNull CommandManager<?, S> manager) {
-		return new AsyncCommandCoordinator<>(manager);
-	}
-
-
-	static <S> CommandExecutionCoordinator<S> sync(@NotNull CommandManager<?, S> manager) {
-		return new SyncCommandCoordinator<>(manager);
 	}
 
 	final static class AsyncCommandCoordinator<S> extends CommandExecutionCoordinator<S> {
@@ -57,20 +55,20 @@ public abstract class CommandExecutionCoordinator<S> {
 		}
 
 		@Override
-		public CoordinatorType type() {
-			return CoordinatorType.ASYNC;
+		public Type type() {
+			return Type.ASYNC;
 		}
 
 		@Override
 		public CompletableFuture<ExecutionResult> coordinateExecution(@NotNull S sender,
 		                                                              @NotNull CommandSyntax<S> syntax,
 		                                                              @NotNull CommandContext<S> context) {
-			return CompletableFuture.supplyAsync(()-> {
+			return CompletableFuture.supplyAsync(() -> {
 
 				try {
 					syntax.execute(sender, context);
 					return ExecutionResult.SUCCESS;
-				}catch (Exception ex) {
+				} catch (Exception ex) {
 					ex.printStackTrace();
 					return ExecutionResult.FAILED;
 				}
@@ -81,17 +79,17 @@ public abstract class CommandExecutionCoordinator<S> {
 	}
 
 
-	 static class SyncCommandCoordinator<S> extends CommandExecutionCoordinator<S> {
+	static class SyncCommandCoordinator<S> extends CommandExecutionCoordinator<S> {
 		public SyncCommandCoordinator(CommandManager<?, S> manager) {
 			super(manager);
 		}
 
-		 @Override
-		 public CoordinatorType type() {
-			 return CoordinatorType.SYNC;
-		 }
+		@Override
+		public Type type() {
+			return Type.SYNC;
+		}
 
-		 @Override
+		@Override
 		public CompletableFuture<ExecutionResult> coordinateExecution(@NotNull S sender,
 		                                                              @NotNull CommandSyntax<S> syntax,
 		                                                              @NotNull CommandContext<S> context) {
@@ -99,7 +97,7 @@ public abstract class CommandExecutionCoordinator<S> {
 			try {
 				syntax.execute(sender, context);
 				return CompletableFuture.completedFuture(ExecutionResult.SUCCESS);
-			}catch (Exception ex) {
+			} catch (Exception ex) {
 				ex.printStackTrace();
 				return CompletableFuture.completedFuture(ExecutionResult.FAILED);
 			}

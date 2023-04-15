@@ -1,40 +1,50 @@
-package dev.mqzen.commands.base.flags;
+package dev.mqzen.commands.base.manager.flags;
 
-import dev.mqzen.commands.arguments.Argument;
-import dev.mqzen.commands.base.syntax.CommandSyntax;
+import dev.mqzen.commands.base.Information;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public sealed interface CommandFlag permits CommandFlag.Builder.SimpleCommandFlag {
 
+	static @NotNull CommandFlag from(FlagInfo info) {
+		Builder builder = CommandFlag.builder(info.getName())
+						.withAliases(info.getAliases());
+
+		if (info.getInformation() != null) {
+
+			var flagInformation = info.getInformation();
+			if (flagInformation.permission() != null)
+				builder.withPermission(flagInformation.permission());
+
+			if (flagInformation.description() != null)
+				builder.withDescription(flagInformation.description());
+
+		}
+
+		return builder.build();
+	}
+
+	static @NotNull Builder builder(String flagName) {
+		return new Builder(flagName);
+	}
+
 	@NotNull String name();
 
-	@NotNull FlagMode mode();
-
-	@Nullable CommandSyntax.Information info();
+	@Nullable Information info();
 
 	@NotNull String[] aliases();
 
-	@NotNull Argument<?> argument();
+	default boolean hasAliase(String aliase) {
+		for (var a : aliases())
+			if (a.equalsIgnoreCase(aliase)) return true;
 
-	enum FlagMode {
-
-		SINGLE_ONLY,
-
-		ALLOWS_MULTIPLE_FLAGS;
-
+		return false;
 	}
 
 	final class Builder {
 
 		@NotNull
 		private final String name;
-
-		@NotNull
-		private final Argument<?> argument;
-
-		@NotNull
-		private FlagMode mode = FlagMode.SINGLE_ONLY;
 
 		@Nullable
 		private String permission = null;
@@ -45,15 +55,10 @@ public sealed interface CommandFlag permits CommandFlag.Builder.SimpleCommandFla
 		@NotNull
 		private String[] aliases = new String[0];
 
-		Builder(@NotNull String name, @NotNull Argument<?> argument) {
+		Builder(@NotNull String name) {
 			this.name = name;
-			this.argument = argument;
 		}
 
-		public @NotNull Builder withMode(@NotNull FlagMode mode) {
-			this.mode = mode;
-			return this;
-		}
 
 		public @NotNull Builder withAliases(@NotNull String... aliases) {
 			this.aliases = aliases;
@@ -71,17 +76,17 @@ public sealed interface CommandFlag permits CommandFlag.Builder.SimpleCommandFla
 		}
 
 		public CommandFlag build() {
-			CommandSyntax.Information info = new CommandSyntax.Information(permission, description);
-			return new SimpleCommandFlag(name, mode, info, argument, aliases);
+			Information info = new Information(permission, description);
+			return new SimpleCommandFlag(name, info, aliases);
 		}
 
 
-		record SimpleCommandFlag(@NotNull String name, @NotNull FlagMode mode, @Nullable CommandSyntax.Information info,
-		                                 @NotNull Argument<?> argument, @NotNull String... aliases) implements CommandFlag {
+		record SimpleCommandFlag(@NotNull String name,
+		                         @Nullable Information info,
+		                         @NotNull String... aliases) implements CommandFlag {
 		}
 
 	}
-
 
 
 }

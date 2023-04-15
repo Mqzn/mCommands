@@ -1,97 +1,96 @@
-package dev.mqzen.commands.base;
+package dev.mqzen.commands.base.context;
 
 import dev.mqzen.commands.arguments.Argument;
 import dev.mqzen.commands.arguments.ArgumentLiteral;
+import dev.mqzen.commands.base.Command;
+import dev.mqzen.commands.base.caption.CaptionKey;
 import dev.mqzen.commands.base.manager.CommandManager;
 import dev.mqzen.commands.base.manager.flags.ContextFlagRegistry;
 import dev.mqzen.commands.base.syntax.CommandSyntax;
 import dev.mqzen.commands.exceptions.types.ArgumentParseException;
-import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
-public final class CommandContext<S> {
-
-	private final static int CAPACITY_ARGUMENTS = 45; // 45-50
-
-	@NotNull
-	private final S sender;
+public final class CommandContext<S> implements Context<S> {
 
 	@NotNull
 	private final CommandManager<?, S> manager;
 
-
-	@NotNull @Getter
-	private final Command<S> command;
-
-	@NotNull @Getter
-	private final String rawFormatted;
-
 	@NotNull
-	private final List<String> rawArguments = new ArrayList<>(CAPACITY_ARGUMENTS);
+	private final DelegateCommandContext<S> delegateContext;
 
 	@NotNull
 	private final Map<ArgumentKey, ParsedArgument<?>> parsedArguments = new HashMap<>();
 
+	private final CommandSyntax<S> syntax;
+
 	@NotNull
 	private final ContextFlagRegistry<S> contextFlagRegistry;
 
-	private int flagsUsedInRaw = 0;
 
 	private CommandContext(@NotNull CommandManager<?, S> manager,
-												 @NotNull Command<S> command,
-	                       @NotNull S sender, @NotNull String[] argumentsInput) {
-		this.sender = sender;
+	                       @NotNull CommandSyntax<S> syntax,
+	                       @NotNull DelegateCommandContext<S> context) {
+
 		this.manager = manager;
-		this.rawArguments.addAll(Arrays.asList(argumentsInput));
-		this.command = command;
-		this.rawFormatted = manager.commandStarter() + command.name() + " " + String.join(" ",argumentsInput);
-
-		for(var arg : argumentsInput) if(ContextFlagRegistry.isRawArgumentFlag(arg)) flagsUsedInRaw++;
-
-		contextFlagRegistry = ContextFlagRegistry.create(manager,this);
+		this.syntax = syntax;
+		this.delegateContext = context;
+		contextFlagRegistry = ContextFlagRegistry.create(manager, this);
 
 	}
 
 	public static <S> CommandContext<S> create(@NotNull CommandManager<?, S> manager,
-	                                           @NotNull Command<S> command,
-	                                           @NotNull S sender,
-	                                           @NotNull String[] argumentsInput) {
-		return new CommandContext<>(manager, command, sender, argumentsInput);
+	                                           @NotNull CommandSyntax<S> syntax,
+	                                           @NotNull DelegateCommandContext<S> context) {
+		return new CommandContext<>(manager, syntax, context);
 	}
 
-	// user <name> permission set <perm>
-	// user -silent mqzen permission set hello
-
+	/**
+	 * Parses the arguments into the used syntax
+	 * this algorithm should provide good reasonable performance
+	 *
+	 * @param <T> the type of arguments that is being parsed
+	 */
 	@SuppressWarnings("unchecked")
-	public <T> void linkToSyntax(@NotNull CommandSyntax<S> syntax) {
+	@Override
+	public <T> void parse() {
+
+		S sender = sender();
+		if (syntax == null) {
+			manager.captionRegistry()
+							.sendCaption(sender,
+											this, CaptionKey.UNKNOWN_COMMAND);
+			return;
+		}
+
+
 		var result = contextFlagRegistry.extractFlags(sender, syntax);
-		if(result == ContextFlagRegistry.FlagExtractionResult.FAILED)
+		if (result == ContextFlagRegistry.FlagExtractionResult.FAILED)
 			return;
 
 		for (int i = 0, rawIndex = 0; i < syntax.length(); i++) {
 			Argument<T> required = (Argument<T>) syntax.getArguments().get(i);
 
-			if(required instanceof ArgumentLiteral){
+			if (required instanceof ArgumentLiteral) {
 				rawIndex++;
 				continue;
 			}
 
 			String rawArg = getRawArgument(rawIndex);
 
-			if(rawArg != null && ContextFlagRegistry.isRawArgumentFlag(rawArg) && !required.useRemainingSpace()) {
+			if (rawArg != null && ContextFlagRegistry.isRawArgumentFlag(rawArg) && !required.useRemainingSpace()) {
 				rawArg = getRawArgument(++rawIndex);
-			}
-
-			else if(required.useRemainingSpace()) {
+			} else if (required.useRemainingSpace()) {
 
 				StringBuilder builder = new StringBuilder();
-				for (int x = i; x < rawArguments.size(); x++) {
+				for (int x = i; x < delegateContext.getRawArguments().size(); x++) {
 					String raw = getRawArgument(x);
 					builder.append(raw);
-					if(x != rawArguments.size()-1) builder.append(" ");
+					if (x != delegateContext.getRawArguments().size() - 1) builder.append(" ");
 				}
 
 				rawArg = builder.toString();
@@ -100,15 +99,15 @@ public final class CommandContext<S> {
 
 			T value = null;
 
-			if(rawArg == null && required.isOptional() && required.defaultValue() != null) {
+			if (rawArg == null && required.isOptional() && required.defaultValue() != null) {
 				value = required.defaultValue();
 			}
 
-			if(rawArg != null) {
+			if (rawArg != null) {
 				try {
-					value = required.parse(command, rawArg);
-				}catch (ArgumentParseException ex) {
-					manager.getSenderWrapper().sendMessage(sender, ex.getMessage());
+					value = required.parse(delegateContext.commandUsed(), rawArg);
+				} catch (ArgumentParseException ex) {
+					manager.exceptionHandler().handleException(ex, sender, this);
 					return;
 				}
 
@@ -123,69 +122,146 @@ public final class CommandContext<S> {
 
 	}
 
-	public @NotNull S getSender() {
-		return sender;
+	/**
+	 * The number of parsed args
+	 *
+	 * @return the number of arguments parsed in the context
+	 */
+	@Override
+	public int parsedArguments() {
+		return parsedArguments.size();
 	}
 
+	/**
+	 * The flags used in the command
+	 *
+	 * @return the flag registry for the flags used in the context
+	 * of the command executed by the command sender
+	 */
+	@Override
+	public @NotNull ContextFlagRegistry<S> flags() {
+		return contextFlagRegistry;
+	}
+
+
+	/**
+	 * Fetches the number of flags used in the raw arguments
+	 *
+	 * @return the count of flags used in raw args
+	 */
+	@Override
+	public int flagsUsed() {
+		return delegateContext.flagsUsed();
+	}
+
+	/**
+	 * Fetches the sender for this context
+	 *
+	 * @return the context command sender
+	 */
+	@Override
+	public @NotNull S sender() {
+		return delegateContext.sender();
+	}
+
+	/**
+	 * The command found and used in the context
+	 * made by the command sender
+	 *
+	 * @return the command used !
+	 * @see Command
+	 */
+	@Override
+	public @NotNull Command<S> commandUsed() {
+		return delegateContext.commandUsed();
+	}
+
+	/**
+	 * The raw arguments used in the context
+	 * made by the command sender
+	 *
+	 * @return The raw arguments
+	 */
+	@Override
 	public @NotNull List<String> getRawArguments() {
-		return rawArguments;
+		return delegateContext.getRawArguments();
+	}
+
+	/**
+	 * The raw arguments formatted using the
+	 * command used
+	 *
+	 * @return the raw format used in the context
+	 * @see Command
+	 * @see CommandContext
+	 */
+	@Override
+	public @NotNull String rawFormat() {
+		return delegateContext.rawFormat();
+	}
+
+	/**
+	 * Fetches the raw argument from the input in the
+	 * constructor
+	 *
+	 * @param index the index of the raw argument to fetch
+	 * @return the raw argument at a specific position
+	 */
+	@Override
+	public @Nullable String getRawArgument(int index) {
+		return delegateContext.getRawArgument(index);
+	}
+
+	/**
+	 * Fetches the parsed argument value
+	 * may return null if the value parsed is not valid
+	 * some cases of failed argument parsing may be like this one:
+	 * an integer argument with min of 1 and max of 10, however the input was "one"
+	 * or may be "-1" which is not a valid value .
+	 *
+	 * @param id the argument name/id
+	 * @return the parsed value of the argument
+	 */
+	@Override
+	public <T> @Nullable T getArgument(String id) {
+		return getParsedArgument((key) -> key.id.equalsIgnoreCase(id));
+	}
+
+	/**
+	 * Fetches the parsed argument value
+	 * may return null if the value parsed is not valid
+	 * some cases of failed argument parsing may be like this one:
+	 * an integer argument with min of 1 and max of 10, however the input was "one"
+	 * or may be "-1" which is not a valid value .
+	 *
+	 * @param index the argument index/position
+	 * @return the parsed value of the argument
+	 */
+	@Override
+	public <T> @Nullable T getArgument(int index) {
+		return getParsedArgument((key) -> key.requiredArgIndex == index);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Nullable
 	private <T> T getParsedArgument(@NotNull Predicate<ArgumentKey> predicate) {
 
-		for(ArgumentKey key : parsedArguments.keySet()) {
-			if(!predicate.test(key)) continue;
+		for (ArgumentKey key : parsedArguments.keySet()) {
+			if (!predicate.test(key)) continue;
 
 			ParsedArgument<T> parsedArgument = (ParsedArgument<T>) parsedArguments.get(key);
-			return parsedArgument.getValue();
+			return parsedArgument.value();
 		}
 
 		return null;
 	}
 
-	public <T> T getParsedArgument(String id) {
-		return getParsedArgument((key)-> key.id.equals(id));
-	}
-
-	public <T> T getParsedArgument(int index) {
-		return getParsedArgument((key)-> key.requiredArgIndex == index);
-	}
-
-	@Nullable
-	public String getRawArgument(int index) {
-
-		if(index < 0 || index >= rawArguments.size()) {
-			return null;
-		}
-
-		return rawArguments.get(index);
-	}
-
-	public int getRequiredArgsCount() {
-		return parsedArguments.size();
-	}
-
-	public ContextFlagRegistry<S> flags() {
-		return contextFlagRegistry;
-	}
-
-	public int flagsUsedCount() {
-		return flagsUsedInRaw;
-	}
-
-	public void debug() {
-
-		for(ParsedArgument<?> argument : parsedArguments.values()) {
-			System.out.println("Raw Index = " + argument.getRawIndex()
-							+ ", Usual Index = " + argument.getIndex() + ", Raw Value= " + argument.getRawValue() + ", Arg required = " + argument.getArgToParse().toString());
-		}
-
-	}
-
-
 	private record ArgumentKey(String id, int requiredArgIndex) {
+
+	}
+
+	private record ParsedArgument<T>(@NotNull Argument<T> argToParse, @Nullable T value, int index, int rawIndex,
+	                                 @Nullable String rawValue) {
 
 	}
 

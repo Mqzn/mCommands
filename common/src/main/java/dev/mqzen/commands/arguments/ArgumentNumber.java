@@ -2,6 +2,7 @@ package dev.mqzen.commands.arguments;
 
 import dev.mqzen.commands.base.Command;
 import dev.mqzen.commands.exceptions.types.ArgumentParseException;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,20 +12,25 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-abstract class ArgumentNumber<T extends Number> extends AbstractArgument<T> {
+public abstract class ArgumentNumber<T extends Number> extends AbstractArgument<T> {
 
 	public static final int NOT_NUMBER_ERROR = 1;
 	public static final int TOO_LOW_ERROR = 2;
 	public static final int TOO_HIGH_ERROR = 3;
 
 	protected final BiFunction<String, Integer, T> radixParser;
+
+	@Getter
 	protected final Function<String, T> parser;
+
 	protected final Comparator<T> comparator;
+
 	protected boolean hasMin, hasMax;
+
 	protected T min, max;
 
 	ArgumentNumber(@NotNull String id, Class<T> type,
-                 Function<String, T> parser,
+	               Function<String, T> parser,
 	               BiFunction<String, Integer, T> radixParser,
 	               Comparator<T> comparator) {
 		super(id, type);
@@ -166,7 +172,6 @@ abstract class ArgumentNumber<T extends Number> extends AbstractArgument<T> {
 			return null;
 		}
 	}
-
 
 
 }

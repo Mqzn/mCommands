@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
+}
+
+group 'dev.mqzen.commands'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+
+    flatDir {
+        dirs 'lib'
+    }
+}
+
+dependencies {
+    implementation project(":common")
+    implementation 'org.jetbrains:annotations:24.0.1'
+    compileOnly files("lib/BungeeCord.jar")
+    implementation "net.kyori:adventure-api:4.13.1"
+    implementation "net.kyori:adventure-platform-bungeecord:4.3.0"
+}
+
+def targetJavaVersion = 17
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+
+}
+compileJava {
+    options.encoding = "UTF-8"
+}
+
+
+shadowJar {
+    setArchiveName("mCommands-Bungee-${project.version}.jar")
+}
+
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
+

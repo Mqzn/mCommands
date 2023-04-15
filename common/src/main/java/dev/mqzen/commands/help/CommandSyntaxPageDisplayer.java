@@ -1,14 +1,12 @@
-package dev.mqzen.commands.spigot.display;
+package dev.mqzen.commands.help;
 
 import dev.mqzen.commands.base.syntax.CommandSyntax;
-import dev.mqzen.commands.help.HelpMessageProvider;
 import dev.mqzen.commands.utilities.text.ItemPageTextDisplayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -18,18 +16,20 @@ import org.jetbrains.annotations.NotNull;
  * @see CommandSyntax
  * @see ItemPageTextDisplayer
  */
-public class CommandSyntaxPageDisplayer implements ItemPageTextDisplayer<CommandSender, CommandSyntax<CommandSender>> {
+public final class CommandSyntaxPageDisplayer<S> implements ItemPageTextDisplayer<S, CommandSyntax<S>> {
+
 
 	@NotNull
-	private final HelpMessageProvider provider;
+	private final CommandHelpProvider provider;
 
-	public CommandSyntaxPageDisplayer(@NotNull HelpMessageProvider provider) {
+	public CommandSyntaxPageDisplayer(@NotNull CommandHelpProvider provider) {
 		this.provider = provider;
 	}
 
+
 	@Override
-	public TextComponent displayPageItem(@NotNull CommandSender sender,
-	                                     @NotNull CommandSyntax<CommandSender> convertible,
+	public TextComponent displayPageItem(@NotNull S sender,
+	                                     @NotNull CommandSyntax<S> convertible,
 	                                     int index) {
 
 		TextComponent comp = convertible.toText(sender);

@@ -1,7 +1,7 @@
-package dev.mqzen.commands.spigot.display;
+package dev.mqzen.commands;
 
 import dev.mqzen.commands.base.syntax.CommandSyntax;
-import dev.mqzen.commands.help.HelpMessageProvider;
+import dev.mqzen.commands.help.CommandHelpProvider;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -9,13 +9,11 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.NotNull;
 
-public final class TestHelpProvider implements HelpMessageProvider {
+public final class TestCommandHelpProvider implements CommandHelpProvider {
 
-	@NotNull
-	private final String label;
 
-	public TestHelpProvider(@NotNull String label) {
-		this.label = label;
+	public TestCommandHelpProvider() {
+
 	}
 
 	@Override
@@ -23,8 +21,9 @@ public final class TestHelpProvider implements HelpMessageProvider {
 		return Style.style(NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH, TextDecoration.BOLD);
 	}
 
+
 	@Override
-	public @NotNull TextComponent header() {
+	public @NotNull TextComponent header(String label) {
 		return Component.text(label + "'s sub-commands");
 	}
 

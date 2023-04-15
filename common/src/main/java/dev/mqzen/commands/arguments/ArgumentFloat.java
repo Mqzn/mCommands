@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public final class ArgumentFloat extends ArgumentNumber<Float>{
+public final class ArgumentFloat extends ArgumentNumber<Float> {
 
 	ArgumentFloat(@NotNull String id) {
 		super(id, Float.class, Float::parseFloat,
@@ -14,13 +14,13 @@ public final class ArgumentFloat extends ArgumentNumber<Float>{
 	}
 
 	@Override
-	public @NotNull <S> List<Float> suggestions() {
+	public @NotNull List<Float> suggestions() {
 
-		if(hasMax && hasMin) {
+		if (hasMax && hasMin) {
 			List<Float> suggestions = new ArrayList<>();
 
 			for (float i = 0; i <= max; i++) {
-					suggestions.add(i);
+				suggestions.add(i);
 			}
 
 			return suggestions;
