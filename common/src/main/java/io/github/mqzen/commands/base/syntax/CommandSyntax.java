@@ -138,8 +138,6 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 	/**
 	 * Checks if the syntax matches the context input
 	 * Here are some examples:
-	 * First syntax: /perms user <user> permission add <permission> [value] (literal => word => literal => literal => word)
-	 * Second Syntax: /perms user <user> permission remove <permission> (literal => word => literal => literal => word)
 	 *
 	 * @param commandContext the input
 	 * @return whether the syntax is suitable for the context used !

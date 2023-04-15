@@ -1,12 +1,9 @@
 plugins {
     id 'java'
-    id 'maven-publish'
-    id 'signing'
 }
 
 
 group 'io.github.mqzen.commands'
-archivesBaseName = "mCommands-common"
 version '1.0.0'
 
 repositories {
@@ -43,70 +40,4 @@ java {
 }
 
 
-artifacts {
-    archives javadocJar, sourcesJar
-}
-
-
-publishing {
- publications{
-
-     mavenJava(MavenPublication){
-
-         groupId = 'io.github.mqzn'
-         artifactId = 'mCommands-common'
-         version = '1.0.0'
-         from components.java
-
-         pom {
-             name = 'mCommands'
-             description = 'mCommands is an open-source general purpose command dispatching Java library.'
-             url = 'https://github.com/Mqzn/mCommands'
-             inceptionYear = '2023'
-
-             licenses {
-                 license {
-                     name = 'MIT License'
-                     url = 'http:www.opensource.orglicensesmit-license.php'
-                 }
-             }
-
-             developers {
-                 developer {
-                     id = 'Mqzn'
-                     name = 'Mqzen'
-                     email = 'mezoahmed2507@gmail.com'
-                 }
-
-             }
-
-             scm {
-                 connection = 'scm:git:git:github.com/Mqzn/mCommands.git'
-                 developerConnection = 'scm:git:ssh://github.com/Mqzn/mCommands.git'
-                 url = 'https://github.com/Mqzn/mCommands'
-             }
-
-         }
-     }
- }
-
- repositories {
-     maven {
-         name = "OSSRH"
-         url = "https:s01.oss.sonatype.orgservicelocalstagingdeploymaven2"
-         credentials {
-             username = project.properties["ossrhUsername"]
-             password = project.properties["ossrhPassword"]
-         }
-     }
- }
-
-}
-
-signing {
- sign publishing.publications.mavenJava
-}
-
 apply plugin: 'java'
-apply plugin: 'maven-publish'
-apply plugin: 'signing'
