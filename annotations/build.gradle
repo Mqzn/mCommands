@@ -3,8 +3,8 @@ plugins {
     id 'maven-publish'
 }
 
-group 'dev.mqzen.commands'
-version '1.0-SNAPSHOT'
+group 'io.github.mqzen.commands'
+version '1.0.0'
 
 repositories {
     mavenCentral()
@@ -19,10 +19,20 @@ dependencies {
     annotationProcessor('org.projectlombok:lombok:1.18.26')
 
 }
+
+def targetJavaVersion = 17
+
 java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
     withSourcesJar()
     withJavadocJar()
 }
+
 
 publishing {
     publications {

@@ -4,8 +4,8 @@ plugins {
 }
 
 
-group 'dev.mqzen.commands'
-version '1.0-SNAPSHOT'
+group 'io.github.mqzen.commands'
+version '1.0.0'
 
 repositories {
     mavenCentral()
@@ -23,6 +23,21 @@ dependencies {
 java {
     withSourcesJar()
     withJavadocJar()
+}
+
+def targetJavaVersion = 17
+
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+
+    withSourcesJar()
+    withJavadocJar()
+
 }
 
 publishing {

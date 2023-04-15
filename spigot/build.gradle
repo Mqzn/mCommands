@@ -5,8 +5,8 @@ plugins {
 
 }
 
-group 'dev.mqzen.commands'
-version '1.0-SNAPSHOT'
+group 'io.github.mqzen.commands'
+version '1.0.0'
 
 repositories {
     mavenCentral()
@@ -36,14 +36,10 @@ java {
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
-    java {
-        withSourcesJar()
-        withJavadocJar()
-    }
+
+    withSourcesJar()
+    withJavadocJar()
 }
-
-
-
 
 
 compileJava {
