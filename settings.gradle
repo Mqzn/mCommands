@@ -1,8 +1,6 @@
 rootProject.name = 'mCommands'
 include 'common'
 include 'spigot'
-include 'standalone'
 include 'annotations'
 include 'bungee'
-include 'velocity'
 

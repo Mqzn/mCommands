@@ -1,6 +1,8 @@
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '7.1.0'
+    id 'maven-publish'
+
 }
 
 group 'dev.mqzen.commands'
@@ -30,7 +32,10 @@ java {
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
-
+    java {
+        withSourcesJar()
+        withJavadocJar()
+    }
 }
 compileJava {
     options.encoding = "UTF-8"
@@ -43,4 +48,15 @@ shadowJar {
 
 apply plugin: 'java'
 apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'maven-publish'
 
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId project.group
+            artifactId project.name
+            version project.version
+            from components.java
+        }
+    }
+}

@@ -14,8 +14,6 @@
             <option value="$PROJECT_DIR$/bungee" />
             <option value="$PROJECT_DIR$/common" />
             <option value="$PROJECT_DIR$/spigot" />
-            <option value="$PROJECT_DIR$/standalone" />
-            <option value="$PROJECT_DIR$/velocity" />
           </set>
         </option>
       </GradleProjectSettings>
