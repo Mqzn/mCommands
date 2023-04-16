@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
 group 'io.github.mqzn.commands'
@@ -32,6 +33,17 @@ java {
     withJavadocJar()
 }
 
-apply plugin: 'java'
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId project.group
+            artifactId project.name
+            version project.version
+            from components.java
+        }
+    }
+}
 
+apply plugin: 'java'
+apply plugin: 'maven-publish'
 
