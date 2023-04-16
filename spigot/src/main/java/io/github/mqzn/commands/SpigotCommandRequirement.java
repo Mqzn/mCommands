@@ -6,9 +6,9 @@ import io.github.mqzn.commands.base.context.Context;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public enum SpigotCommandRequirement implements CommandRequirement<CommandSender> {
+public interface SpigotCommandRequirement extends CommandRequirement<CommandSender> {
 
-	ONLY_PLAYER_EXECUTABLE() {
+	SpigotCommandRequirement ONLY_PLAYER_EXECUTABLE = new SpigotCommandRequirement() {
 		@Override
 		public boolean accepts(CommandSender sender, Context<CommandSender> commandContext) {
 			return sender instanceof Player;
@@ -19,6 +19,5 @@ public enum SpigotCommandRequirement implements CommandRequirement<CommandSender
 			return CaptionKey.ONLY_PLAYER_EXECUTABLE;
 		}
 	};
-
 
 }

@@ -22,6 +22,9 @@ public final class BungeeCommandManager extends AbstractCommandManager<Plugin, C
 
 	}
 
+	public BungeeCommandManager(@NotNull Plugin plugin) {
+		this(plugin, CommandExecutionCoordinator.Type.SYNC);
+	}
 
 	@Override
 	public char commandStarter() {

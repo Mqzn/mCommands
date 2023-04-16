@@ -18,6 +18,6 @@ public @interface Command {
 
 	String[] aliases() default {};
 
-	Class<? extends CommandRequirement<?>>[] requirements();
+	Class<? extends CommandRequirement<?>>[] requirements() default {};
 
 }

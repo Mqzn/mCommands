@@ -160,10 +160,15 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 	                                  final @NotNull Context<S> commandContext) {
 
 		for (CommandRequirement<S> requirement : command.requirements()) {
+
 			if (!requirement.accepts(sender, commandContext)) {
-				this.captionRegistry.sendCaption(sender, commandContext, requirement.caption());
+				CaptionKey key = requirement.caption();
+				if(key != null)
+					this.captionRegistry.sendCaption(sender, commandContext, key);
+
 				return false;
 			}
+
 		}
 
 		return true;

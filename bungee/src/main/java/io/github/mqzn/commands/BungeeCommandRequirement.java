@@ -6,8 +6,9 @@ import io.github.mqzn.commands.base.context.Context;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
-public enum BungeeCommandRequirement implements CommandRequirement<CommandSender> {
-	ONLY_PLAYER_EXECUTABLE() {
+public interface BungeeCommandRequirement extends CommandRequirement<CommandSender> {
+
+	BungeeCommandRequirement ONLY_PLAYER_EXECUTABLE = new BungeeCommandRequirement() {
 		@Override
 		public boolean accepts(CommandSender sender, Context<CommandSender> commandContext) {
 			return !(sender instanceof ProxiedPlayer);
@@ -19,6 +20,5 @@ public enum BungeeCommandRequirement implements CommandRequirement<CommandSender
 		}
 
 	};
-
 
 }
