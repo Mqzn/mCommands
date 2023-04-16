@@ -35,7 +35,7 @@ public abstract class AbstractArgument<T> implements Argument<T> {
 	}
 
 	public AbstractArgument(@NotNull ArgumentData data, Class<T> type) {
-		this(data.id(), type, data.optional(), data.useRemainingSpace());
+		this(data.getId(), type, data.isOptional(), data.isUseRemainingSpace());
 	}
 
 	/**
