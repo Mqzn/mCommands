@@ -2,6 +2,9 @@
 An advanced general purpose command dispatching framework
 designed using OOP concepts.
 
+this library utilize [Kyori Adventure](https://github.com/KyoriPowered/adventure) for
+messages and text styles
+
 ## Installation
 
 Unfortunately since I don't currently have a repository hosting, you will have to
@@ -20,4 +23,4 @@ This bungeecord platform is for minecraft bungeecord proxy api development, allo
 to declare and register bungeecord commands.
 
 ## Wiki
-Coming soon...
+Wiki for mCommands is available [here](https://github.com/Mqzn/mCommands/wiki)
