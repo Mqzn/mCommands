@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-abstract class AbstractArgument<T> implements Argument<T> {
+public abstract class AbstractArgument<T> implements Argument<T> {
 
 	@NotNull
 	protected final List<T> suggestions = new ArrayList<>();
