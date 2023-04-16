@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group 'io.github.mqzen.commands'
+group 'io.github.mqzn.commands'
 version '1.0.0'
 
 repositories {
