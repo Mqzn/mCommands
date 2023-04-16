@@ -1,7 +1,6 @@
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '7.1.0'
-    id 'maven-publish'
 }
 
 group 'io.github.mqzn.commands'
@@ -13,10 +12,10 @@ repositories {
 
 dependencies {
 
+    compileOnly project(":common")
 
-    implementation project(":common")
-    implementation 'org.jetbrains:annotations:24.0.1'
-    implementation 'org.projectlombok:lombok:1.18.26'
+    compileOnly 'org.jetbrains:annotations:24.0.1'
+    compileOnly 'org.projectlombok:lombok:1.18.26'
     annotationProcessor('org.projectlombok:lombok:1.18.26')
 
 }
@@ -30,25 +29,11 @@ java {
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
-    withSourcesJar()
-    withJavadocJar()
 }
 
 shadow {
-    setArchivesBaseName("mCommands-Annotations-${project.version}.jar")
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId project.group
-            artifactId project.name
-            version project.version
-            from components.java
-        }
-    }
+    archivesBaseName = "mCommands-Annotations"
 }
 
 apply plugin: 'java'
-apply plugin: 'maven-publish'
-
+apply plugin: 'com.github.johnrengelman.shadow'
