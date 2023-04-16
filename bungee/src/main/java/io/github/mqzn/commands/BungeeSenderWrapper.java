@@ -5,8 +5,8 @@ import net.kyori.adventure.platform.bungeecord.BungeeAudiences;
 import net.kyori.adventure.text.TextComponent;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.command.ConsoleCommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,7 +26,7 @@ public final class BungeeSenderWrapper implements SenderWrapper<CommandSender> {
 
 	@Override
 	public boolean isConsole(CommandSender sender) {
-		return sender instanceof ConsoleCommandSender;
+		return !(sender instanceof ProxiedPlayer);
 	}
 
 	@Override
