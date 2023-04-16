@@ -2,7 +2,7 @@
 An advanced general purpose command dispatching framework
 designed using OOP concepts.
 
-this library utilize [Kyori Adventure](https://github.com/KyoriPowered/adventure) for
+This library utilizes [Kyori Adventure](https://github.com/KyoriPowered/adventure) for
 messages and text styles
 
 ## Installation
