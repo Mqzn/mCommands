@@ -7,7 +7,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.md_5.bungee.api.CommandSender;
 
-interface BungeeCaption {
+public interface BungeeCaption {
 
 	Caption<CommandSender> UNKNOWN_COMMAND = Caption.<CommandSender>builder(CaptionKey.UNKNOWN_COMMAND)
 					.withMessage((sender, context, ex) -> Message.prefixed(Message.EXECUTION_ERROR)

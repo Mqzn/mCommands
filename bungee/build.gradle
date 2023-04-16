@@ -9,16 +9,12 @@ version '1.0.0'
 
 repositories {
     mavenCentral()
-
-    flatDir {
-        dirs 'lib'
-    }
 }
 
 dependencies {
     implementation project(":common")
     implementation 'org.jetbrains:annotations:24.0.1'
-    compileOnly files("lib/BungeeCord.jar")
+    compileOnly 'net.md-5:bungeecord-api:1.16-R0.3'
     implementation "net.kyori:adventure-api:4.13.1"
     implementation "net.kyori:adventure-platform-bungeecord:4.3.0"
 }
