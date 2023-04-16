@@ -15,6 +15,13 @@ public final class ArgumentInteger extends ArgumentNumber<Integer> {
 						Integer::compare);
 	}
 
+	ArgumentInteger(ArgumentData data) {
+		super(data, Integer.class,
+						Integer::parseInt,
+						Integer::parseInt,
+						Integer::compare);
+	}
+
 	@Override
 	public @NotNull List<Integer> suggestions() {
 

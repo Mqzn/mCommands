@@ -23,6 +23,12 @@ public final class ArgumentEnum<E extends Enum<E>> extends AbstractArgument<E> {
 		this.values = enumClass.getEnumConstants();
 	}
 
+	public ArgumentEnum(@NotNull ArgumentData data, Class<E> enumClass) {
+		super(data, enumClass);
+		this.enumClass = enumClass;
+		this.values = enumClass.getEnumConstants();
+	}
+
 	public ArgumentEnum<E> setFormat(@NotNull Format format) {
 		this.format = format;
 		return this;

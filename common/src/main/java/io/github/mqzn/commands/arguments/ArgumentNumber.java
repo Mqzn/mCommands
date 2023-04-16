@@ -40,6 +40,16 @@ public abstract class ArgumentNumber<T extends Number> extends AbstractArgument<
 
 	}
 
+	ArgumentNumber(@NotNull ArgumentData data, Class<T> type,
+	               Function<String, T> parser,
+	               BiFunction<String, Integer, T> radixParser,
+	               Comparator<T> comparator) {
+		super(data, type);
+		this.radixParser = radixParser;
+		this.parser = parser;
+		this.comparator = comparator;
+	}
+
 	@Override
 	public @NotNull T parse(@NotNull Command<?> command, @NotNull String input) throws ArgumentParseException {
 		try {

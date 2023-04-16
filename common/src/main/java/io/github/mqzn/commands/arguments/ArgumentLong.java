@@ -12,6 +12,10 @@ public final class ArgumentLong extends ArgumentNumber<Long> {
 		super(id, Long.class, Long::parseLong, Long::parseLong, Long::compare);
 	}
 
+	ArgumentLong(@NotNull ArgumentData data) {
+		super(data, Long.class, Long::parseLong, Long::parseLong, Long::compare);
+	}
+
 	@Override
 	public @NotNull List<Long> suggestions() {
 

@@ -14,6 +14,11 @@ public final class ArgumentDouble extends ArgumentNumber<Double> {
 						((s, radix) -> (double) Long.parseLong(s, radix)), Double::compare);
 	}
 
+	ArgumentDouble(@NotNull ArgumentData data) {
+		super(data, Double.class, Double::parseDouble,
+						((s, radix) -> (double) Long.parseLong(s, radix)), Double::compare);
+	}
+
 	@Override
 	public @NotNull List<Double> suggestions() {
 

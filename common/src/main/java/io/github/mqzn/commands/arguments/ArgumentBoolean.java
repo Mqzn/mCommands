@@ -12,6 +12,10 @@ public final class ArgumentBoolean extends AbstractArgument<Boolean> {
 		super(id, Boolean.class);
 	}
 
+	ArgumentBoolean(ArgumentData data) {
+		super(data, Boolean.class);
+	}
+
 	@Override
 	public Boolean parse(@NotNull Command<?> command, @NotNull String input) throws ArgumentParseException {
 

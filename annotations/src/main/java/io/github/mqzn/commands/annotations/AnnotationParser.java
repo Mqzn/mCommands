@@ -2,6 +2,7 @@ package io.github.mqzn.commands.annotations;
 
 import io.github.mqzn.commands.Pair;
 import io.github.mqzn.commands.arguments.Argument;
+import io.github.mqzn.commands.arguments.ArgumentData;
 import io.github.mqzn.commands.arguments.ArgumentNumber;
 import io.github.mqzn.commands.base.CommandInfo;
 import io.github.mqzn.commands.base.CommandRequirement;
@@ -165,19 +166,19 @@ public final class AnnotationParser<S> {
 		Arg annotation = parameter.getAnnotation(Arg.class);
 		if (annotation == null) return null;
 
-		String id = annotation.id();
+		ArgumentData data = ArgumentData.of(annotation.id(), annotation.optional(), false);
 
 		Class<?> type = parameter.getType();
 
 		@Nullable Argument<?> arg;
 		if (parameter.isAnnotationPresent(Greedy.class) && type.equals(String.class))
-			arg = Argument.Array(id);
+			arg = Argument.Array(data.getId());
 
 		else if (type.equals(String.class))
-			arg = Argument.word(id);
+			arg = Argument.word(data);
 
 		else
-			arg = manager.typeRegistry().convertArgument(id, type);
+			arg = manager.typeRegistry().convertArgument(data, type);
 
 
 		return arg;

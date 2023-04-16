@@ -13,6 +13,9 @@ public final class ArgumentLiteral extends AbstractArgument<String> {
 		super(id, String.class);
 	}
 
+	ArgumentLiteral(ArgumentData data) {
+		super(data, String.class);
+	}
 
 	@Override
 	public String parse(@NotNull Command<?> command, @NotNull String input) {

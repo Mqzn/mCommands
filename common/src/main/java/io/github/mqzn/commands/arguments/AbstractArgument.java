@@ -19,19 +19,23 @@ public abstract class AbstractArgument<T> implements Argument<T> {
 	@Nullable
 	private T defaultValue = null;
 
-	AbstractArgument(@NotNull String id, @NotNull Class<T> type) {
+	public AbstractArgument(@NotNull String id, @NotNull Class<T> type) {
 		this(id, type, false, false);
 	}
 
-	AbstractArgument(@NotNull String id, @NotNull Class<T> type, boolean optional, boolean useRemainingSpace) {
+	public AbstractArgument(@NotNull String id, @NotNull Class<T> type, boolean optional, boolean useRemainingSpace) {
 		this.id = id;
 		this.type = type;
 		this.optional = optional;
 		this.useRemainingSpace = useRemainingSpace;
 	}
 
-	AbstractArgument(String id, Class<T> type, boolean useRemainingSpace) {
+	public AbstractArgument(String id, Class<T> type, boolean useRemainingSpace) {
 		this(id, type, false, useRemainingSpace);
+	}
+
+	public AbstractArgument(@NotNull ArgumentData data, Class<T> type) {
+		this(data.id(), type, data.optional(), data.useRemainingSpace());
 	}
 
 	/**

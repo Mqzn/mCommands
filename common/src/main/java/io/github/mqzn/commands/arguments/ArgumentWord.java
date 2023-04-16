@@ -7,8 +7,13 @@ import java.util.Collections;
 import java.util.List;
 
 public final class ArgumentWord extends AbstractArgument<String> {
+
 	ArgumentWord(String id) {
 		super(id, String.class);
+	}
+
+	ArgumentWord(ArgumentData data) {
+		super(data, String.class);
 	}
 
 	@Override

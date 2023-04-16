@@ -1,6 +1,7 @@
 package io.github.mqzn.commands.base.manager;
 
 import io.github.mqzn.commands.arguments.Argument;
+import io.github.mqzn.commands.arguments.ArgumentData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,7 +12,7 @@ import java.util.function.Function;
 public final class ArgumentTypeRegistry {
 
 	@NotNull
-	private final Map<Class<?>, Function<String, Argument<?>>> argumentCreatorMapper = new HashMap<>();
+	private final Map<Class<?>, Function<ArgumentData, Argument<?>>> argumentCreatorMapper = new HashMap<>();
 
 
 	ArgumentTypeRegistry() {
@@ -33,20 +34,20 @@ public final class ArgumentTypeRegistry {
 		argumentCreatorMapper.put(Boolean.class, Argument::Boolean);
 		argumentCreatorMapper.put(boolean.class, Argument::Boolean);
 
-		argumentCreatorMapper.put(String[].class, Argument::Array);
+		argumentCreatorMapper.put(String[].class, (data)-> Argument.Array(data.getId()));
 
 	}
 
 	@Nullable
-	public Argument<?> convertArgument(@NotNull String id, @NotNull Class<?> clazz) {
+	public Argument<?> convertArgument(@NotNull ArgumentData data, @NotNull Class<?> clazz) {
 		var mapper = argumentCreatorMapper.get(clazz);
 		if (mapper == null) {
 			return null;
 		}
-		return mapper.apply(id);
+		return mapper.apply(data);
 	}
 
-	public void registerArgumentConverter(Class<?> type, Function<String, Argument<?>> mapper) {
+	public void registerArgumentConverter(Class<?> type, Function<ArgumentData, Argument<?>> mapper) {
 		argumentCreatorMapper.put(type, mapper);
 	}
 

@@ -13,6 +13,11 @@ public final class ArgumentFloat extends ArgumentNumber<Float> {
 						((s, radix) -> (float) Long.parseLong(s, radix)), Float::compare);
 	}
 
+	ArgumentFloat(@NotNull ArgumentData data) {
+		super(data, Float.class, Float::parseFloat,
+						((s, radix) -> (float) Long.parseLong(s, radix)), Float::compare);
+	}
+
 	@Override
 	public @NotNull List<Float> suggestions() {
 

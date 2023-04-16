@@ -4,7 +4,6 @@ import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.List;
 
 public interface Argument<T> {
@@ -43,6 +42,39 @@ public interface Argument<T> {
 
 	static <E extends Enum<E>> ArgumentEnum<E> Enum(String id, Class<E> enumClass) {
 		return new ArgumentEnum<>(id, enumClass);
+	}
+
+
+	static ArgumentLiteral literal(@NotNull ArgumentData data) {
+		return new ArgumentLiteral(data);
+	}
+
+	static ArgumentWord word(@NotNull ArgumentData data) {
+		return new ArgumentWord(data);
+	}
+
+	static ArgumentBoolean Boolean(@NotNull ArgumentData data) {
+		return new ArgumentBoolean(data);
+	}
+
+	static ArgumentInteger integer(@NotNull ArgumentData data) {
+		return new ArgumentInteger(data);
+	}
+
+	static ArgumentDouble Double(@NotNull ArgumentData data) {
+		return new ArgumentDouble(data);
+	}
+
+	static ArgumentFloat Float(@NotNull ArgumentData data) {
+		return new ArgumentFloat(data);
+	}
+
+	static ArgumentLong Long(ArgumentData id) {
+		return new ArgumentLong(id);
+	}
+
+	static <E extends Enum<E>> ArgumentEnum<E> Enum(ArgumentData data, Class<E> enumClass) {
+		return new ArgumentEnum<>(data, enumClass);
 	}
 
 	/**
