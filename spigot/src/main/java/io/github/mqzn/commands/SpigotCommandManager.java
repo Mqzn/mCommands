@@ -46,6 +46,7 @@ public final class SpigotCommandManager extends AbstractCommandManager<Plugin, C
 		this(plugin, CommandExecutionCoordinator.Type.SYNC);
 	}
 
+
 	@Override
 	public @NotNull Plugin getBootstrap() {
 		return plugin;

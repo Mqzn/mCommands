@@ -9,6 +9,7 @@ import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.base.syntax.SyntaxFlags;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

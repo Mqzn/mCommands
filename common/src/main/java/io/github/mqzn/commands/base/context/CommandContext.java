@@ -10,6 +10,7 @@ import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

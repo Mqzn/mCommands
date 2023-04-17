@@ -1,9 +1,12 @@
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '7.1.0'
+    id 'maven-publish'
+    id 'signing'
 }
 
-group 'io.github.mqzn.commands'
+group 'io.github.mqzn'
+
 version '1.0.0'
 
 repositories {
@@ -29,11 +32,72 @@ java {
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
+    withSourcesJar()
+    withJavadocJar()
 }
 
 shadow {
     archivesBaseName = "mCommands-Annotations"
 }
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId project.group
+            artifactId 'mCommands-annotations'
+            version project.version
+            from components.java
+
+
+            pom {
+                name = 'mCommands'
+                description = 'Advanced command dispatching java library'
+                url = 'https://github.com/Mqzn/mCommands'
+                inceptionYear = '2023'
+
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'http://www.opensource.org/licenses/mit-license.php'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'mqzn'
+                        name = 'Mqzen'
+                        email = 'mezoahmed2507@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git:github.com/Mqzn/mCommands.git'
+                    developerConnection = 'scm:git:ssh://github.com/Mqzn/mCommands.git'
+                    url = 'https://github.com/Mqzn/mCommands'
+                }
+            }
+
+        }
+
+    }
+    repositories {
+        maven {
+            name = "OSSRH"
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+
+            credentials {
+                username = project.properties["ossrhUsername"]
+                password = project.properties["ossrhPassword"]
+            }
+
+        }
+
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
+}
+
 apply plugin: 'java'
 apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'

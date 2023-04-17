@@ -4,6 +4,7 @@ import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 
 public interface Argument<T> {

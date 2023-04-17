@@ -13,6 +13,7 @@ import io.github.mqzn.commands.base.syntax.SyntaxFlags;
 import io.github.mqzn.commands.sender.SenderWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.lang.reflect.*;
 import java.util.regex.Pattern;
 

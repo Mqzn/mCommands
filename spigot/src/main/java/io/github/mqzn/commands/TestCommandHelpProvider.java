@@ -18,7 +18,7 @@ public final class TestCommandHelpProvider implements CommandHelpProvider {
 	 *
 	 * @return how the line is displayed in the help topic
 	 * e.g: "[style]========== Help Menu [style]============
-	 * where style could be "&8&l&m"
+	 *
 	 */
 	@Override
 	public @NotNull Style lineStyle() {
