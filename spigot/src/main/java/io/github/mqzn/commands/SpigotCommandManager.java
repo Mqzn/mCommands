@@ -60,19 +60,8 @@ public final class SpigotCommandManager extends AbstractCommandManager<Plugin, C
 	@Override
 	public <C extends Command<CommandSender>> void registerCommand(C command) {
 		super.registerCommand(command);
-		cmdMap.register(command.name(), new SpigotCommand(this, command));
+		cmdMap.register(command.name(), new InternalSpigotCommand(this, command));
 	}
 
-
-	public void debugCommandSyntaxes(String cmd) {
-		var command = getCommand(cmd);
-		if (command == null) return;
-
-		log("%s's syntaxes : ", cmd);
-		for (var syntax : command.syntaxes()) {
-			log("- %s", syntax.formatted());
-		}
-
-	}
 
 }

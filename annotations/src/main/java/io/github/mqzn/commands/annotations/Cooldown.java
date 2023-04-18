@@ -4,19 +4,14 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
+import java.util.concurrent.TimeUnit;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface CommandSyntaxMeta {
+@Target(ElementType.TYPE)
+public @interface Cooldown {
 
-	String syntax();
+	long value();
 
-	Class<?> senderType() default Object.class;
-
-	String description() default "";
-
-	String permission() default "";
-
+	TimeUnit unit() default TimeUnit.SECONDS;
 
 }

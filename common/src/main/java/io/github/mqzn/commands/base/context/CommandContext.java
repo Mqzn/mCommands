@@ -29,12 +29,11 @@ public final class CommandContext<S> implements Context<S> {
 
 	private final CommandSyntax<S> syntax;
 
-	@NotNull
 	private final ContextFlagRegistry<S> contextFlagRegistry;
 
 
 	private CommandContext(@NotNull CommandManager<?, S> manager,
-	                       @NotNull CommandSyntax<S> syntax,
+	                       CommandSyntax<S> syntax,
 	                       @NotNull DelegateCommandContext<S> context) {
 
 		this.manager = manager;
@@ -60,7 +59,7 @@ public final class CommandContext<S> implements Context<S> {
 	@Override
 	public <T> void parse() {
 
-		S sender = sender();
+		@NotNull S sender = sender();
 		if (syntax == null) {
 			manager.captionRegistry()
 							.sendCaption(sender,
@@ -88,7 +87,7 @@ public final class CommandContext<S> implements Context<S> {
 			} else if (required.useRemainingSpace()) {
 
 				StringBuilder builder = new StringBuilder();
-				for (int x = i; x < delegateContext.getRawArguments().size(); x++) {
+				for (int x = rawIndex; x < delegateContext.getRawArguments().size(); x++) {
 					String raw = getRawArgument(x);
 					builder.append(raw);
 					if (x != delegateContext.getRawArguments().size() - 1) builder.append(" ");
@@ -105,8 +104,10 @@ public final class CommandContext<S> implements Context<S> {
 			}
 
 			if (rawArg != null) {
+
 				try {
-					value = required.parse(delegateContext.commandUsed(), rawArg);
+					if (required.useRemainingSpace()) value = (T) rawArg;
+					else value = required.parse(delegateContext.commandUsed(), rawArg);
 				} catch (ArgumentParseException ex) {
 					manager.exceptionHandler().handleException(ex, sender, this);
 					return;

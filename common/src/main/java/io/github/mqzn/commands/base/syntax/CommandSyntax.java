@@ -17,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,14 +28,19 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 	private final static String[] argumentFormatPrefixSuffix = {
 					"<", ">", "[", "]"
 	};
-	@NotNull
-	private final CommandManager<?, S> manager;
+
+	@Getter
+	private final Class<?> senderClass;
+
 	@NotNull
 	private final String commandLabel;
+
 	@NotNull
-	private final CommandExecution<S> execution;
+	private final CommandExecution<S, ?> execution;
+
 	@NotNull
 	private final List<Argument<?>> arguments;
+
 	@NotNull
 	@Getter
 	private final SyntaxFlags flags;
@@ -46,42 +50,26 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 	@Getter
 	private Information info = null;
 
-	private CommandSyntax(@NotNull CommandManager<?, S> manager,
-	                      @NotNull String commandLabel,
-	                      @NotNull CommandExecution<S> execution,
-	                      @NotNull SyntaxFlags flags,
-	                      @NotNull Argument<?>... args) {
-		this.manager = manager;
+
+	<C> CommandSyntax(Class<C> senderClass,
+	                  @NotNull String commandLabel,
+	                  @NotNull CommandExecution<S, C> execution,
+	                  @NotNull SyntaxFlags flags,
+	                  @NotNull List<Argument<?>> args) {
+		this.senderClass = senderClass;
 		this.commandLabel = commandLabel;
 		this.execution = execution;
 		this.flags = flags;
-		this.arguments = Arrays.asList(args);
+		this.arguments = args;
 		this.trimmedLength = trimmedSyntaxLength();
 		this.withoutFlagsOrOptionalLength = trimmedLength - flags.count();
 	}
 
-	private CommandSyntax(@NotNull CommandManager<?, S> manager,
-	                      @NotNull String commandLabel,
-	                      @NotNull CommandExecution<S> execution,
-	                      @NotNull Argument<?>... args) {
-		this(manager, commandLabel, execution, SyntaxFlags.of(), args);
-	}
-
-	@NotNull
-	public static <S> CommandSyntax<S> of(@NotNull CommandManager<?, S> manager,
-	                                      @NotNull String commandLabel,
-	                                      @NotNull CommandExecution<S> execution,
-	                                      @NotNull Argument<?>... args) {
-		return new CommandSyntax<>(manager, commandLabel, execution, args);
-	}
-
-	@NotNull
-	public static <S> CommandSyntax<S> of(@NotNull CommandManager<?, S> manager,
-	                                      @NotNull String commandLabel,
-	                                      @NotNull CommandExecution<S> execution,
-	                                      @NotNull SyntaxFlags flags,
-	                                      @NotNull Argument<?>... args) {
-		return new CommandSyntax<>(manager, commandLabel, execution, flags, args);
+	<C> CommandSyntax(@NotNull Class<C> senderClass,
+	                  @NotNull String commandLabel,
+	                  @NotNull CommandExecution<S, C> execution,
+	                  @NotNull List<Argument<?>> args) {
+		this(senderClass, commandLabel, execution, SyntaxFlags.of(), args);
 	}
 
 
@@ -105,6 +93,7 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 		return builder.toString();
 	}
 
+
 	@Nullable
 	public Argument<?> getArgument(int index) {
 
@@ -112,14 +101,12 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 		return arguments.get(index);
 	}
 
-	public CommandSyntax<S> withInfo(@NotNull String permission, @NotNull String description) {
+	public void setInfo(@NotNull String permission, @NotNull String description) {
 		this.info = new Information(permission, description);
-		return this;
 	}
 
-	public CommandSyntax<S> withFlag(String flag) {
+	public void addFlag(String flag) {
 		flags.addFlag(flag);
-		return this;
 	}
 
 	public int length() {
@@ -144,22 +131,15 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 	 */
 	public boolean matchesContext(@NotNull DelegateCommandContext<S> commandContext) {
 
-		manager.log("Checking syntax '%s' with context '%s'", this.formatted(), commandContext.rawFormat());
 		if (!AmbiguityChecker.hasLiteralArgs(this) && useSpace()) {
-			manager.log("Syntax has space consumer argument without literals");
 			return true;
 		}
 
 
 		final int capacity = this.arguments.size();
-		manager.log("number of required arguments '%s'", capacity);
-
-		manager.log("number of flags used in context %s", commandContext.flagsUsed());
 
 		final int maxRawArgsCount = commandContext.getRawArguments().size();
 		final int minRawArgsCount = maxRawArgsCount - commandContext.flagsUsed();
-
-		manager.log("minimum raw Args= %s, maximum raw Args =%s", minRawArgsCount, maxRawArgsCount);
 
 		/*if(capacity < minRawArgsCount || capacity > maxRawArgsCount) {
 			return false;
@@ -182,12 +162,8 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 			}
 
 			if (ContextFlagRegistry.isRawArgumentFlag(raw)) {
-				manager.log("Raw arg '%s' is a flag", raw);
 				raw = commandContext.getRawArgument(++rawIndex);
-				manager.log("Skipped to next raw argument '%s'", raw);
 			}
-
-			manager.log("Required argument id is '%s' at index '%s'", required.id(), index);
 
 			if (required instanceof ArgumentLiteral && !required.id().equalsIgnoreCase(raw)) {
 
@@ -212,8 +188,9 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 		return arguments;
 	}
 
-	public void execute(S sender, CommandContext<S> commandContext) {
-		execution.execute(sender, commandContext);
+	@SuppressWarnings("unchecked")
+	public <C> void execute(C sender, CommandContext<S> commandContext) {
+		((CommandExecution<S, C>) execution).execute(sender, commandContext);
 	}
 
 	private int trimmedSyntaxLength() {
@@ -225,18 +202,10 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 		return argsCopy.size();
 	}
 
-	public void debug() {
 
-		manager.log("Argument for this syntax :");
-		for (var arg : arguments) {
-			manager.log("- %s<%s>", arg.getClass().getSimpleName(), arg.id());
-		}
+	public String formatted(CommandManager<?, S> commandManager) {
 
-	}
-
-	public String formatted() {
-
-		String start = manager.commandStarter() == ' ' ? "" : String.valueOf(manager.commandStarter());
+		String start = commandManager.commandStarter() == ' ' ? "" : String.valueOf(commandManager.commandStarter());
 		StringBuilder builder = new StringBuilder(start).append(commandLabel).append(" ");
 
 		for (int i = 0; i < arguments.size(); i++) {
@@ -270,10 +239,14 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 	}
 
 	@Override
-	public @NonNull TextComponent toText(@NotNull S sender) {
-		return Component.text(this.formatted());
+	public @NonNull TextComponent toText(@NotNull CommandManager<?, S> manager, @NotNull S sender) {
+		return Component.text(this.formatted(manager));
 	}
 
+
+	public void setInfo(@Nullable Information info) {
+		this.info = info;
+	}
 
 	@Override
 	public boolean equals(Object o) {

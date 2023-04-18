@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.List;
 
-final class SpigotCommand extends org.bukkit.command.Command implements PluginIdentifiableCommand {
+final class InternalSpigotCommand extends org.bukkit.command.Command implements PluginIdentifiableCommand {
 
 	@NotNull
 	private final SpigotCommandManager manager;
@@ -18,8 +18,8 @@ final class SpigotCommand extends org.bukkit.command.Command implements PluginId
 	private final Command<CommandSender> command;
 
 
-	SpigotCommand(@NotNull SpigotCommandManager manager,
-	              @NotNull Command<CommandSender> command) {
+	InternalSpigotCommand(@NotNull SpigotCommandManager manager,
+	                      @NotNull Command<CommandSender> command) {
 		super(command.name(), command.info().description(), "",
 						Arrays.asList(command.info().aliases()));
 		this.manager = manager;

@@ -29,9 +29,9 @@ public abstract class CommandExecutionCoordinator<S> {
 
 	public abstract Type type();
 
-	public abstract CompletableFuture<ExecutionResult> coordinateExecution(@NotNull S sender,
-	                                                                       @NotNull CommandSyntax<S> syntax,
-	                                                                       @NotNull CommandContext<S> context);
+	public abstract <C> CompletableFuture<ExecutionResult> coordinateExecution(@NotNull C sender,
+	                                                                           @NotNull CommandSyntax<S> syntax,
+	                                                                           @NotNull CommandContext<S> context);
 
 
 	public enum ExecutionResult {
@@ -60,9 +60,9 @@ public abstract class CommandExecutionCoordinator<S> {
 		}
 
 		@Override
-		public CompletableFuture<ExecutionResult> coordinateExecution(@NotNull S sender,
-		                                                              @NotNull CommandSyntax<S> syntax,
-		                                                              @NotNull CommandContext<S> context) {
+		public <C> CompletableFuture<ExecutionResult> coordinateExecution(@NotNull C sender,
+		                                                                  @NotNull CommandSyntax<S> syntax,
+		                                                                  @NotNull CommandContext<S> context) {
 			return CompletableFuture.supplyAsync(() -> {
 
 				try {
@@ -90,9 +90,9 @@ public abstract class CommandExecutionCoordinator<S> {
 		}
 
 		@Override
-		public CompletableFuture<ExecutionResult> coordinateExecution(@NotNull S sender,
-		                                                              @NotNull CommandSyntax<S> syntax,
-		                                                              @NotNull CommandContext<S> context) {
+		public <C> CompletableFuture<ExecutionResult> coordinateExecution(@NotNull C sender,
+		                                                                  @NotNull CommandSyntax<S> syntax,
+		                                                                  @NotNull CommandContext<S> context) {
 
 			try {
 				syntax.execute(sender, context);

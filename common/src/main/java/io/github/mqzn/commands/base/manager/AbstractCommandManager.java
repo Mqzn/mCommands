@@ -9,13 +9,17 @@ import io.github.mqzn.commands.base.caption.CaptionRegistry;
 import io.github.mqzn.commands.base.context.CommandContext;
 import io.github.mqzn.commands.base.context.Context;
 import io.github.mqzn.commands.base.context.DelegateCommandContext;
+import io.github.mqzn.commands.base.cooldown.CommandCooldown;
+import io.github.mqzn.commands.base.cooldown.CooldownCaption;
 import io.github.mqzn.commands.base.manager.flags.ContextFlagRegistry;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.exceptions.CommandExceptionHandler;
+import io.github.mqzn.commands.exceptions.UnknownCommandSenderType;
 import io.github.mqzn.commands.exceptions.types.SyntaxAmbiguityException;
 import io.github.mqzn.commands.help.CommandHelpProvider;
 import io.github.mqzn.commands.help.CommandSyntaxPageDisplayer;
 import io.github.mqzn.commands.sender.SenderWrapper;
+import io.github.mqzn.commands.utilities.TimeParser;
 import io.github.mqzn.commands.utilities.text.PaginatedText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,28 +27,47 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.logging.Logger;
 
+/**
+ * The class responsible for handling,
+ * registering, and coordinating the execution of the
+ * available commands
+ *
+ * @param <P> The bootstrap for the lib to work on
+ * @param <S> The command sender type
+ * @see CommandManager
+ */
 public abstract class AbstractCommandManager<P, S> implements CommandManager<P, S> {
 
 	protected final Logger logger = Logger.getLogger("CommandManager-Logger");
 
 	protected final P plugin;
+
 	@NotNull
 	protected final SenderWrapper<S> wrapper;
+
 	@NotNull
 	protected final CaptionRegistry<S> captionRegistry;
+
+	@NotNull
+	protected final SenderProviderRegistry<S> senderProviderRegistry;
+
 	@NotNull
 	private final CommandExceptionHandler<S> exceptionHandler;
+
 	@NotNull
 	private final CommandExecutionCoordinator<S> coordinator;
+
 	@NotNull
 	private final Map<String, Command<S>> commands;
+
 	@NotNull
 	private final ArgumentTypeRegistry typeRegistry;
+
 	@NotNull
 	private final FlagRegistry flagRegistry;
+	private final Map<String, Long> cooldowns = new HashMap<>();
 	@Nullable
 	private CommandHelpProvider commandHelpProvider;
-
 
 	public AbstractCommandManager(@NotNull P plugin,
 	                              @NotNull SenderWrapper<S> wrapper, @NotNull CommandExecutionCoordinator.Type coordinator) {
@@ -59,6 +82,7 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 			throw new RuntimeException(e);
 		}
 		this.captionRegistry = new CaptionRegistry<>(this);
+		this.senderProviderRegistry = new SenderProviderRegistry<>();
 		this.exceptionHandler = new CommandExceptionHandler<>(this);
 	}
 
@@ -105,7 +129,7 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 		}
 
 		var paginated = PaginatedText.<S, CommandSyntax<S>>create(commandHelpProvider, wrapper)
-						.withDisplayer(new CommandSyntaxPageDisplayer<>(commandHelpProvider));
+						.withDisplayer(new CommandSyntaxPageDisplayer<>(this, commandHelpProvider));
 
 		commandSyntaxes.forEach(paginated::add);
 
@@ -114,7 +138,8 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 	}
 
 	@Override
-	public final void executeCommand(
+	@SuppressWarnings("unchecked")
+	public final <C> void executeCommand(
 					final @NotNull Command<S> command,
 					final @NotNull S sender,
 					final @NotNull String[] args
@@ -123,6 +148,24 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 		DelegateCommandContext<S> context = DelegateCommandContext.create(this, command, sender, args);
 
 		if (!checkRequirements(command, sender, context)) return;
+
+		if (command.hasCooldown()) {
+			CommandCooldown cooldown = command.cooldown();
+			String senderName = wrapper.senderName(sender);
+			Long lastTimeCommandExecuted = cooldowns.get(wrapper.senderName(sender));
+
+			if (lastTimeCommandExecuted == null || cooldownExpired(lastTimeCommandExecuted, cooldown)) {
+				cooldowns.put(senderName, System.currentTimeMillis());
+			} else {
+				//send a caption telling the user that he's in a cool down
+
+				//calculating remaining time
+				TimeParser parser = TimeParser.parse(calculateRemainingTime(lastTimeCommandExecuted, cooldown));
+				captionRegistry.sendCaption(sender, context, null, new CooldownCaption<>(parser));
+				return;
+			}
+
+		}
 
 		if (args.length == 0) {
 			command.defaultExecution(sender, context);
@@ -139,7 +182,23 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 		CommandContext<S> commandContext = CommandContext.create(this, syntax, context);
 		commandContext.parse();
 
-		coordinator.coordinateExecution(sender, syntax, commandContext)
+		if (this.wrapper.canBeSender(syntax.getSenderClass())) {
+
+			coordinator.coordinateExecution(sender, syntax, commandContext)
+							.whenComplete((result, ex) -> log("%s has executed the command '%s'", wrapper.senderName(sender), commandContext.rawFormat()));
+
+			return;
+		}
+		//custom sender detected
+		//fetching custom sender type
+		C customSender = (C) senderProviderRegistry.provideSender(sender, syntax.getSenderClass());
+
+		//checking if custom sender is null, if so then it failed to find its type, so throwing an exception
+		if (customSender == null) {
+			throw new UnknownCommandSenderType(syntax.getSenderClass());
+		}
+
+		coordinator.coordinateExecution(customSender, syntax, commandContext)
 						.whenComplete((result, ex) -> log("%s has executed the command '%s'", wrapper.senderName(sender), commandContext.rawFormat()));
 
 	}
@@ -155,6 +214,16 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 		return null;
 	}
 
+	private boolean cooldownExpired(@NotNull Long lastTime, @NotNull CommandCooldown cooldown) {
+		return System.currentTimeMillis() > lastTime + cooldown.toMillis();
+	}
+
+	private long calculateRemainingTime(@NotNull Long lastTime, @NotNull CommandCooldown commandCooldown) {
+		long diff = (System.currentTimeMillis() - lastTime);
+
+		return commandCooldown.toMillis() - diff;
+	}
+
 	private boolean checkRequirements(final @NotNull Command<S> command,
 	                                  final @NotNull S sender,
 	                                  final @NotNull Context<S> commandContext) {
@@ -163,7 +232,7 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 
 			if (!requirement.accepts(sender, commandContext)) {
 				CaptionKey key = requirement.caption();
-				if(key != null)
+				if (key != null)
 					this.captionRegistry.sendCaption(sender, commandContext, key);
 
 				return false;
@@ -187,7 +256,7 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 		if (!check.isEmpty()) {
 
 			try {
-				throw new SyntaxAmbiguityException(command, check);
+				throw new SyntaxAmbiguityException(this, command, check);
 			} catch (SyntaxAmbiguityException e) {
 				e.printStackTrace();
 				return;
@@ -232,6 +301,11 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 	@Override
 	public @NotNull CaptionRegistry<S> captionRegistry() {
 		return captionRegistry;
+	}
+
+	@Override
+	public @NotNull SenderProviderRegistry<S> senderProviderRegistry() {
+		return senderProviderRegistry;
 	}
 
 	@Override

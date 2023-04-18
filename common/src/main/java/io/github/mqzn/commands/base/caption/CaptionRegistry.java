@@ -45,10 +45,10 @@ public class CaptionRegistry<S> {
 		this.sendCaption(sender, commandContext, null, key);
 	}
 
-	<E extends CommandException> void sendCaption(@NotNull S sender,
-	                                              @NotNull Context<S> commandContext,
-	                                              @Nullable E exception,
-	                                              @NotNull Caption<S> caption) {
+	public <E extends CommandException> void sendCaption(@NotNull S sender,
+	                                                     @NotNull Context<S> commandContext,
+	                                                     @Nullable E exception,
+	                                                     @NotNull Caption<S> caption) {
 		var text = caption.message(sender, commandContext, exception);
 		manager.getSenderWrapper().sendMessage(sender, text);
 	}

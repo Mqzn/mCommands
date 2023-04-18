@@ -20,7 +20,7 @@ public interface CommandManager<P, S> {
 
 	@NotNull CommandExceptionHandler<S> exceptionHandler();
 
-	void executeCommand(
+	<C> void executeCommand(
 					@NotNull Command<S> command,
 					S sender,
 					@NotNull String[] args
@@ -43,6 +43,8 @@ public interface CommandManager<P, S> {
 	@NotNull FlagRegistry flagRegistry();
 
 	@NotNull CaptionRegistry<S> captionRegistry();
+
+	@NotNull SenderProviderRegistry<S> senderProviderRegistry();
 
 	@Nullable CommandHelpProvider helpProvider();
 

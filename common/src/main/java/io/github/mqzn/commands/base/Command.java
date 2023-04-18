@@ -3,10 +3,11 @@ package io.github.mqzn.commands.base;
 import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.arguments.ArgumentInteger;
 import io.github.mqzn.commands.base.context.Context;
+import io.github.mqzn.commands.base.cooldown.CommandCooldown;
 import io.github.mqzn.commands.base.manager.CommandManager;
 import io.github.mqzn.commands.base.syntax.CommandExecution;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
-import io.github.mqzn.commands.base.syntax.SyntaxFlags;
+import io.github.mqzn.commands.base.syntax.CommandSyntaxBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -57,6 +58,13 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 	@NotNull CommandInfo info();
 
 	/**
+	 * Represents a command cooldown
+	 *
+	 * @return the cooldown of the command
+	 */
+	@NotNull CommandCooldown cooldown();
+
+	/**
 	 * The requirements for the command to be executed
 	 *
 	 * @return The requirements for the command to be executed
@@ -77,6 +85,11 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 	 * @see CommandSyntax
 	 */
 	@NotNull List<CommandSyntax<S>> syntaxes();
+
+
+	default boolean hasCooldown() {
+		return !cooldown().isEmpty();
+	}
 
 	/**
 	 * An internal builder class for the command
@@ -100,9 +113,11 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 		@NotNull
 		private final List<CommandSyntax<S>> syntaxes = new ArrayList<>();
 		@NotNull
+		private CommandCooldown cooldown = CommandCooldown.EMPTY;
+		@NotNull
 		private CommandInfo info = CommandInfo.EMPTY_INFO;
-		@Nullable
-		private CommandExecution<S> defaultExecutor;
+
+		private CommandExecution<S, S> defaultExecutor;
 
 		Builder(@NotNull CommandManager<?, S> manager, @NotNull String name) {
 			this.manager = manager;
@@ -120,43 +135,19 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 			return this;
 		}
 
-		public Builder<S> syntax(@NotNull CommandExecution<S> execution,
-		                         @NotNull SyntaxFlags flags,
-		                         @NotNull Argument<?>... args) {
-			this.syntaxes.add(CommandSyntax.of(manager, name, execution, flags, args));
-			return this;
-		}
-
-		public Builder<S> syntax(@NotNull CommandExecution<S> execution,
-		                         @NotNull Argument<?>... args) {
-			this.syntaxes.add(CommandSyntax.of(manager, name, execution, args));
-			return this;
-		}
-
 		public Builder<S> syntax(@NotNull CommandSyntax<S> syntax) {
 			this.syntaxes.add(syntax);
 			return this;
 		}
 
-		public Builder<S> syntax(@NotNull CommandExecution<S> execution,
-		                         @NotNull String permission,
-		                         @NotNull String description,
-		                         @NotNull Argument<?>... args) {
-			this.syntaxes.add(CommandSyntax.of(manager, name, execution, args).withInfo(permission, description));
-			return this;
-		}
 
-		public Builder<S> syntax(@NotNull CommandExecution<S> execution,
-		                         @NotNull SyntaxFlags flags,
-		                         @NotNull String permission,
-		                         @NotNull String description,
-		                         @NotNull Argument<?>... args) {
-			this.syntaxes.add(CommandSyntax.of(manager, name, execution, flags, args).withInfo(permission, description));
-			return this;
-		}
-
-		public Builder<S> defaultExecutor(@NotNull CommandExecution<S> execution) {
+		public Builder<S> defaultExecutor(@NotNull CommandExecution<S, S> execution) {
 			this.defaultExecutor = execution;
+			return this;
+		}
+
+		public Builder<S> cooldown(@NotNull CommandCooldown cooldown) {
+			this.cooldown = cooldown;
 			return this;
 		}
 
@@ -168,25 +159,29 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 				pageArg.setOptional(true);
 				pageArg.setDefaultValue(1);
 
-				CommandSyntax<S> helpSyntax = CommandSyntax.of(manager, name, (sender, context) -> {
-					@Nullable Integer page = context.getArgument("page");
-					if (page == null) return;
-					manager.handleHelpProvider(sender, context, name, page, syntaxes);
-				}, Argument.literal("help"), pageArg);
+				CommandSyntax<S> helpSyntax =
+								CommandSyntaxBuilder.<S, S>genericBuilder(manager.getSenderWrapper().senderType(), name).execute((sender, context) -> {
+
+													@Nullable Integer page = context.getArgument("page");
+													if (page == null) return;
+													manager.handleHelpProvider(sender, context, name, page, syntaxes);
+												}
+								).argument(Argument.literal("help")).argument(pageArg).build();
 
 				syntaxes.add(helpSyntax);
 			}
 
-			return new ImmutableCommandImpl<>(manager, name, info, requirements, syntaxes, defaultExecutor);
+			return new ImmutableCommandImpl<>(manager, name, info, cooldown, requirements, syntaxes, defaultExecutor);
 		}
 
 
 		record ImmutableCommandImpl<S>(@NotNull CommandManager<?, S> manager,
 		                               @NotNull String name,
 		                               @NotNull CommandInfo info,
+		                               @NotNull CommandCooldown cooldown,
 		                               @NotNull Set<CommandRequirement<S>> requirements,
 		                               @NotNull List<CommandSyntax<S>> syntaxes,
-		                               @Nullable CommandExecution<S> execution) implements Command<S> {
+		                               @Nullable CommandExecution<S, S> execution) implements Command<S> {
 
 			/**
 			 * The name of the command
