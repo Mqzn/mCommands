@@ -14,11 +14,9 @@ public final class TestCommandHelpProvider implements CommandHelpProvider {
 	/**
 	 * The line style of the help topic
 	 *
-	 * @see Style
-	 *
 	 * @return how the line is displayed in the help topic
 	 * e.g: "[style]========== Help Menu [style]============
-	 *
+	 * @see Style
 	 */
 	@Override
 	public @NotNull Style lineStyle() {
@@ -41,9 +39,8 @@ public final class TestCommandHelpProvider implements CommandHelpProvider {
 	 * The style of the syntax of a command
 	 *
 	 * @param syntax the syntax of a command
-	 *
+	 * @param <S>    the sender type param
 	 * @return The style of the syntax of a command
-	 * @param <S> the sender type param
 	 */
 	@Override
 	public @NotNull <S> Style syntaxStyle(@NotNull CommandSyntax<S> syntax) {

@@ -10,11 +10,9 @@ public interface CommandHelpProvider {
 	/**
 	 * The line style of the help topic
 	 *
-	 * @see Style
-	 *
 	 * @return how the line is displayed in the help topic
 	 * e.g: "[style]========== Help Menu [style]============
-	 *
+	 * @see Style
 	 */
 	@NotNull Style lineStyle();
 
@@ -30,9 +28,8 @@ public interface CommandHelpProvider {
 	 * The style of the syntax of a command
 	 *
 	 * @param syntax the syntax of a command
-	 *
+	 * @param <S>    the sender type param
 	 * @return The style of the syntax of a command
-	 * @param <S> the sender type param
 	 */
 	@NotNull <S> Style syntaxStyle(@NotNull CommandSyntax<S> syntax);
 

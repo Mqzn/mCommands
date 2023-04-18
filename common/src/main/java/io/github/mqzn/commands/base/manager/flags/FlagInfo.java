@@ -59,7 +59,6 @@ public final class FlagInfo {
 		}
 
 
-
 		public @NotNull FlagInfo build() {
 			return new FlagInfo(name, information, aliases);
 		}

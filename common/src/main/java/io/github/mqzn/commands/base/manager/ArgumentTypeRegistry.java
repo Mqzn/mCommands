@@ -34,7 +34,7 @@ public final class ArgumentTypeRegistry {
 		argumentCreatorMapper.put(Boolean.class, Argument::Boolean);
 		argumentCreatorMapper.put(boolean.class, Argument::Boolean);
 
-		argumentCreatorMapper.put(String[].class, (data)-> Argument.Array(data.getId()));
+		argumentCreatorMapper.put(String[].class, (data) -> Argument.Array(data.getId()));
 
 	}
 
