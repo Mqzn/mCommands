@@ -19,7 +19,7 @@ dependencies {
 
     compileOnly 'org.spigotmc:spigot:1.8.8-R0.1-SNAPSHOT'
 
-    implementation project(":annotations")
+    //implementation project(":annotations")
     implementation project(":common")
 
     compileOnly "net.kyori:adventure-api:4.13.1"
