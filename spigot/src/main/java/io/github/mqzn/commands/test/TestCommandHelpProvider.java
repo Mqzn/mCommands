@@ -1,4 +1,4 @@
-package io.github.mqzn.commands;
+package io.github.mqzn.commands.test;
 
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.help.CommandHelpProvider;
