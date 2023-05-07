@@ -86,7 +86,7 @@ public abstract class AbstractArgument<T> implements Argument<T> {
 		this.optional = optional;
 	}
 
-	public Argument<T> asOptional(boolean optional) {
+	public Argument<T> asOptional() {
 		setOptional(true);
 		return this;
 	}
