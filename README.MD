@@ -78,7 +78,8 @@ public final class SpigotPluginTest extends JavaPlugin {
                       
 						sender.sendMessage("Test sub works !");
 											
-					  }).build())
+					  })
+                      .build())
 				.defaultExecutor((s, context) -> s.sendMessage("OMG NO ARGS !"))
 				.build();
       
