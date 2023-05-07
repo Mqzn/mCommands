@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ArgumentOnlinePlayer extends AbstractArgument<ProxiedPlayer> {
+public final class ArgumentOnlinePlayer extends AbstractArgument<ProxiedPlayer> {
 
 
 	public ArgumentOnlinePlayer(@NotNull String id) {
