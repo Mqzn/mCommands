@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.github.mqzn:mCommands-<platform>:1.0.1'
+    implementation 'io.github.mqzn:mCommands-<platform>:1.0.2'
 }
 ```
 
