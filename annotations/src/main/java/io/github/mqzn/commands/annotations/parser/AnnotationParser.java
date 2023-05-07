@@ -351,7 +351,6 @@ public final class AnnotationParser<S> {
 					argument.setOptional(optional);
 
 					if (parameter.isAnnotationPresent(Suggest.class)) {
-						System.out.println("ARG TYPE = " + argument.getClass().getName());
 						Suggest suggest = parameter.getAnnotation(Suggest.class);
 						assert suggest != null;
 
