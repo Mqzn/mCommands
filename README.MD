@@ -74,9 +74,9 @@ public final class SpigotPluginTest extends JavaPlugin {
 				.syntax(
 				  SpigotCommandSyntaxBuilder.builder("test")
 				  .argument(Argument.literal("testsub"))
-                  .execute((sender, context) -> sender.sendMessage("Test sub works !"))
-                  .build()
-                )
+                                  .execute((sender, context) -> sender.sendMessage("Test sub works !"))
+                                  .build()
+                                )               
 				.defaultExecutor((s, context) -> s.sendMessage("OMG NO ARGS !"))
 				.build();
       
