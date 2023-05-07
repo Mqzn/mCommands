@@ -2,6 +2,7 @@ package io.github.mqzn.commands.base.manager;
 
 import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.arguments.ArgumentData;
+import io.github.mqzn.commands.arguments.ArgumentNumber;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,12 +13,16 @@ import java.util.function.Function;
 public final class ArgumentTypeRegistry {
 
 	@NotNull
+	private final ArgumentNumberComparator argumentNumberComparator;
+
+	@NotNull
 	private final Map<Class<?>, Function<ArgumentData, Argument<?>>> argumentCreatorMapper = new HashMap<>();
 
 
 	ArgumentTypeRegistry() {
 
 		//TODO create one for enum
+		this.argumentNumberComparator = new ArgumentNumberComparator();
 
 		argumentCreatorMapper.put(Integer.class, Argument::integer);
 		argumentCreatorMapper.put(int.class, Argument::integer);
@@ -35,8 +40,8 @@ public final class ArgumentTypeRegistry {
 		argumentCreatorMapper.put(boolean.class, Argument::Boolean);
 
 		argumentCreatorMapper.put(String[].class, (data) -> Argument.Array(data.getId()));
-
 	}
+
 
 	@Nullable
 	public Argument<?> convertArgument(@NotNull ArgumentData data, @NotNull Class<?> clazz) {
@@ -51,5 +56,9 @@ public final class ArgumentTypeRegistry {
 		argumentCreatorMapper.put(type, mapper);
 	}
 
+
+	public <N extends Number> ArgumentNumberComparator.ArgumentComparator<N> getComparator(Class<? extends ArgumentNumber<N>> argNumClass) {
+		return argumentNumberComparator.comparatorOfArg(argNumClass);
+	}
 
 }

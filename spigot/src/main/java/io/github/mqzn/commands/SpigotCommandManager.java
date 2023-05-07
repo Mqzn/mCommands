@@ -1,15 +1,18 @@
 package io.github.mqzn.commands;
 
+import io.github.mqzn.commands.arguments.ArgumentOfflinePlayer;
+import io.github.mqzn.commands.arguments.ArgumentOnlinePlayer;
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.manager.AbstractCommandManager;
 import io.github.mqzn.commands.base.manager.CommandExecutionCoordinator;
 import net.minecraft.server.v1_8_R3.MinecraftServer;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-
 import java.lang.reflect.Field;
 
 public final class SpigotCommandManager extends AbstractCommandManager<Plugin, CommandSender> {
@@ -33,12 +36,8 @@ public final class SpigotCommandManager extends AbstractCommandManager<Plugin, C
 			throw new RuntimeException(e);
 		}
 
-
-		captionRegistry.registerCaption(SpigotCaption.INVALID_ARGUMENT);
-		captionRegistry.registerCaption(SpigotCaption.UNKNOWN_COMMAND);
-		captionRegistry.registerCaption(SpigotCaption.NO_PERMISSION);
-		captionRegistry.registerCaption(SpigotCaption.ONLY_PLAYER_EXECUTABLE);
-		captionRegistry.registerCaption(SpigotCaption.NO_HELP_TOPIC_AVAILABLE);
+		this.registerCaptions();
+		this.registerTypes();
 	}
 
 
@@ -63,5 +62,18 @@ public final class SpigotCommandManager extends AbstractCommandManager<Plugin, C
 		cmdMap.register(command.name(), new InternalSpigotCommand(this, command));
 	}
 
+	private void registerCaptions() {
+		captionRegistry.registerCaption(SpigotCaption.INVALID_ARGUMENT);
+		captionRegistry.registerCaption(SpigotCaption.UNKNOWN_COMMAND);
+		captionRegistry.registerCaption(SpigotCaption.NO_PERMISSION);
+		captionRegistry.registerCaption(SpigotCaption.ONLY_PLAYER_EXECUTABLE);
+		captionRegistry.registerCaption(SpigotCaption.NO_HELP_TOPIC_AVAILABLE);
+	}
+
+
+	private void registerTypes() {
+		typeRegistry().registerArgumentConverter(OfflinePlayer.class, ArgumentOfflinePlayer::new);
+		typeRegistry().registerArgumentConverter(Player.class, ArgumentOnlinePlayer::new);
+	}
 
 }

@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'io.github.mqzn'
-version '1.0.1'
+version '1.0.2'
 
 repositories {
     mavenCentral()
@@ -17,10 +17,10 @@ repositories {
 
 dependencies {
     implementation project(":common")
-    implementation 'org.jetbrains:annotations:24.0.1'
+    compileOnly 'org.jetbrains:annotations:24.0.1'
     compileOnly 'net.md-5:bungeecord-api:1.16-R0.3'
-    implementation "net.kyori:adventure-api:4.13.1"
-    implementation "net.kyori:adventure-platform-bungeecord:4.3.0"
+    compileOnly "net.kyori:adventure-api:4.13.1"
+    compileOnly "net.kyori:adventure-platform-bungeecord:4.3.0"
 }
 
 def targetJavaVersion = 17

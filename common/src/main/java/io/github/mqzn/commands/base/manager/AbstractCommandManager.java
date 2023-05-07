@@ -1,7 +1,6 @@
 package io.github.mqzn.commands.base.manager;
 
-import io.github.mqzn.commands.arguments.Argument;
-import io.github.mqzn.commands.arguments.ArgumentLiteral;
+import io.github.mqzn.commands.arguments.ArgumentNumber;
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.CommandRequirement;
 import io.github.mqzn.commands.base.caption.CaptionKey;
@@ -11,10 +10,10 @@ import io.github.mqzn.commands.base.context.Context;
 import io.github.mqzn.commands.base.context.DelegateCommandContext;
 import io.github.mqzn.commands.base.cooldown.CommandCooldown;
 import io.github.mqzn.commands.base.cooldown.CooldownCaption;
-import io.github.mqzn.commands.base.manager.flags.ContextFlagRegistry;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.exceptions.CommandExceptionHandler;
 import io.github.mqzn.commands.exceptions.UnknownCommandSenderType;
+import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import io.github.mqzn.commands.exceptions.types.SyntaxAmbiguityException;
 import io.github.mqzn.commands.help.CommandHelpProvider;
 import io.github.mqzn.commands.help.CommandSyntaxPageDisplayer;
@@ -43,6 +42,9 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 	protected final P plugin;
 
 	@NotNull
+	protected final ArgumentNumberSuggestionProcessor argumentNumberSuggestionProcessor;
+
+	@NotNull
 	protected final SenderWrapper<S> wrapper;
 
 	@NotNull
@@ -56,6 +58,7 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 
 	@NotNull
 	private final CommandExecutionCoordinator<S> coordinator;
+
 
 	@NotNull
 	private final Map<String, Command<S>> commands;
@@ -84,6 +87,9 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 		this.captionRegistry = new CaptionRegistry<>(this);
 		this.senderProviderRegistry = new SenderProviderRegistry<>();
 		this.exceptionHandler = new CommandExceptionHandler<>(this);
+
+		this.argumentNumberSuggestionProcessor = ArgumentNumberSuggestionProcessor.create(this);
+
 	}
 
 	public AbstractCommandManager(@NotNull P plugin, @NotNull SenderWrapper<S> wrapper) {
@@ -180,7 +186,11 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 
 		//log("Found syntax : " + syntaxUsed.formatted());
 		CommandContext<S> commandContext = CommandContext.create(this, syntax, context);
-		commandContext.parse();
+		try {
+			commandContext.parse();
+		} catch (ArgumentParseException e) {
+			return;
+		}
 
 		if (this.wrapper.canBeSender(syntax.getSenderClass())) {
 
@@ -309,65 +319,32 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 	}
 
 	@Override
-	public @NotNull List<String> suggest(Command<S> command, S sender, String[] args) {
-		List<String> completions = new ArrayList<>();
+	public synchronized @NotNull List<String> suggest(Command<S> command, S sender, String[] args) {
+		CommandSuggestionEngine<S> suggestionEngine = command.suggestions();
 
-		for (var syntax : command.syntaxes()) {
-			var info = syntax.getInfo();
-			String permission = info == null ? null : info.permission();
+		int index = args.length - 1;
+		Set<CommandSuggestionEngine.SyntaxSuggestionContainer<S>> suggestionsContainer = suggestionEngine.getSuggestions(args);
+		if (suggestionsContainer.isEmpty()) return Collections.emptyList();
 
-			if (args.length >= syntax.withoutFlagsOrOptionalArgumentsLength()
-							&& args.length <= syntax.length()
-							&& wrapper.hasPermission(sender, permission)) {
-
-				completions.addAll(collectSuggestions(syntax, args));
-			}
-
+		List<String> allSuggestions = new ArrayList<>();
+		for (var container : suggestionsContainer) {
+			var argSuggestions = container.getArgumentSuggestions(index);
+			if (argSuggestions == null) continue;
+			allSuggestions.addAll(argSuggestions);
 		}
 
-		return completions;
-	}
-
-	private List<String> collectSuggestions(CommandSyntax<S> syntax, String[] rawArgs) {
-
-		List<String> suggestions = new ArrayList<>();
-		for (int r = 0, a = 0; a < syntax.length(); r++) {
-
-			String raw = r >= rawArgs.length ? null : rawArgs[r];
-			Argument<?> required = syntax.getArgument(r);
-
-			if (ContextFlagRegistry.isRawArgumentFlag(raw)) continue;
-
-			if (required == null) break;
-
-			if (required.isOptional() && raw == null) {
-				a++;
-				continue;
-			} else if (raw == null) {
-				break;
-			}
-
-
-			if (required instanceof ArgumentLiteral && raw.equalsIgnoreCase(required.id())) {
-				suggestions.add(required.id());
-
-			} else {
-
-				suggestions.addAll(required.suggestions()
-								.stream().map(Object::toString)
-								.toList());
-			}
-
-			a++;
-		}
-
-		return suggestions;
+		return allSuggestions;
 	}
 
 	@Override
 	public synchronized @NotNull List<CommandSyntax<S>> findAmbiguity(@NotNull List<CommandSyntax<S>> syntaxes) {
 		AmbiguityChecker<S> ambiguityChecker = AmbiguityChecker.of(syntaxes);
 		return ambiguityChecker.findAmbiguity();
+	}
+
+	@Override
+	public <N extends Number> void setNumericArgumentSuggestions(@NotNull ArgumentNumber<N> argNum) {
+		argumentNumberSuggestionProcessor.provide(argNum);
 	}
 
 	@Override

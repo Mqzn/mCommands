@@ -1,6 +1,5 @@
 package io.github.mqzn.commands.arguments;
 
-import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -14,16 +13,13 @@ import java.util.regex.Pattern;
 
 public abstract class ArgumentNumber<T extends Number> extends AbstractArgument<T> {
 
-	public static final int NOT_NUMBER_ERROR = 1;
-	public static final int TOO_LOW_ERROR = 2;
-	public static final int TOO_HIGH_ERROR = 3;
-
 	protected final BiFunction<String, Integer, T> radixParser;
 
 	@Getter
 	protected final Function<String, T> parser;
 
 	protected final Comparator<T> comparator;
+
 
 	protected boolean hasMin, hasMax;
 
@@ -51,7 +47,7 @@ public abstract class ArgumentNumber<T extends Number> extends AbstractArgument<
 	}
 
 	@Override
-	public @NotNull T parse(@NotNull Command<?> command, @NotNull String input) throws ArgumentParseException {
+	public @NotNull T parse(@NotNull String command, @NotNull String input) throws ArgumentParseException {
 		try {
 			final T value;
 			final int radix = getRadix(input);
@@ -63,15 +59,15 @@ public abstract class ArgumentNumber<T extends Number> extends AbstractArgument<
 
 			// Check range
 			if (hasMin && comparator.compare(value, min) < 0) {
-				throw new ArgumentParseException(String.format("Input '%s' is lower than the minimum allowed value", input), input, TOO_LOW_ERROR, command);
+				throw new ArgumentParseException(String.format("Input '%s' is lower than the minimum allowed value", input), input, command);
 			}
 			if (hasMax && comparator.compare(value, max) > 0) {
-				throw new ArgumentParseException(String.format("Input '%s' is higher than the maximum allowed value", input), input, TOO_HIGH_ERROR, command);
+				throw new ArgumentParseException(String.format("Input '%s' is higher than the maximum allowed value", input), input, command);
 			}
 
 			return value;
 		} catch (NumberFormatException | NullPointerException e) {
-			throw new ArgumentParseException(String.format("Input '%s' is not a number, or it's invalid for the given type", input), input, NOT_NUMBER_ERROR, command);
+			throw new ArgumentParseException(String.format("Input '%s' is not a number, or it's invalid for the given type", input), input, command);
 		}
 	}
 
@@ -100,19 +96,6 @@ public abstract class ArgumentNumber<T extends Number> extends AbstractArgument<
 		return this;
 	}
 
-	/**
-	 * Creates the byteflag based on the number's min/max existance.
-	 *
-	 * @return A byteflag for argument specification.
-	 */
-	public byte getNumberProperties() {
-		byte result = 0;
-		if (this.hasMin())
-			result |= 0x1;
-		if (this.hasMax())
-			result |= 0x2;
-		return result;
-	}
 
 	/**
 	 * Gets if the argument has a minimum.
@@ -184,4 +167,5 @@ public abstract class ArgumentNumber<T extends Number> extends AbstractArgument<
 	}
 
 
+	public abstract T increment(T num);
 }

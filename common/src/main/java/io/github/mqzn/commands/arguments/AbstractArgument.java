@@ -10,12 +10,17 @@ public abstract class AbstractArgument<T> implements Argument<T> {
 
 	@NotNull
 	protected final List<T> suggestions = new ArrayList<>();
+
 	@NotNull
 	private final String id;
+
 	@NotNull
 	private final Class<T> type;
+
 	private final boolean useRemainingSpace;
+
 	private boolean optional;
+
 	@Nullable
 	private T defaultValue = null;
 
@@ -104,22 +109,16 @@ public abstract class AbstractArgument<T> implements Argument<T> {
 		return this;
 	}
 
+
 	@Override
-	public @NotNull <S> List<T> suggestions() {
+	public @NotNull List<T> suggestions() {
 		return suggestions;
 	}
 
 	@Override
-	public String toString() {
-		return "AbstractArgument{" +
-						"id='" + id + '\'' +
-						", type=" + type.getName() +
-						", optional=" + optional +
-						", useRemainingSpace=" + useRemainingSpace +
-						", defaultValue=" + defaultValue +
-						'}';
+	public String toString(T obj) {
+		return obj.toString();
 	}
-
 
 }
 

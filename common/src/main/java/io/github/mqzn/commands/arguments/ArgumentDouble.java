@@ -2,10 +2,6 @@ package io.github.mqzn.commands.arguments;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 public final class ArgumentDouble extends ArgumentNumber<Double> {
 
 
@@ -20,25 +16,14 @@ public final class ArgumentDouble extends ArgumentNumber<Double> {
 	}
 
 	@Override
-	public @NotNull List<Double> suggestions() {
-
-		if (hasMax && hasMin) {
-			List<Double> suggestions = new ArrayList<>();
-
-			for (double i = 0; i <= max; i++) {
-				suggestions.add(i);
-			}
-
-			return suggestions;
-		}
-
-		return Collections.singletonList(0D);
+	public Class<?>[] alternativeTypes() {
+		return new Class[]{double.class};
 	}
 
 
 	@Override
-	public Class<?>[] alternativeTypes() {
-		return new Class[]{double.class};
+	public Double increment(Double num) {
+		return num + 1D;
 	}
 
 }

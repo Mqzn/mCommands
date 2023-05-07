@@ -1,11 +1,7 @@
 package io.github.mqzn.commands.arguments;
 
-import io.github.mqzn.commands.base.Command;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Collections;
-import java.util.List;
 
 public final class ArgumentLiteral extends AbstractArgument<String> {
 
@@ -18,7 +14,7 @@ public final class ArgumentLiteral extends AbstractArgument<String> {
 	}
 
 	@Override
-	public String parse(@NotNull Command<?> command, @NotNull String input) {
+	public String parse(@NotNull String command, @NotNull String input) {
 		return input;
 	}
 
@@ -35,11 +31,6 @@ public final class ArgumentLiteral extends AbstractArgument<String> {
 	@Override
 	public boolean isOptional() {
 		return false;
-	}
-
-	@Override
-	public @NotNull <S> List<String> suggestions() {
-		return Collections.singletonList(this.id());
 	}
 
 	@Override

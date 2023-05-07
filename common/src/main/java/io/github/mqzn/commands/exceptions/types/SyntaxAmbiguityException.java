@@ -17,7 +17,7 @@ public final class SyntaxAmbiguityException extends CommandException {
 
 		super("Similar syntaxes detected (duplicate execution logic) : " + String.join("\n",
 						syntaxes.stream().map((syntax) -> syntax.formatted(manager))
-										.collect(Collectors.toSet())), command);
+										.collect(Collectors.toSet())), command.name());
 
 	}
 

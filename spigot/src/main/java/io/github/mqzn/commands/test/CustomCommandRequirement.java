@@ -1,5 +1,6 @@
-package io.github.mqzn.commands;
+package io.github.mqzn.commands.test;
 
+import io.github.mqzn.commands.SpigotCommandRequirement;
 import io.github.mqzn.commands.base.caption.CaptionKey;
 import io.github.mqzn.commands.base.context.Context;
 import org.bukkit.command.CommandSender;

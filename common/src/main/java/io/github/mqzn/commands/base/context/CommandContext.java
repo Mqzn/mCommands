@@ -33,7 +33,7 @@ public final class CommandContext<S> implements Context<S> {
 
 
 	private CommandContext(@NotNull CommandManager<?, S> manager,
-	                       CommandSyntax<S> syntax,
+	                       @NotNull CommandSyntax<S> syntax,
 	                       @NotNull DelegateCommandContext<S> context) {
 
 		this.manager = manager;
@@ -57,7 +57,7 @@ public final class CommandContext<S> implements Context<S> {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> void parse() {
+	public <T> void parse() throws ArgumentParseException {
 
 		@NotNull S sender = sender();
 		if (syntax == null) {
@@ -107,10 +107,10 @@ public final class CommandContext<S> implements Context<S> {
 
 				try {
 					if (required.useRemainingSpace()) value = (T) rawArg;
-					else value = required.parse(delegateContext.commandUsed(), rawArg);
+					else value = required.parse(delegateContext.commandUsed().name(), rawArg);
 				} catch (ArgumentParseException ex) {
 					manager.exceptionHandler().handleException(ex, sender, this);
-					return;
+					throw ex;
 				}
 
 			}
@@ -143,6 +143,16 @@ public final class CommandContext<S> implements Context<S> {
 	@Override
 	public @NotNull ContextFlagRegistry<S> flags() {
 		return contextFlagRegistry;
+	}
+
+	/**
+	 * The length of the args used in the raw context
+	 *
+	 * @return The length of the args used in the raw context
+	 */
+	@Override
+	public int length() {
+		return delegateContext.length();
 	}
 
 

@@ -17,6 +17,8 @@ repositories {
 }
 
 dependencies {
+    implementation "net.kyori:adventure-api:4.13.1"
+    implementation "net.kyori:adventure-platform-bukkit:4.3.0"
     implementation 'io.github.mqzn:mCommands-<platform>:1.0.0'
 }
 ```
@@ -28,6 +30,8 @@ dependencies {
 The spigot platform is for minecraft spigot api development
 
 ```gradle
+implementation "net.kyori:adventure-api:4.13.1"
+implementation "net.kyori:adventure-platform-bukkit:4.3.0"
 implementation 'io.github.mqzn:mCommands-spigot:1.0.0'
 ```
 

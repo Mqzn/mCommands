@@ -1,6 +1,7 @@
-package io.github.mqzn.commands.annotations;
+package io.github.mqzn.commands.annotations.parser;
 
 import io.github.mqzn.commands.Pair;
+import io.github.mqzn.commands.annotations.*;
 import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.arguments.ArgumentData;
 import io.github.mqzn.commands.arguments.ArgumentNumber;
@@ -13,6 +14,7 @@ import io.github.mqzn.commands.base.manager.CommandManager;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.base.syntax.CommandSyntaxBuilder;
 import io.github.mqzn.commands.base.syntax.SyntaxFlags;
+import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import io.github.mqzn.commands.sender.SenderWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -106,7 +108,7 @@ public final class AnnotationParser<S> {
 			CommandSyntaxMeta syntaxMeta = method.getAnnotation(CommandSyntaxMeta.class);
 			assert syntaxMeta != null;
 
-			var loadedData = loadMethodParameters(manager, syntaxMeta, method);
+			var loadedData = loadMethodParameters(manager, cmdAnnotation.name(), syntaxMeta, method);
 			var arguments = loadedData.getRight();
 			var flags = loadedData.getLeft();
 
@@ -128,8 +130,15 @@ public final class AnnotationParser<S> {
 								Object[] valuesToUse = readValues(method, sender, context);
 
 								try {
+
+									for (Object obj : valuesToUse) {
+
+										System.out.println("Object : " + (obj == null ? "OBJ IS NULL" : obj.getClass().getName()));
+
+									}
+
 									method.invoke(annotatedCommand, valuesToUse);
-								} catch (IllegalAccessException | InvocationTargetException e) {
+								} catch (IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
 									throw new RuntimeException(e);
 								}
 
@@ -159,16 +168,10 @@ public final class AnnotationParser<S> {
 		CommandSyntaxMeta meta = method.getAnnotation(CommandSyntaxMeta.class);
 		assert meta != null;
 
-		if (!manager.getSenderWrapper().senderType().isAssignableFrom(parameters[0].getType()) && !meta.senderType().isAssignableFrom(parameters[0].getType()))
+		if (!this.isSenderParam(meta, parameters[0]))
 			throw new IllegalArgumentException(
 							String.format("First parameter in method '%s' is not a valid command sender instance !", method.getName())
 			);
-
-		if (!manager.senderProviderRegistry().hasProviderFor(parameters[0].getType()))
-			throw new IllegalArgumentException(
-							String.format("First parameter in method '%s' is not registered as a command sender !", method.getName())
-			);
-
 
 		if (Modifier.isStatic(method.getModifiers()))
 			throw new IllegalArgumentException(
@@ -196,7 +199,8 @@ public final class AnnotationParser<S> {
 	}
 
 
-	private @Nullable Argument<?> getArgFromParameter(CommandManager<?, S> manager, Parameter parameter) {
+	@SuppressWarnings("unchecked")
+	private <E extends Enum<E>> @Nullable Argument<?> getArgFromParameter(CommandManager<?, S> manager, Parameter parameter) {
 
 		Arg annotation = parameter.getAnnotation(Arg.class);
 		if (annotation == null) return null;
@@ -212,9 +216,16 @@ public final class AnnotationParser<S> {
 		else if (type.equals(String.class))
 			arg = Argument.word(data);
 
-		else
-			arg = manager.typeRegistry().convertArgument(data, type);
+		else if (type.isEnum()) {
+			arg = Argument.Enum(data, (Class<E>) type);
 
+			Class<E> aEnum = (Class<E>) type;
+			for (E constant : aEnum.getEnumConstants()) {
+				((Argument<E>) arg).suggest(constant);
+			}
+
+		} else
+			arg = manager.typeRegistry().convertArgument(data, type);
 
 		return arg;
 	}
@@ -245,13 +256,13 @@ public final class AnnotationParser<S> {
 	 * @return the parameters of the method to be used in invocation of that method
 	 */
 	@NotNull
-	private <C> Object[] readValues(Method method, C sender, Context<S> context) {
+	private <C> Object[] readValues(@NotNull Method method, @NotNull C sender, Context<S> context) {
 
 		var parameters = method.getParameters();
 		Object[] values = new Object[parameters.length];
 		values[0] = sender;
 
-		for (int index = 0, p = index + 1; p < parameters.length; index++, p++) {
+		for (int p = 1; p < parameters.length; p++) {
 
 			Object value;
 			Parameter parameter = parameters[p];
@@ -261,15 +272,13 @@ public final class AnnotationParser<S> {
 				value = context.flags().isPresent(flagName);
 			} else {
 
-				value = context.getArgument(index);
-				while (value == null && index++ < context.parsedArguments())
-					value = context.getArgument(index);
+				assert isParamArgument(parameter);
+				Arg annotation = parameter.getAnnotation(Arg.class);
+				assert annotation != null;
 
+				System.out.println("Argument ID = " + annotation.id());
+				value = context.getArgument(annotation.id());
 			}
-
-
-			if (value == null)
-				break;
 
 			values[p] = value;
 		}
@@ -297,8 +306,9 @@ public final class AnnotationParser<S> {
 	 */
 
 	@SuppressWarnings({"unchecked"})
-	public <N extends Number> Pair<SyntaxFlags, Argument<?>[]> loadMethodParameters(
+	private <T, N extends Number> Pair<SyntaxFlags, Argument<?>[]> loadMethodParameters(
 					final @NotNull CommandManager<?, S> manager,
+					final @NotNull String commandName,
 					final @NotNull CommandSyntaxMeta syntaxMeta,
 					final @NotNull Method method
 	) {
@@ -335,26 +345,44 @@ public final class AnnotationParser<S> {
 					throw new IllegalArgumentException(String.format(
 									"Argument optional status(optional=%b) in syntax doesn't match the corresponding parameter optional status(optional=%b)", optional, parameterArgAnnotation.optional()));
 
-				@Nullable Argument<?> argument = getArgFromParameter(manager, parameter);
+				@Nullable Argument<T> argument = (Argument<T>) getArgFromParameter(manager, parameter);
 
 				if (argument != null) {
 					argument.setOptional(optional);
 
-					if (argument instanceof ArgumentNumber && parameter.isAnnotationPresent(Range.class)) {
+					if (parameter.isAnnotationPresent(Suggest.class)) {
+						System.out.println("ARG TYPE = " + argument.getClass().getName());
+						Suggest suggest = parameter.getAnnotation(Suggest.class);
+						assert suggest != null;
+
+						for (var suggestion : suggest.value()) {
+							try {
+								argument.suggest(argument.parse(commandName, suggestion));
+							} catch (ArgumentParseException e) {
+								throw new RuntimeException(e);
+							}
+						}
+
+					}
+
+					if (argument instanceof ArgumentNumber<N> argNum && parameter.isAnnotationPresent(Range.class)) {
 
 						Range range = parameter.getAnnotation(Range.class);
 						assert range != null;
 
-						ArgumentNumber<N> argNum = (ArgumentNumber<N>) argument;
 						if (!range.min().isEmpty())
 							argNum.min(argNum.getParser().apply(range.min()));
 
 						if (!range.max().isEmpty())
 							argNum.max(argNum.getParser().apply(range.max()));
+
+						manager.setNumericArgumentSuggestions(argNum);
 					}
 
 					args[i] = argument;
+
 				} else if (parameter.isAnnotationPresent(Arg.class)) {
+
 					throw new IllegalArgumentException(
 									String.format("Parameter '%s' in method '%s' "
 																	+ "has no parser for that type",
@@ -371,18 +399,18 @@ public final class AnnotationParser<S> {
 			if (isSenderParam(syntaxMeta, parameter)) continue;
 
 			String flag = getFlagFromParameter(parameter);
-			if (flag == null) {
-				throw new IllegalArgumentException(
-								String.format("Redundant parameter '%s' in method '%s' with type '%s'",
-												parameter.getName(), method.getName(), parameter.getType().getName()));
-			}
 
-			//checking if flag is registered within the manager
-			if (!manager.flagRegistry().flagExists(flag)) {
-				throw new IllegalArgumentException(
-								String.format("Unknown flag '%s' parameter in method '%s'", flag, method.getName())
-				);
-			}
+			String exceptionMessage = null;
+
+			if (!isParamArgument(parameter))
+				exceptionMessage = String.format("Redundant parameter '%s' in method '%s' with type '%s'",
+								parameter.getName(), method.getName(), parameter.getType().getName());
+			else if (flag != null && !manager.flagRegistry().flagExists(flag))
+				exceptionMessage = String.format("Unknown flag '%s' parameter in method '%s'", flag, method.getName());
+
+
+			if (exceptionMessage != null)
+				throw new IllegalArgumentException(exceptionMessage);
 
 			//adding the collected flag
 			flags.addFlag(flag);

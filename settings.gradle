@@ -3,4 +3,5 @@ include 'common'
 include 'spigot'
 include 'annotations'
 include 'bungee'
+include 'velocity'
 

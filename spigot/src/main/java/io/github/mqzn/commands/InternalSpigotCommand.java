@@ -48,6 +48,7 @@ final class InternalSpigotCommand extends org.bukkit.command.Command implements 
 
 	@Override
 	public List<String> tabComplete(CommandSender sender, String alias, String[] args) throws IllegalArgumentException {
+		System.out.println("Arguments: " + Arrays.toString(args));
 		return manager.suggest(command, sender, args);
 	}
 

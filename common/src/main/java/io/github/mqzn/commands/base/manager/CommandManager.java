@@ -1,5 +1,6 @@
 package io.github.mqzn.commands.base.manager;
 
+import io.github.mqzn.commands.arguments.ArgumentNumber;
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.caption.CaptionRegistry;
 import io.github.mqzn.commands.base.context.Context;
@@ -62,6 +63,7 @@ public interface CommandManager<P, S> {
 
 	@NotNull List<String> suggest(Command<S> command, S sender, String[] args);
 
+	<N extends Number> void setNumericArgumentSuggestions(ArgumentNumber<N> argNum);
 
 	void log(String msg, Object... args);
 

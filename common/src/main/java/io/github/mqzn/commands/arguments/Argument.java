@@ -1,6 +1,5 @@
 package io.github.mqzn.commands.arguments;
 
-import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -119,7 +118,7 @@ public interface Argument<T> {
 	 */
 	@NotNull Argument<T> setDefaultValue(T value);
 
-	T parse(@NotNull Command<?> command, @NotNull String input) throws ArgumentParseException;
+	T parse(@NotNull String command, @NotNull String input) throws ArgumentParseException;
 
 	default boolean isOptional() {
 		return false;
@@ -129,10 +128,24 @@ public interface Argument<T> {
 
 	Argument<T> suggest(@NotNull T suggestion);
 
-	@NotNull <S> List<T> suggestions();
+
+	default Argument<T> suggest(@NotNull T... suggestions) {
+		for (T suggestion : suggestions) {
+			suggest(suggestion);
+		}
+		return this;
+	}
+
+	@NotNull List<T> suggestions();
+
+	String toString(T obj);
 
 	default Class<?>[] alternativeTypes() {
 		return new Class[0];
+	}
+
+	default boolean isSuggestionDynamic() {
+		return false;
 	}
 
 }

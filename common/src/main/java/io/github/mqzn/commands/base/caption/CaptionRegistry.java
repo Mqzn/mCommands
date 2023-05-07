@@ -34,7 +34,10 @@ public class CaptionRegistry<S> {
 		return captions.get(key);
 	}
 
-	public <E extends CommandException> void sendCaption(S sender, Context<S> commandContext, @Nullable E exception, CaptionKey key) {
+	public <E extends CommandException> void sendCaption(@NotNull S sender,
+	                                                     @NotNull Context<S> commandContext,
+	                                                     @Nullable E exception,
+	                                                     @NotNull CaptionKey key) {
 		var caption = getCaption(key);
 
 		if (caption == null) return;

@@ -151,7 +151,7 @@ public final class ContextFlagRegistry<S> {
 
 		FOUND_NONE,
 
-		FAILED;
+		FAILED
 
 	}
 

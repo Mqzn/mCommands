@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 
 public final class CooldownCaption<S> implements Caption<S> {
 
-
 	@NotNull
 	private final Pair<Long, TimeUnit> timeData;
 

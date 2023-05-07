@@ -182,4 +182,10 @@ public final class DelegateCommandContext<S> implements Context<S> {
 		return rawFormatted;
 	}
 
+
+	@Override
+	public int length() {
+		return rawArguments.size();
+	}
+
 }

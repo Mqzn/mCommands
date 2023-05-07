@@ -2,6 +2,7 @@ package io.github.mqzn.commands.base.context;
 
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.manager.flags.ContextFlagRegistry;
+import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -93,7 +94,7 @@ public interface Context<S> {
 	 * Parses the arguments into the used syntax
 	 * this algorithm should provide good reasonable performance
 	 */
-	<T> void parse();
+	<T> void parse() throws ArgumentParseException;
 
 	/**
 	 * The number of parsed args
@@ -110,5 +111,15 @@ public interface Context<S> {
 	 */
 	@NotNull ContextFlagRegistry<S> flags();
 
+	/**
+	 * The length of the args used in the raw context
+	 *
+	 * @return The length of the args used in the raw context
+	 */
+	int length();
+
+	default int getLastIndex() {
+		return length() - 1;
+	}
 
 }

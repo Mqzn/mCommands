@@ -37,7 +37,7 @@ public abstract class CommandExecutionCoordinator<S> {
 	public enum ExecutionResult {
 		SUCCESS,
 
-		FAILED;
+		FAILED
 
 	}
 
@@ -45,7 +45,7 @@ public abstract class CommandExecutionCoordinator<S> {
 	public enum Type {
 
 		ASYNC,
-		SYNC;
+		SYNC
 	}
 
 	final static class AsyncCommandCoordinator<S> extends CommandExecutionCoordinator<S> {

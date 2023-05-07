@@ -1,6 +1,5 @@
 package io.github.mqzn.commands.arguments;
 
-import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,17 +35,22 @@ public final class ArgumentEnum<E extends Enum<E>> extends AbstractArgument<E> {
 
 	@NotNull
 	@Override
-	public E parse(@NotNull Command<?> command, @NotNull String input) throws ArgumentParseException {
+	public E parse(@NotNull String command, @NotNull String input) throws ArgumentParseException {
 		for (E value : this.values) {
 			if (this.format.formatter.apply(value.name()).equals(input)) {
 				return value;
 			}
 		}
-		throw new ArgumentParseException("Not a " + this.enumClass.getSimpleName() + " value", input, NOT_ENUM_VALUE_ERROR, command);
+		throw new ArgumentParseException("Not a " + this.enumClass.getSimpleName() + " value", input, command);
 	}
 
 	public List<String> entries() {
 		return Arrays.stream(values).map(x -> format.formatter.apply(x.name())).toList();
+	}
+
+	@Override
+	public String toString(E obj) {
+		return obj.name();
 	}
 
 	public enum Format {
@@ -60,5 +64,4 @@ public final class ArgumentEnum<E extends Enum<E>> extends AbstractArgument<E> {
 			this.formatter = formatter;
 		}
 	}
-
 }

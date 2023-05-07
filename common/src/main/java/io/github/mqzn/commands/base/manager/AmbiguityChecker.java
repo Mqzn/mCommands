@@ -49,7 +49,7 @@ public final class AmbiguityChecker<S> {
 				if (first == second) continue;
 
 				var secondSyntax = syntaxes.get(second);
-				boolean areAmbigious = this.areAmbigious(firstSyntax, secondSyntax);
+				boolean areAmbigious = areAmbigious(firstSyntax, secondSyntax);
 
 				if (areAmbigious) {
 					ambigious.add(firstSyntax);

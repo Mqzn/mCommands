@@ -1,8 +1,5 @@
-package io.github.mqzn.commands;
+package io.github.mqzn.commands.arguments;
 
-import io.github.mqzn.commands.arguments.AbstractArgument;
-import io.github.mqzn.commands.arguments.ArgumentData;
-import io.github.mqzn.commands.base.Command;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -20,14 +17,19 @@ public final class ArgumentOfflinePlayer extends AbstractArgument<OfflinePlayer>
 		super(id, OfflinePlayer.class, optional, useRemainingSpace);
 	}
 
+
 	public ArgumentOfflinePlayer(@NotNull ArgumentData data) {
 		super(data, OfflinePlayer.class);
 	}
 
 	@Override
-	public OfflinePlayer parse(@NotNull Command<?> command, @NotNull String input) {
+	@SuppressWarnings("deprecation")
+	public OfflinePlayer parse(@NotNull String command, @NotNull String input) {
 		return Bukkit.getOfflinePlayer(input);
 	}
 
-
+	@Override
+	public String toString(OfflinePlayer obj) {
+		return obj.getName();
+	}
 }
