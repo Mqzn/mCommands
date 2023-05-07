@@ -306,7 +306,7 @@ public final class AnnotationParser<S> {
 	 */
 
 	@SuppressWarnings({"unchecked"})
-	private <T, N extends Number> Pair<SyntaxFlags, Argument<?>[]> loadMethodParameters(
+	private <T> Pair<SyntaxFlags, Argument<?>[]> loadMethodParameters(
 					final @NotNull CommandManager<?, S> manager,
 					final @NotNull String commandName,
 					final @NotNull CommandSyntaxMeta syntaxMeta,
@@ -350,6 +350,8 @@ public final class AnnotationParser<S> {
 				if (argument != null) {
 					argument.setOptional(optional);
 
+					this.handleArgumentNumber(argument, parameter);
+
 					if (parameter.isAnnotationPresent(Suggest.class)) {
 						Suggest suggest = parameter.getAnnotation(Suggest.class);
 						assert suggest != null;
@@ -364,21 +366,7 @@ public final class AnnotationParser<S> {
 
 					}
 
-					if (argument instanceof ArgumentNumber<N> && parameter.isAnnotationPresent(Range.class)) {
 
-						ArgumentNumber<N> argNum = (ArgumentNumber<N>) argument;
-
-						Range range = parameter.getAnnotation(Range.class);
-						assert range != null;
-
-						if (!range.min().isEmpty())
-							argNum.min(argNum.getParser().apply(range.min()));
-
-						if (!range.max().isEmpty())
-							argNum.max(argNum.getParser().apply(range.max()));
-
-						manager.setNumericArgumentSuggestions(argNum);
-					}
 
 					args[i] = argument;
 
@@ -429,5 +417,24 @@ public final class AnnotationParser<S> {
 						&& meta.senderType().isAssignableFrom(parameter.getType()));
 	}
 
+	@SuppressWarnings("unchecked")
+	private <N extends Number> void handleArgumentNumber(Argument<?> argument, Parameter parameter) {
+		if (argument instanceof ArgumentNumber && parameter.isAnnotationPresent(Range.class)) {
+
+			ArgumentNumber<N> argNum = (ArgumentNumber<N>) argument;
+
+			Range range = parameter.getAnnotation(Range.class);
+			assert range != null;
+
+			if (!range.min().isEmpty())
+				argNum.min(argNum.getParser().apply(range.min()));
+
+			if (!range.max().isEmpty())
+				argNum.max(argNum.getParser().apply(range.max()));
+
+
+			manager.<N>setNumericArgumentSuggestions(argNum);
+		}
+	}
 
 }
