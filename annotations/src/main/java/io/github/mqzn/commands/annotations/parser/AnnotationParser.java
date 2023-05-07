@@ -433,7 +433,7 @@ public final class AnnotationParser<S> {
 				argNum.max(argNum.getParser().apply(range.max()));
 
 
-			manager.<N>setNumericArgumentSuggestions(argNum);
+			manager.setNumericArgumentSuggestions(argNum);
 		}
 	}
 
