@@ -365,7 +365,9 @@ public final class AnnotationParser<S> {
 
 					}
 
-					if (argument instanceof ArgumentNumber<N> argNum && parameter.isAnnotationPresent(Range.class)) {
+					if (argument instanceof ArgumentNumber<N> && parameter.isAnnotationPresent(Range.class)) {
+
+						ArgumentNumber<N> argNum = (ArgumentNumber<N>) argument;
 
 						Range range = parameter.getAnnotation(Range.class);
 						assert range != null;
