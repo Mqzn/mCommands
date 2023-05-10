@@ -2,7 +2,7 @@
 
 <div align="center">
   <a href="https://www.codefactor.io/repository/github/mqzn/mcommands"><img src="https://www.codefactor.io/repository/github/mqzn/mcommands/badge" alt="CodeFactor" /></a> 
-  <img src="![img.png](img.png)" alt="mCommands logo">
+  <img src="https://github.com/Mqzn/mCommands/blob/master/img.png" alt="mCommands logo">
 </div>
 
 
