@@ -1,5 +1,11 @@
 # mCommands
 
+<div align="center">
+  <a href="https://www.codefactor.io/repository/github/mqzn/mcommands"><img src="https://www.codefactor.io/repository/github/mqzn/mcommands/badge" alt="CodeFactor" /></a> 
+  <img src="![img.png](img.png)" alt="mCommands logo">
+</div>
+
+
 An advanced general purpose command dispatching framework
 designed using OOP concepts.
 
