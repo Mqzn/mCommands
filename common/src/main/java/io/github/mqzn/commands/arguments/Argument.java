@@ -5,7 +5,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 
+/**
+ * An interface to represent an argument as a command-syntax
+ * parameter to be used in usages and context parsing
+ *
+ * @param <T> the data type of the argument parameter
+ */
 public interface Argument<T> {
 
 	static ArgumentLiteral literal(String id) {
@@ -85,6 +92,13 @@ public interface Argument<T> {
 	String id();
 
 	/**
+	 * The description of an argument
+	 *
+	 * @return the description for usage
+	 */
+	Optional<@Nullable String> description();
+
+	/**
 	 * The type of the argument
 	 *
 	 * @return the class type of the argument
@@ -128,15 +142,12 @@ public interface Argument<T> {
 
 	Argument<T> suggest(@NotNull T suggestion);
 
-
-	default Argument<T> suggest(@NotNull T... suggestions) {
-		for (T suggestion : suggestions) {
-			suggest(suggestion);
-		}
-		return this;
-	}
+	Argument<T> description(@Nullable String description);
 
 	@NotNull List<T> suggestions();
+
+	@SuppressWarnings("unchecked")
+	Argument<T> suggest(@NotNull T... suggestions);
 
 	String toString(T obj);
 

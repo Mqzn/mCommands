@@ -4,6 +4,7 @@ import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +31,7 @@ public final class ArgumentOnlinePlayer extends AbstractArgument<ProxiedPlayer> 
 	public ProxiedPlayer parse(@NotNull String command, @NotNull String input) throws ArgumentParseException {
 
 		ProxiedPlayer player = ProxyServer.getInstance().getPlayer(input);
-		if(player == null || !player.isConnected()) {
+		if (player == null || !player.isConnected()) {
 			throw new ArgumentParseException(String.format("Player %s is offline or doesn't exist", input), input, command);
 		}
 

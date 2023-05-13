@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -31,20 +32,12 @@ public final class CommandSuggestionEngine<S> {
 
 	@SuppressWarnings("unchecked")
 	private static @NotNull <T> List<String> collectArgumentSuggestions(Argument<?> arg) {
-		ArrayList<String> argSuggestions = new ArrayList<>();
-
-		if (arg instanceof ArgumentLiteral) {
-			argSuggestions.add(arg.id());
-			return argSuggestions;
-		}
 
 		Argument<T> argument = (Argument<T>) arg;
 
-		argSuggestions.addAll(argument.suggestions().stream()
+		return new ArrayList<>(argument.suggestions().stream()
 						.map(argument::toString)
 						.toList());
-
-		return argSuggestions;
 	}
 
 	private void initialize() {
@@ -91,7 +84,7 @@ public final class CommandSuggestionEngine<S> {
 
 			for (int arg = 0; arg < syntax.length(); arg++) {
 				Argument<?> argument = syntax.getArgument(arg);
-				if(argument == null) break;
+				if (argument == null) break;
 
 				if (argument.isSuggestionDynamic()) {
 					dynamicArgs.add(arg);

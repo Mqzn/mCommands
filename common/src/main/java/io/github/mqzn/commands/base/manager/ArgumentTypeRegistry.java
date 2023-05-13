@@ -21,7 +21,6 @@ public final class ArgumentTypeRegistry {
 
 	ArgumentTypeRegistry() {
 
-		//TODO create one for enum
 		this.argumentNumberComparator = new ArgumentNumberComparator();
 
 		argumentCreatorMapper.put(Integer.class, Argument::integer);

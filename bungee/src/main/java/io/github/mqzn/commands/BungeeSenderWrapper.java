@@ -10,7 +10,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class BungeeSenderWrapper implements SenderWrapper<CommandSender> {
+final class BungeeSenderWrapper implements SenderWrapper<CommandSender> {
 
 	@NotNull
 	private final BungeeAudiences audiences;

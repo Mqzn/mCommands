@@ -13,19 +13,19 @@ import org.jetbrains.annotations.NotNull;
 public final class VelocityCommandManager extends AbstractCommandManager<ProxyServer, CommandSource> {
 
 	@NotNull
-	private final Object bootstrap;
+	private final Object bootstrapObj;
 
-	public VelocityCommandManager(@NotNull Object bootstrap, @NotNull ProxyServer plugin,
+	public VelocityCommandManager(@NotNull Object bootstrapObj, @NotNull ProxyServer plugin,
 	                              CommandExecutionCoordinator.@NotNull Type coordinator) {
 		super(plugin, new VelocitySenderWrapper(), coordinator);
-		this.bootstrap = bootstrap;
+		this.bootstrapObj = bootstrapObj;
 		this.registerCaptions();
 		this.registerTypes();
 	}
 
-	public VelocityCommandManager(@NotNull Object bootstrap, @NotNull ProxyServer plugin) {
+	public VelocityCommandManager(@NotNull Object bootstrapObj, @NotNull ProxyServer plugin) {
 		super(plugin, new VelocitySenderWrapper());
-		this.bootstrap = bootstrap;
+		this.bootstrapObj = bootstrapObj;
 		this.registerCaptions();
 		this.registerTypes();
 	}
@@ -44,25 +44,25 @@ public final class VelocityCommandManager extends AbstractCommandManager<ProxySe
 	}
 
 	private void registerTypes() {
-		typeRegistry().registerArgumentConverter(Player.class, (data)-> new ArgumentOnlinePlayer(plugin, data));
+		typeRegistry().registerArgumentConverter(Player.class, (data) -> new ArgumentOnlinePlayer(this.bootstrap, data));
 	}
 
 	@Override
 	public <C extends Command<CommandSource>> void registerCommand(C command) {
 		super.registerCommand(command);
 
-		CommandMeta commandMeta = plugin.getCommandManager().metaBuilder(command.name())
+		CommandMeta commandMeta = bootstrap.getCommandManager().metaBuilder(command.name())
 						.aliases(command.info().aliases())
-						.plugin(bootstrap)
+						.plugin(bootstrapObj)
 						.build();
 
-		plugin.getCommandManager().register(commandMeta, new InternalVelocityCommand(this, command));
+		this.bootstrap.getCommandManager().register(commandMeta, new InternalVelocityCommand(this, command));
 	}
 
 	@Override
 	public void unregisterCommand(String name) {
 		super.unregisterCommand(name);
-		plugin.getCommandManager().unregister(name);
+		this.bootstrap.getCommandManager().unregister(name);
 	}
 
 

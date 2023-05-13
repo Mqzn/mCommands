@@ -3,6 +3,7 @@ package io.github.mqzn;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import io.github.mqzn.commands.base.Command;
+
 import java.util.List;
 
 class InternalVelocityCommand implements SimpleCommand {

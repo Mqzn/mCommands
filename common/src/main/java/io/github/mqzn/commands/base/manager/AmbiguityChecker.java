@@ -21,6 +21,9 @@ public final class AmbiguityChecker<S> {
 	}
 
 	public static <S> boolean hasLiteralArgs(@NotNull CommandSyntax<S> syntax) {
+
+		if (syntax.isSubCommand()) return true;
+
 		for (var arg : syntax.getArguments()) {
 			if (arg instanceof ArgumentLiteral) {
 				return true;

@@ -10,9 +10,9 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/annotations" />
             <option value="$PROJECT_DIR$/bungee" />
             <option value="$PROJECT_DIR$/common" />
+            <option value="$PROJECT_DIR$/jcord" />
             <option value="$PROJECT_DIR$/spigot" />
             <option value="$PROJECT_DIR$/velocity" />
           </set>

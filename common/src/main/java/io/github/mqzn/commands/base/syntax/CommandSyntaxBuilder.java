@@ -11,17 +11,22 @@ import java.util.List;
 public class CommandSyntaxBuilder<S, C> {
 
 	@NotNull
-	private final String commandLabel;
+	protected final String commandLabel;
+
 	@NotNull
-	private final List<Argument<?>> arguments = new ArrayList<>();
-	@Nullable
-	private Class<C> senderClass;
-	private CommandExecution<S, C> execution;
-	@NotNull
-	private SyntaxFlags flags = SyntaxFlags.of();
+	protected final List<Argument<?>> arguments = new ArrayList<>();
 
 	@Nullable
-	private Information info = null;
+	protected Class<C> senderClass;
+
+	@Nullable
+	protected CommandExecution<S, C> execution;
+
+	@NotNull
+	protected SyntaxFlags flags = SyntaxFlags.of();
+
+	@Nullable
+	protected Information info = null;
 
 	protected CommandSyntaxBuilder(@NotNull Class<C> senderClass,
 	                               @NotNull String label) {
@@ -55,7 +60,9 @@ public class CommandSyntaxBuilder<S, C> {
 	}
 
 	public CommandSyntaxBuilder<S, C> argument(@NotNull Argument<?> argument) {
-		arguments.add(argument);
+		if (!arguments.contains(argument)) {
+			arguments.add(argument);
+		}
 		return this;
 	}
 
@@ -65,7 +72,9 @@ public class CommandSyntaxBuilder<S, C> {
 	}
 
 	public CommandSyntax<S> build() {
-		CommandSyntax<S> syntax = new CommandSyntax<>(senderClass, commandLabel, execution, flags, arguments);
+		CommandSyntax<S> syntax = new CommandSyntax<>(senderClass, commandLabel,
+						execution == null ? (s, c) -> {
+						} : execution, flags, arguments);
 		syntax.setInfo(info);
 		return syntax;
 	}

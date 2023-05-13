@@ -16,11 +16,10 @@ import net.kyori.adventure.text.TextComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class CommandSyntax<S> implements TextConvertible<S> {
+public class CommandSyntax<S> implements TextConvertible<S> {
 
 	// args and execution
 
@@ -28,28 +27,21 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 	private final static String[] argumentFormatPrefixSuffix = {
 					"<", ">", "[", "]"
 	};
-
+	@NotNull
+	protected final List<Argument<?>> arguments;
 	@Getter
 	private final Class<?> senderClass;
-
 	@NotNull
 	private final String commandLabel;
-
 	@NotNull
 	private final CommandExecution<S, ?> execution;
-
-	@NotNull
-	private final List<Argument<?>> arguments;
-
 	@NotNull
 	@Getter
 	private final SyntaxFlags flags;
-	private final int trimmedLength;
-	private final int withoutFlagsOrOptionalLength;
+
 	@Nullable
 	@Getter
 	private Information info = null;
-
 
 	<C> CommandSyntax(Class<C> senderClass,
 	                  @NotNull String commandLabel,
@@ -61,15 +53,6 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 		this.execution = execution;
 		this.flags = flags;
 		this.arguments = args;
-		this.trimmedLength = trimmedSyntaxLength();
-		this.withoutFlagsOrOptionalLength = trimmedLength - flags.count();
-	}
-
-	<C> CommandSyntax(@NotNull Class<C> senderClass,
-	                  @NotNull String commandLabel,
-	                  @NotNull CommandExecution<S, C> execution,
-	                  @NotNull List<Argument<?>> args) {
-		this(senderClass, commandLabel, execution, SyntaxFlags.of(), args);
 	}
 
 
@@ -93,6 +76,14 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 		return builder.toString();
 	}
 
+	public static boolean aliasesIncludes(Aliases aliases, String name) {
+		for (String aliase : aliases.getArray()) {
+			if (aliase.equalsIgnoreCase(name))
+				return true;
+		}
+
+		return false;
+	}
 
 	@Nullable
 	public Argument<?> getArgument(int index) {
@@ -101,25 +92,12 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 		return arguments.get(index);
 	}
 
-	public void setInfo(@NotNull String permission, @NotNull String description) {
-		this.info = new Information(permission, description);
-	}
-
 	public void addFlag(String flag) {
 		flags.addFlag(flag);
 	}
 
 	public int length() {
 		return arguments.size();
-	}
-
-
-	public int withoutOptionalLength() {
-		return trimmedLength;
-	}
-
-	public int withoutFlagsOrOptionalArgumentsLength() {
-		return withoutFlagsOrOptionalLength;
 	}
 
 	/**
@@ -135,15 +113,16 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 			return true;
 		}
 
-
 		final int capacity = this.arguments.size();
 
-		final int maxRawArgsCount = commandContext.getRawArguments().size();
-		final int minRawArgsCount = maxRawArgsCount - commandContext.flagsUsed();
+		int minSyntaxLength = (int) arguments.stream()
+						.filter((arg) -> !arg.isOptional())
+						.count() - flags.count();
 
-		/*if(capacity < minRawArgsCount || capacity > maxRawArgsCount) {
-			return false;
-		}*/
+		int maxSyntaxLength = arguments.size() + flags.count();
+		int rawLength = commandContext.getRawArguments().size();
+
+		if (rawLength < minSyntaxLength || rawLength > maxSyntaxLength) return false;
 
 		for (int index = 0, rawIndex = 0; index < capacity; index++) {
 
@@ -161,14 +140,18 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 				return rawIndex < commandContext.getRawArguments().size();
 			}
 
-			if (ContextFlagRegistry.isRawArgumentFlag(raw)) {
+			while (ContextFlagRegistry.isRawArgumentFlag(raw)) {
 				raw = commandContext.getRawArgument(++rawIndex);
 			}
 
-			if (required instanceof ArgumentLiteral && !required.id().equalsIgnoreCase(raw)) {
+			if (required instanceof ArgumentLiteral) {
 
-				return false;
+				if (!required.id().equalsIgnoreCase(raw) && !aliasesIncludes(((ArgumentLiteral) required).getAliases(), raw)) {
+					return false;
+				}
+
 			}
+
 
 			rawIndex++;
 		}
@@ -192,16 +175,6 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 	public <C> void execute(C sender, CommandContext<S> commandContext) {
 		((CommandExecution<S, C>) execution).execute(sender, commandContext);
 	}
-
-	private int trimmedSyntaxLength() {
-		//without optional args
-
-		List<Argument<?>> argsCopy = new ArrayList<>(arguments);
-		argsCopy.removeIf(Argument::isOptional);
-
-		return argsCopy.size();
-	}
-
 
 	public String formatted(CommandManager<?, S> commandManager) {
 
@@ -243,9 +216,12 @@ public final class CommandSyntax<S> implements TextConvertible<S> {
 		return Component.text(this.formatted(manager));
 	}
 
-
 	public void setInfo(@Nullable Information info) {
 		this.info = info;
+	}
+
+	public boolean isSubCommand() {
+		return this instanceof SubCommandSyntax<S>;
 	}
 
 	@Override

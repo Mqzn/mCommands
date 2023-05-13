@@ -1,5 +1,6 @@
 package io.github.mqzn.commands.base.context;
 
+import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.manager.CommandManager;
 import io.github.mqzn.commands.base.manager.flags.ContextFlagRegistry;
@@ -92,6 +93,18 @@ public final class DelegateCommandContext<S> implements Context<S> {
 	 */
 	@Override
 	public <T> @Nullable T getArgument(int index) {
+		throw new UnsupportedOperationException("This cannot be done using a delegate context !");
+	}
+
+	/**
+	 * Fetches the original required argument
+	 * stated by the syntax executed
+	 *
+	 * @param index the index of the arg
+	 * @return the original required argument
+	 */
+	@Override
+	public @Nullable Argument<?> getRequiredArgument(int index) {
 		throw new UnsupportedOperationException("This cannot be done using a delegate context !");
 	}
 

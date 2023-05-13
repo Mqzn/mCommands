@@ -7,7 +7,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.jetbrains.annotations.Nullable;
 
-public final class VelocitySenderWrapper implements SenderWrapper<CommandSource> {
+final class VelocitySenderWrapper implements SenderWrapper<CommandSource> {
 
 	public static final String VELOCITY_CONSOLE_SENDER_NAME = "CONSOLE";
 
@@ -43,7 +43,7 @@ public final class VelocitySenderWrapper implements SenderWrapper<CommandSource>
 
 	@Override
 	public String senderName(CommandSource sender) {
-		if(sender instanceof Player player) {
+		if (sender instanceof Player player) {
 			return player.getUsername();
 		}
 		return VELOCITY_CONSOLE_SENDER_NAME;

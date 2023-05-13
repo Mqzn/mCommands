@@ -5,7 +5,7 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.TabExecutor;
 import org.jetbrains.annotations.NotNull;
 
-public final class BungeeCommand extends net.md_5.bungee.api.plugin.Command implements TabExecutor {
+final class InternalBungeeCommand extends net.md_5.bungee.api.plugin.Command implements TabExecutor {
 
 	@NotNull
 	private final BungeeCommandManager manager;
@@ -13,7 +13,7 @@ public final class BungeeCommand extends net.md_5.bungee.api.plugin.Command impl
 	@NotNull
 	private final Command<CommandSender> command;
 
-	public BungeeCommand(@NotNull BungeeCommandManager manager, @NotNull Command<CommandSender> command) {
+	public InternalBungeeCommand(@NotNull BungeeCommandManager manager, @NotNull Command<CommandSender> command) {
 		super(command.name(), command.info().permission(), command.info().aliases());
 		this.manager = manager;
 		this.command = command;

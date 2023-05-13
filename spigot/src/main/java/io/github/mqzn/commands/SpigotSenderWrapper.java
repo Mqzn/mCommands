@@ -11,7 +11,7 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class SpigotSenderWrapper implements SenderWrapper<CommandSender> {
+final class SpigotSenderWrapper implements SenderWrapper<CommandSender> {
 
 	@NotNull
 	@Getter

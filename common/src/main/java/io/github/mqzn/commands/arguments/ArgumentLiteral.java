@@ -1,16 +1,23 @@
 package io.github.mqzn.commands.arguments;
 
+import io.github.mqzn.commands.base.syntax.Aliases;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public final class ArgumentLiteral extends AbstractArgument<String> {
 
+	@Getter
+	private Aliases aliases = Aliases.of(new String[0]);
+
 	ArgumentLiteral(String id) {
 		super(id, String.class);
+		suggestions.add(id);
 	}
 
 	ArgumentLiteral(ArgumentData data) {
 		super(data, String.class);
+		suggestions.add(data.getId());
 	}
 
 	@Override
@@ -33,9 +40,24 @@ public final class ArgumentLiteral extends AbstractArgument<String> {
 		return false;
 	}
 
+	public ArgumentLiteral aliases(String... aliases) {
+		this.aliases = Aliases.of(aliases);
+		for (String aliase : aliases) {
+			if (!suggestions.contains(aliase)) {
+				suggestions.add(aliase);
+			}
+		}
+		return this;
+	}
+
 	@Override
 	public Class<?>[] alternativeTypes() {
 		return super.alternativeTypes();
+	}
+
+	@Override
+	public Argument<String> suggest(@NotNull String suggestion) {
+		throw new UnsupportedOperationException("You cannot do that for a literal argument");
 	}
 
 }

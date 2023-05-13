@@ -39,7 +39,7 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 
 	protected final Logger logger = Logger.getLogger("CommandManager-Logger");
 
-	protected final P plugin;
+	protected final P bootstrap;
 
 	@NotNull
 	protected final ArgumentNumberSuggestionProcessor argumentNumberSuggestionProcessor;
@@ -68,13 +68,16 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 
 	@NotNull
 	private final FlagRegistry flagRegistry;
+
+	@NotNull
 	private final Map<String, Long> cooldowns = new HashMap<>();
+
 	@Nullable
 	private CommandHelpProvider commandHelpProvider;
 
-	public AbstractCommandManager(@NotNull P plugin,
+	public AbstractCommandManager(@NotNull P bootstrap,
 	                              @NotNull SenderWrapper<S> wrapper, @NotNull CommandExecutionCoordinator.Type coordinator) {
-		this.plugin = plugin;
+		this.bootstrap = bootstrap;
 		this.wrapper = wrapper;
 		this.commands = new HashMap<>();
 		this.coordinator = coordinator == CommandExecutionCoordinator.Type.ASYNC ? CommandExecutionCoordinator.async(this) : CommandExecutionCoordinator.sync(this);
@@ -92,13 +95,13 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 
 	}
 
-	public AbstractCommandManager(@NotNull P plugin, @NotNull SenderWrapper<S> wrapper) {
-		this(plugin, wrapper, CommandExecutionCoordinator.Type.SYNC);
+	public AbstractCommandManager(@NotNull P bootstrap, @NotNull SenderWrapper<S> wrapper) {
+		this(bootstrap, wrapper, CommandExecutionCoordinator.Type.SYNC);
 	}
 
 	@Override
 	public @NotNull P getBootstrap() {
-		return plugin;
+		return bootstrap;
 	}
 
 	@Override
@@ -126,7 +129,7 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 	                               @NotNull Context<S> context,
 	                               @NotNull String label,
 	                               int page,
-	                               @NotNull List<CommandSyntax<S>> commandSyntaxes) {
+	                               @NotNull List<CommandSyntax<S>> commandSubCommands) {
 
 
 		if (commandHelpProvider == null) {
@@ -137,7 +140,7 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 		var paginated = PaginatedText.<S, CommandSyntax<S>>create(commandHelpProvider, wrapper)
 						.withDisplayer(new CommandSyntaxPageDisplayer<>(this, commandHelpProvider));
 
-		commandSyntaxes.forEach(paginated::add);
+		commandSubCommands.forEach(paginated::add);
 
 		paginated.paginate();
 		paginated.displayPage(label, sender, page);
@@ -218,10 +221,11 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 	public @Nullable CommandSyntax<S> findSyntax(final @NotNull Command<S> command,
 	                                             final @NotNull DelegateCommandContext<S> commandContext) {
 
-		for (CommandSyntax<S> syntax : command.syntaxes())
-			if (syntax.matchesContext(commandContext)) return syntax;
+		for (CommandSyntax<S> syntax : command.syntaxes()) {
+			if (!syntax.isSubCommand() && syntax.matchesContext(commandContext)) return syntax;
+		}
 
-		return null;
+		return command.tree().traverse(commandContext);
 	}
 
 	private boolean cooldownExpired(@NotNull Long lastTime, @NotNull CommandCooldown cooldown) {

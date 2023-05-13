@@ -9,6 +9,7 @@ import io.github.mqzn.commands.base.manager.CommandSuggestionEngine;
 import io.github.mqzn.commands.base.syntax.CommandExecution;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.base.syntax.CommandSyntaxBuilder;
+import io.github.mqzn.commands.base.tree.CommandTree;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,6 +86,15 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 	@NotNull List<CommandSyntax<S>> syntaxes();
 
 	/**
+	 * The tree of subcommands of this
+	 * command specifically
+	 *
+	 * @return the tree of all subcommands hierarchy
+	 */
+	@NotNull CommandTree<S> tree();
+
+
+	/**
 	 * Fetches the engine controlling and caching all
 	 * suggestions for this command in a complex mapping
 	 *
@@ -141,8 +151,9 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 			return this;
 		}
 
-		public Builder<S> syntax(@NotNull CommandSyntax<S> syntax) {
-			this.syntaxes.add(syntax);
+		@SafeVarargs
+		public final Builder<S> syntax(@NotNull CommandSyntax<S>... syntaxes) {
+			this.syntaxes.addAll(Arrays.asList(syntaxes));
 			return this;
 		}
 
@@ -183,14 +194,31 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 
 		static final class ImmutableCommandImpl<S> implements Command<S> {
 
-			private final @NotNull CommandManager<?, S> manager;
-			private final @NotNull String name;
-			private final @NotNull CommandInfo info;
-			private final @NotNull CommandCooldown cooldown;
-			private final @NotNull Set<CommandRequirement<S>> requirements;
-			private final @NotNull List<CommandSyntax<S>> syntaxes;
-			private final @Nullable CommandExecution<S, S> execution;
+			@NotNull
+			private final CommandManager<?, S> manager;
 
+			@NotNull
+			private final String name;
+
+			@NotNull
+			private final CommandInfo info;
+
+			@NotNull
+			private final CommandCooldown cooldown;
+
+			@NotNull
+			private final Set<CommandRequirement<S>> requirements;
+
+			@NotNull
+			private final List<CommandSyntax<S>> syntaxes;
+
+			@Nullable
+			private final CommandExecution<S, S> execution;
+
+			@NotNull
+			private final CommandTree<S> tree;
+
+			@NotNull
 			private final CommandSuggestionEngine<S> suggestionsEngine;
 
 			ImmutableCommandImpl(@NotNull CommandManager<?, S> manager,
@@ -207,8 +235,8 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 				this.requirements = requirements;
 				this.syntaxes = syntaxes;
 				this.execution = execution;
-
-				suggestionsEngine = CommandSuggestionEngine.create(this);
+				this.tree = CommandTree.create(this);
+				this.suggestionsEngine = CommandSuggestionEngine.create(this);
 			}
 
 			/**
@@ -279,41 +307,31 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 				return syntaxes;
 			}
 
-			public @Nullable CommandExecution<S, S> execution() {
-				return execution;
+			/**
+			 * The tree of subcommands of this
+			 * command specifically
+			 *
+			 * @return the tree of all subcommands hierarchy
+			 */
+			@Override
+			public @NotNull CommandTree<S> tree() {
+				return tree;
 			}
+
 
 			@Override
 			public boolean equals(Object obj) {
 				if (obj == this) return true;
 				if (obj == null || obj.getClass() != this.getClass()) return false;
 				var that = (ImmutableCommandImpl<?>) obj;
-				return Objects.equals(this.manager, that.manager) &&
-								Objects.equals(this.name, that.name) &&
-								Objects.equals(this.info, that.info) &&
-								Objects.equals(this.cooldown, that.cooldown) &&
-								Objects.equals(this.requirements, that.requirements) &&
-								Objects.equals(this.syntaxes, that.syntaxes) &&
-								Objects.equals(this.execution, that.execution);
+				return Objects.equals(this.name, that.name) &&
+								Objects.equals(this.info, that.info);
 			}
 
 			@Override
 			public int hashCode() {
-				return Objects.hash(manager, name, info, cooldown, requirements, syntaxes, execution);
+				return Objects.hash(name, info);
 			}
-
-			@Override
-			public String toString() {
-				return "ImmutableCommandImpl[" +
-								"manager=" + manager + ", " +
-								"name=" + name + ", " +
-								"info=" + info + ", " +
-								"cooldown=" + cooldown + ", " +
-								"requirements=" + requirements + ", " +
-								"syntaxes=" + syntaxes + ", " +
-								"execution=" + execution + ']';
-			}
-
 
 		}
 

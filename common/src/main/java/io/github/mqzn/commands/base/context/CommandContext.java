@@ -7,6 +7,7 @@ import io.github.mqzn.commands.base.caption.CaptionKey;
 import io.github.mqzn.commands.base.manager.CommandManager;
 import io.github.mqzn.commands.base.manager.flags.ContextFlagRegistry;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
+import io.github.mqzn.commands.base.syntax.SubCommandSyntax;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -72,19 +73,22 @@ public final class CommandContext<S> implements Context<S> {
 		if (result == ContextFlagRegistry.FlagExtractionResult.FAILED)
 			return;
 
-		for (int i = 0, rawIndex = 0; i < syntax.length(); i++) {
-			Argument<T> required = (Argument<T>) syntax.getArguments().get(i);
+		List<Argument<?>> syntaxArgs = syntax.isSubCommand() ? this.commandUsed()
+						.tree().getParentalArguments(((SubCommandSyntax<S>) syntax).getName()) : syntax.getArguments();
 
-			if (required instanceof ArgumentLiteral) {
+		for (int required = 0, rawIndex = 0; required < syntaxArgs.size(); required++) {
+			Argument<T> argument = (Argument<T>) syntaxArgs.get(required);
+
+			if (argument instanceof ArgumentLiteral) {
 				rawIndex++;
 				continue;
 			}
 
 			String rawArg = getRawArgument(rawIndex);
 
-			if (rawArg != null && ContextFlagRegistry.isRawArgumentFlag(rawArg) && !required.useRemainingSpace()) {
+			if (rawArg != null && ContextFlagRegistry.isRawArgumentFlag(rawArg) && !argument.useRemainingSpace()) {
 				rawArg = getRawArgument(++rawIndex);
-			} else if (required.useRemainingSpace()) {
+			} else if (argument.useRemainingSpace()) {
 
 				StringBuilder builder = new StringBuilder();
 				for (int x = rawIndex; x < delegateContext.getRawArguments().size(); x++) {
@@ -99,15 +103,14 @@ public final class CommandContext<S> implements Context<S> {
 
 			T value = null;
 
-			if (rawArg == null && required.isOptional() && required.defaultValue() != null) {
-				value = required.defaultValue();
+			if (rawArg == null && argument.isOptional() && argument.defaultValue() != null) {
+				value = argument.defaultValue();
 			}
 
 			if (rawArg != null) {
-
 				try {
-					if (required.useRemainingSpace()) value = (T) rawArg;
-					else value = required.parse(delegateContext.commandUsed().name(), rawArg);
+					if (argument.useRemainingSpace()) value = (T) rawArg;
+					else value = argument.parse(delegateContext.commandUsed().name(), rawArg);
 				} catch (ArgumentParseException ex) {
 					manager.exceptionHandler().handleException(ex, sender, this);
 					throw ex;
@@ -115,8 +118,8 @@ public final class CommandContext<S> implements Context<S> {
 
 			}
 
-			ParsedArgument<T> parsedArgument = new ParsedArgument<>(required, value, i, rawIndex, rawArg);
-			parsedArguments.put(new ArgumentKey(required.id(), i), parsedArgument);
+			ParsedArgument<T> parsedArgument = new ParsedArgument<>(argument, value, required, rawIndex, rawArg);
+			parsedArguments.put(new ArgumentKey(argument.id(), required), parsedArgument);
 
 			rawIndex++;
 		}
@@ -152,7 +155,7 @@ public final class CommandContext<S> implements Context<S> {
 	 */
 	@Override
 	public int length() {
-		return delegateContext.length();
+		return syntax.length();
 	}
 
 
@@ -252,6 +255,18 @@ public final class CommandContext<S> implements Context<S> {
 	@Override
 	public <T> @Nullable T getArgument(int index) {
 		return getParsedArgument((key) -> key.requiredArgIndex == index);
+	}
+
+	/**
+	 * Fetches the original required argument
+	 * stated by the syntax executed
+	 *
+	 * @param index the index of the arg
+	 * @return the original required argument
+	 */
+	@Override
+	public @Nullable Argument<?> getRequiredArgument(int index) {
+		return syntax.getArgument(index);
 	}
 
 	@SuppressWarnings("unchecked")

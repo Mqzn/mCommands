@@ -35,7 +35,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.github.mqzn:mCommands-<platform>:1.0.2'
+    implementation 'io.github.mqzn:mCommands-<platform>:1.0.3'
 }
 ```
 
@@ -46,7 +46,7 @@ dependencies {
 The spigot platform is for minecraft spigot api development
 
 ```gradle
-implementation 'io.github.mqzn:mCommands-spigot:1.0.2'
+implementation 'io.github.mqzn:mCommands-spigot:1.0.3'
 ```
 
 ### Annotations
@@ -54,7 +54,7 @@ implementation 'io.github.mqzn:mCommands-spigot:1.0.2'
 This platform allows you to use annotations to declare and register your commands
 
 ```gradle
-implementation 'io.github.mqzn:mCommands-annotations:1.0.2'
+implementation 'io.github.mqzn:mCommands-annotations:1.0.3'
 ```
 
 ### Bungee
@@ -63,32 +63,33 @@ This bungeecord platform is for minecraft bungeecord proxy api development, allo
 to declare and register bungeecord commands.
 
 ```gradle
-implementation 'io.github.mqzn:mCommands-bungee:1.0.2'
+implementation 'io.github.mqzn:mCommands-bungee:1.0.3'
 ```
 
 ## Quick Usage Overview
+
 ```java
 public final class SpigotPluginTest extends JavaPlugin {
 	private SpigotCommandManager commandManager;
-	
-    @Override
+
+	@Override
 	public void onEnable() {
-	    var cmd = Command.builder(commandManager, "test")
-				.info(new CommandInfo("test.perm", "Test cmd", "testis"))
-				.requirement(SpigotCommandRequirement.ONLY_PLAYER_EXECUTABLE)
-				.cooldown(new CommandCooldown(5, TimeUnit.MINUTES))
-				.syntax(
-				  SpigotCommandSyntaxBuilder.builder("test")
-				  .argument(Argument.literal("testsub"))
-                                  .execute((sender, context) -> sender.sendMessage("Test sub works !"))
-                                  .build()
-                                )               
-				.defaultExecutor((s, context) -> s.sendMessage("OMG NO ARGS !"))
-				.build();
-      
-      commandManager.register(cmd);
-    }
-	
+		var cmd = Command.builder(commandManager, "test")
+						.info(new CommandInfo("test.perm", "Test cmd", "testis"))
+						.requirement(SpigotCommandRequirement.ONLY_PLAYER_EXECUTABLE)
+						.cooldown(new CommandCooldown(5, TimeUnit.MINUTES))
+						.syntax(
+										SpigotCommandSyntaxBuilder.builder("test")
+														.argument(Argument.literal("testsub"))
+														.execute((sender, context) -> sender.sendMessage("Test sub works !"))
+														.build()
+						)
+						.defaultExecutor((s, context) -> s.sendMessage("OMG NO ARGS !"))
+						.build();
+
+		commandManager.register(cmd);
+	}
+
 }
 
 

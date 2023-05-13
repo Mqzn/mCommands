@@ -12,4 +12,8 @@ public @interface Arg {
 	String id();
 
 	boolean optional() default false;
+
+	String defaultValue() default "";
+
+	String description() default "";
 }

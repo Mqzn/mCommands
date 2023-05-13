@@ -5,7 +5,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
+/**
+ * This class represents an argument as a command-syntax
+ * parameter to be used in usages and context parsing
+ *
+ * @param <T> the data type of the argument parameter
+ */
 public abstract class AbstractArgument<T> implements Argument<T> {
 
 	@NotNull
@@ -13,12 +21,11 @@ public abstract class AbstractArgument<T> implements Argument<T> {
 
 	@NotNull
 	private final String id;
-
 	@NotNull
 	private final Class<T> type;
-
 	private final boolean useRemainingSpace;
-
+	@Nullable
+	private String description = null;
 	private boolean optional;
 
 	@Nullable
@@ -51,6 +58,16 @@ public abstract class AbstractArgument<T> implements Argument<T> {
 	@Override
 	public String id() {
 		return id;
+	}
+
+	/**
+	 * The description of an argument
+	 *
+	 * @return the description for usage
+	 */
+	@Override
+	public Optional<@Nullable String> description() {
+		return Optional.ofNullable(description);
 	}
 
 	/**
@@ -104,22 +121,49 @@ public abstract class AbstractArgument<T> implements Argument<T> {
 	}
 
 	@Override
+	public Argument<T> description(@Nullable String description) {
+		this.description = description;
+		return this;
+	}
+
+	@Override
 	public Argument<T> suggest(@NotNull T suggestion) {
 		suggestions.add(suggestion);
 		return this;
 	}
-
 
 	@Override
 	public @NotNull List<T> suggestions() {
 		return suggestions;
 	}
 
+
+	@Override
+	@SafeVarargs
+	public final Argument<T> suggest(@NotNull T... suggestions) {
+		for (T suggestion : suggestions) {
+			suggest(suggestion);
+		}
+		return this;
+	}
+
+
 	@Override
 	public String toString(T obj) {
 		return obj.toString();
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof AbstractArgument<?> that)) return false;
+		return id.equals(that.id) && type.equals(that.type);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id, type);
+	}
 }
 
 	

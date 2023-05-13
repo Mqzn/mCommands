@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'io.github.mqzn'
-version '1.0.2'
+version '1.0.3'
 
 repositories {
     mavenCentral()
@@ -41,13 +41,14 @@ compileJava {
     options.encoding = "UTF-8"
 }
 
-
 shadowJar {
     setArchiveName("mCommands-Bungee-${project.version}.jar")
 }
 
 publishing {
+
     publications {
+
         mavenJava(MavenPublication) {
             groupId project.group
             artifactId 'mCommands-bungee'

@@ -1,5 +1,6 @@
 package io.github.mqzn.commands.base.context;
 
+import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.manager.flags.ContextFlagRegistry;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
@@ -89,6 +90,15 @@ public interface Context<S> {
 	 */
 	@Nullable <T> T getArgument(int index);
 
+
+	/**
+	 * Fetches the original required argument
+	 * stated by the syntax executed
+	 *
+	 * @param index the index of the arg
+	 * @return the original required argument
+	 */
+	@Nullable Argument<?> getRequiredArgument(int index);
 
 	/**
 	 * Parses the arguments into the used syntax

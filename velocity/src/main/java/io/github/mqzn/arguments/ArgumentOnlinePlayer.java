@@ -6,6 +6,7 @@ import io.github.mqzn.commands.arguments.AbstractArgument;
 import io.github.mqzn.commands.arguments.ArgumentData;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

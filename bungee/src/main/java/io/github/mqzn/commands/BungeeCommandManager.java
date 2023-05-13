@@ -37,7 +37,7 @@ public final class BungeeCommandManager extends AbstractCommandManager<Plugin, C
 	@Override
 	public <C extends Command<CommandSender>> void registerCommand(C command) {
 		super.registerCommand(command);
-		plugin.getProxy().getPluginManager().registerCommand(plugin, new BungeeCommand(this, command));
+		bootstrap.getProxy().getPluginManager().registerCommand(bootstrap, new InternalBungeeCommand(this, command));
 	}
 
 
