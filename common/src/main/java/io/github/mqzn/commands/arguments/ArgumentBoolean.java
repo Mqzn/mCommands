@@ -10,29 +10,29 @@ public final class ArgumentBoolean extends AbstractArgument<Boolean> {
 	ArgumentBoolean(String id) {
 		super(id, Boolean.class);
 	}
-
+	
 	ArgumentBoolean(ArgumentData data) {
 		super(data, Boolean.class);
 	}
-
+	
 	@Override
 	public Boolean parse(@NotNull String command, @NotNull String input) throws ArgumentParseException {
-
+		
 		if (!input.equalsIgnoreCase("true") && !input.equalsIgnoreCase("false") && !input.equalsIgnoreCase("no") && !input.equalsIgnoreCase("yes"))
 			throw new ArgumentParseException("Argument '" + id() + "' should be boolean, the input '" + input + "' is not a valid boolean", input, command);
-
+		
 		return input.equalsIgnoreCase("true")
-						|| input.equalsIgnoreCase("yes");
+			|| input.equalsIgnoreCase("yes");
 	}
-
+	
 	@Override
 	public @NotNull List<Boolean> suggestions() {
 		return Arrays.asList(true, false);
 	}
-
+	
 	@Override
 	public Class<?>[] alternativeTypes() {
 		return new Class[]{boolean.class};
 	}
-
+	
 }

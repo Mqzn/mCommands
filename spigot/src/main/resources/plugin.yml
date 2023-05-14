@@ -1,4 +1,4 @@
 name: mCommands-Spigot-Test
-version: 1.0.0
-main: io.github.mqzn.commands.SpigotPluginTest
+version: 1.0.3
+main: io.github.mqzn.commands.test.SpigotPluginTest
 author: Mqzen

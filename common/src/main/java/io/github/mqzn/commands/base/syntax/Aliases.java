@@ -6,8 +6,8 @@ import lombok.Getter;
 @Data(staticConstructor = "of")
 
 public class Aliases {
-
+	
 	@Getter
 	private final String[] array;
-
+	
 }

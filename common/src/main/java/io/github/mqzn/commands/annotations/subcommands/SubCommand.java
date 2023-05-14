@@ -6,6 +6,6 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Repeatable(SubCommands.class)
 public @interface SubCommand {
-
+	
 	Class<?> value();
 }

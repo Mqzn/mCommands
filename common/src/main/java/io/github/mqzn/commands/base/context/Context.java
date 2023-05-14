@@ -10,22 +10,22 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public interface Context<S> {
-
-
+	
+	
 	/**
 	 * Fetches the number of flags used in the raw arguments
 	 *
 	 * @return the count of flags used in raw args
 	 */
 	int flagsUsed();
-
+	
 	/**
 	 * Fetches the sender for this context
 	 *
 	 * @return the context command sender
 	 */
 	@NotNull S sender();
-
+	
 	/**
 	 * The command found and used in the context
 	 * made by the command sender
@@ -34,7 +34,7 @@ public interface Context<S> {
 	 * @see Command
 	 */
 	@NotNull Command<S> commandUsed();
-
+	
 	/**
 	 * The raw arguments used in the context
 	 * made by the command sender
@@ -42,7 +42,7 @@ public interface Context<S> {
 	 * @return The raw arguments
 	 */
 	@NotNull List<String> getRawArguments();
-
+	
 	/**
 	 * The raw arguments formatted using the
 	 * command used
@@ -52,7 +52,7 @@ public interface Context<S> {
 	 * @see CommandContext
 	 */
 	@NotNull String rawFormat();
-
+	
 	/**
 	 * Fetches the raw argument from the input in the
 	 * constructor
@@ -61,8 +61,8 @@ public interface Context<S> {
 	 * @return the raw argument at a specific position
 	 */
 	@Nullable String getRawArgument(int index);
-
-
+	
+	
 	/**
 	 * Fetches the parsed argument value
 	 * may return null if the value parsed is not valid
@@ -75,8 +75,8 @@ public interface Context<S> {
 	 * @return the parsed value of the argument
 	 */
 	@Nullable <T> T getArgument(String id);
-
-
+	
+	
 	/**
 	 * Fetches the parsed argument value
 	 * may return null if the value parsed is not valid
@@ -89,8 +89,8 @@ public interface Context<S> {
 	 * @return the parsed value of the argument
 	 */
 	@Nullable <T> T getArgument(int index);
-
-
+	
+	
 	/**
 	 * Fetches the original required argument
 	 * stated by the syntax executed
@@ -99,20 +99,20 @@ public interface Context<S> {
 	 * @return the original required argument
 	 */
 	@Nullable Argument<?> getRequiredArgument(int index);
-
+	
 	/**
 	 * Parses the arguments into the used syntax
 	 * this algorithm should provide good reasonable performance
 	 */
 	<T> void parse() throws ArgumentParseException;
-
+	
 	/**
 	 * The number of parsed args
 	 *
 	 * @return the number of arguments parsed in the context
 	 */
 	int parsedArguments();
-
+	
 	/**
 	 * The flags used in the command
 	 *
@@ -120,16 +120,16 @@ public interface Context<S> {
 	 * of the command executed by the command sender
 	 */
 	@NotNull ContextFlagRegistry<S> flags();
-
+	
 	/**
 	 * The length of the args used in the raw context
 	 *
 	 * @return The length of the args used in the raw context
 	 */
 	int length();
-
+	
 	default int getLastIndex() {
 		return length() - 1;
 	}
-
+	
 }

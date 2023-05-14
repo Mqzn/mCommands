@@ -9,13 +9,13 @@ import java.util.List;
 class InternalVelocityCommand implements SimpleCommand {
 	private final VelocityCommandManager commandManager;
 	private final Command<CommandSource> command;
-
+	
 	InternalVelocityCommand(VelocityCommandManager commandManager, Command<CommandSource> command) {
-
+		
 		this.commandManager = commandManager;
 		this.command = command;
 	}
-
+	
 	/**
 	 * Executes the command for the specified invocation.
 	 *
@@ -25,10 +25,10 @@ class InternalVelocityCommand implements SimpleCommand {
 	public void execute(Invocation invocation) {
 		String[] args = invocation.arguments();
 		CommandSource sender = invocation.source();
-
+		
 		commandManager.executeCommand(command, sender, args);
 	}
-
+	
 	/**
 	 * Provides tab complete suggestions for the specified invocation.
 	 *
@@ -39,6 +39,6 @@ class InternalVelocityCommand implements SimpleCommand {
 	public List<String> suggest(Invocation invocation) {
 		return commandManager.suggest(command, invocation.source(), invocation.arguments());
 	}
-
-
+	
+	
 }

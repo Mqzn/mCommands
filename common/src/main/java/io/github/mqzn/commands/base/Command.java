@@ -16,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl {
-
+	
 	/**
 	 * Creating a builder instance for
 	 * proper building of the command instance
@@ -32,7 +32,7 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 	static <P, S> Builder<S> builder(CommandManager<P, S> manager, String name) {
 		return new Builder<>(manager, name);
 	}
-
+	
 	/**
 	 * Command Manager instance
 	 * that will be used in creation of this command
@@ -40,14 +40,14 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 	 * @return the manager shared instance
 	 */
 	CommandManager<?, S> manager();
-
+	
 	/**
 	 * The name of the command
 	 *
 	 * @return the command name
 	 */
 	String name();
-
+	
 	/**
 	 * The info of the command,
 	 * like description, permission, and it's aliases
@@ -55,28 +55,28 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 	 * @return the information of the command
 	 */
 	@NotNull CommandInfo info();
-
+	
 	/**
 	 * Represents a command cooldown
 	 *
 	 * @return the cooldown of the command
 	 */
 	@NotNull CommandCooldown cooldown();
-
+	
 	/**
 	 * The requirements for the command to be executed
 	 *
 	 * @return The requirements for the command to be executed
 	 */
 	@NotNull Set<CommandRequirement<S>> requirements();
-
+	
 	/**
 	 * The default command execution when no args are provided !
 	 *
 	 * @param sender the command executor !
 	 */
 	void defaultExecution(S sender, Context<S> commandContext);
-
+	
 	/**
 	 * The syntaxes registered for this command
 	 *
@@ -84,7 +84,7 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 	 * @see CommandSyntax
 	 */
 	@NotNull List<CommandSyntax<S>> syntaxes();
-
+	
 	/**
 	 * The tree of subcommands of this
 	 * command specifically
@@ -92,8 +92,8 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 	 * @return the tree of all subcommands hierarchy
 	 */
 	@NotNull CommandTree<S> tree();
-
-
+	
+	
 	/**
 	 * Fetches the engine controlling and caching all
 	 * suggestions for this command in a complex mapping
@@ -101,12 +101,12 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 	 * @return the command suggestions holder
 	 */
 	@NotNull CommandSuggestionEngine<S> suggestions();
-
-
+	
+	
 	default boolean hasCooldown() {
 		return !cooldown().isEmpty();
 	}
-
+	
 	/**
 	 * An internal builder class for the command
 	 * class {@link Command<S>}
@@ -118,10 +118,10 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 	 * @see CommandRequirement
 	 */
 	final class Builder<S> {
-
+		
 		@NotNull
 		private final CommandManager<?, S> manager;
-
+		
 		@NotNull
 		private final String name;
 		@NotNull
@@ -132,95 +132,96 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 		private CommandCooldown cooldown = CommandCooldown.EMPTY;
 		@NotNull
 		private CommandInfo info = CommandInfo.EMPTY_INFO;
-
+		
 		private CommandExecution<S, S> defaultExecutor;
-
+		
 		Builder(@NotNull CommandManager<?, S> manager, @NotNull String name) {
 			this.manager = manager;
 			this.name = name;
 		}
-
+		
 		public Builder<S> info(@NotNull CommandInfo info) {
 			this.info = info;
 			return this;
 		}
-
-
+		
+		@SuppressWarnings("UnusedReturnValue")
 		public Builder<S> requirement(@NotNull CommandRequirement<S> requirement) {
 			this.requirements.add(requirement);
 			return this;
 		}
-
+		
 		@SafeVarargs
 		public final Builder<S> syntax(@NotNull CommandSyntax<S>... syntaxes) {
 			this.syntaxes.addAll(Arrays.asList(syntaxes));
 			return this;
 		}
-
-
+		
+		@SuppressWarnings("UnusedReturnValue")
 		public Builder<S> defaultExecutor(@NotNull CommandExecution<S, S> execution) {
 			this.defaultExecutor = execution;
 			return this;
 		}
-
+		
+		@SuppressWarnings("UnusedReturnValue")
 		public Builder<S> cooldown(@NotNull CommandCooldown cooldown) {
 			this.cooldown = cooldown;
 			return this;
 		}
-
-
+		
+		
 		public synchronized Command<S> build() {
 			if (manager.helpProvider() != null) {
-
+				
 				ArgumentInteger pageArg = (ArgumentInteger) Argument.integer("page").min(1);
 				pageArg.setOptional(true);
 				pageArg.setDefaultValue(1);
-
+				
 				CommandSyntax<S> helpSyntax =
-								CommandSyntaxBuilder.<S, S>genericBuilder(manager.getSenderWrapper().senderType(), name).execute((sender, context) -> {
-
-													@Nullable Integer page = context.getArgument("page");
-													if (page == null) return;
-													manager.handleHelpProvider(sender, context, name, page, syntaxes);
-												}
-								).argument(Argument.literal("help")).argument(pageArg).build();
-
+					CommandSyntaxBuilder.<S, S>genericBuilder(manager.getSenderWrapper().senderType(), name).execute((sender, context) -> {
+							
+							@Nullable Integer page = context.getArgument("page");
+							if (page == null) return;
+							manager.handleHelpProvider(sender, context, name, page, syntaxes);
+						}
+					).argument(Argument.literal("help")).argument(pageArg).build();
+				
 				syntaxes.add(helpSyntax);
 			}
-
+			
 			return new ImmutableCommandImpl<>(manager, name, info, cooldown, requirements, syntaxes, defaultExecutor);
 		}
-
-
+		
+		
 		static final class ImmutableCommandImpl<S> implements Command<S> {
-
+			
 			@NotNull
 			private final CommandManager<?, S> manager;
-
+			
 			@NotNull
 			private final String name;
-
+			
 			@NotNull
 			private final CommandInfo info;
-
+			
 			@NotNull
 			private final CommandCooldown cooldown;
-
+			
 			@NotNull
 			private final Set<CommandRequirement<S>> requirements;
-
+			
 			@NotNull
 			private final List<CommandSyntax<S>> syntaxes;
-
+			
 			@Nullable
 			private final CommandExecution<S, S> execution;
-
+			
 			@NotNull
 			private final CommandTree<S> tree;
-
+			
 			@NotNull
 			private final CommandSuggestionEngine<S> suggestionsEngine;
-
+			
 			ImmutableCommandImpl(@NotNull CommandManager<?, S> manager,
 			                     @NotNull String name,
 			                     @NotNull CommandInfo info,
@@ -238,7 +239,7 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 				this.tree = CommandTree.create(this);
 				this.suggestionsEngine = CommandSuggestionEngine.create(this);
 			}
-
+			
 			/**
 			 * The name of the command
 			 *
@@ -248,7 +249,7 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 			public String name() {
 				return name;
 			}
-
+			
 			/**
 			 * The info of the command,
 			 * like description, permission, and it's aliases
@@ -259,7 +260,7 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 			public @NotNull CommandInfo info() {
 				return info;
 			}
-
+			
 			/**
 			 * The requirements for the command to be executed
 			 *
@@ -269,7 +270,7 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 			public @NotNull Set<CommandRequirement<S>> requirements() {
 				return requirements;
 			}
-
+			
 			/**
 			 * The default command execution when no args are provided !
 			 *
@@ -280,7 +281,7 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 				if (execution != null)
 					execution.execute(sender, commandContext);
 			}
-
+			
 			/**
 			 * Fetches the engine controlling and caching all
 			 * suggestions for this command in a complex mapping
@@ -291,22 +292,22 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 			public @NotNull CommandSuggestionEngine<S> suggestions() {
 				return suggestionsEngine;
 			}
-
+			
 			@Override
 			public @NotNull CommandManager<?, S> manager() {
 				return manager;
 			}
-
+			
 			@Override
 			public @NotNull CommandCooldown cooldown() {
 				return cooldown;
 			}
-
+			
 			@Override
 			public @NotNull List<CommandSyntax<S>> syntaxes() {
 				return syntaxes;
 			}
-
+			
 			/**
 			 * The tree of subcommands of this
 			 * command specifically
@@ -317,25 +318,25 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 			public @NotNull CommandTree<S> tree() {
 				return tree;
 			}
-
-
+			
+			
 			@Override
 			public boolean equals(Object obj) {
 				if (obj == this) return true;
 				if (obj == null || obj.getClass() != this.getClass()) return false;
 				var that = (ImmutableCommandImpl<?>) obj;
 				return Objects.equals(this.name, that.name) &&
-								Objects.equals(this.info, that.info);
+					Objects.equals(this.info, that.info);
 			}
-
+			
 			@Override
 			public int hashCode() {
 				return Objects.hash(name, info);
 			}
-
+			
 		}
-
-
+		
+		
 	}
-
+	
 }

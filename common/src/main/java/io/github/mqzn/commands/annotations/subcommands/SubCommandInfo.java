@@ -8,13 +8,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface SubCommandInfo {
-
+	
 	String name();
-
+	
 	Class<?> parent() default Object.class;
-
+	
 	Class<?>[] children() default {};
-
+	
 	String[] aliases() default {};
-
+	
 }

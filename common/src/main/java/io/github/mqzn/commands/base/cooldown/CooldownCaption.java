@@ -15,31 +15,31 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.TimeUnit;
 
 public final class CooldownCaption<S> implements Caption<S> {
-
+	
 	@NotNull
 	private final Pair<Long, TimeUnit> timeData;
-
+	
 	public CooldownCaption(TimeParser parser) {
 		this.timeData = parser.highestLogicalUnitValue();
 	}
-
+	
 	private static String formatUnit(TimeUnit unit) {
 		String unitName = unit.name().toLowerCase();
 		unitName = unitName.substring(0, unitName.length() - 1);
 		return unitName + "(s)";
 	}
-
+	
 	@Override
 	public @NotNull CaptionKey key() {
 		return CaptionKey.COMMAND_IN_COOLDOWN;
 	}
-
+	
 	@Override
 	public @NotNull <E extends CommandException> TextComponent message(S sender, Context<S> context, E exception) {
-
+		
 		return Message.prefixed(Message.EXECUTION_ERROR)
-						.append(Component.text(String.format("Command '" + context.commandUsed().name()
-										+ "' is in cooldown for %s %s", timeData.getLeft(), formatUnit(timeData.getRight())), NamedTextColor.YELLOW));
+			.append(Component.text(String.format("Command '" + context.commandUsed().name()
+				+ "' is in cooldown for %s %s", timeData.getLeft(), formatUnit(timeData.getRight())), NamedTextColor.YELLOW));
 	}
-
+	
 }

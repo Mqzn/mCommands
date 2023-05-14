@@ -7,6 +7,8 @@ import io.github.mqzn.commands.annotations.subcommands.SubCommand;
 @SubCommand(value = TestSub1.class)
 @SubCommand(value = TestSub2.class)
 @SubCommand(value = TestSub3.class)
+@SubCommand(value = TestRoot1.class)
+@SubCommand(value = TestRoot2.class)
 public class TestAnnotatedCommand {
 
 

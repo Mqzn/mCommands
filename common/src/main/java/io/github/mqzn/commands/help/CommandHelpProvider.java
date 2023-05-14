@@ -6,7 +6,7 @@ import net.kyori.adventure.text.format.Style;
 import org.jetbrains.annotations.NotNull;
 
 public interface CommandHelpProvider {
-
+	
 	/**
 	 * The line style of the help topic
 	 *
@@ -15,7 +15,7 @@ public interface CommandHelpProvider {
 	 * @see Style
 	 */
 	@NotNull Style lineStyle();
-
+	
 	/**
 	 * The header of the help topic
 	 *
@@ -23,7 +23,7 @@ public interface CommandHelpProvider {
 	 * @return the header of the help topic
 	 */
 	@NotNull TextComponent header(String label);
-
+	
 	/**
 	 * The style of the syntax of a command
 	 *
@@ -32,5 +32,5 @@ public interface CommandHelpProvider {
 	 * @return The style of the syntax of a command
 	 */
 	@NotNull <S> Style syntaxStyle(@NotNull CommandSyntax<S> syntax);
-
+	
 }

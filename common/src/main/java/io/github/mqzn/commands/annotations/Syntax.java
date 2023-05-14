@@ -9,14 +9,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
 public @interface Syntax {
-
+	
 	String syntax();
-
+	
 	Class<?> senderType() default Object.class;
-
+	
 	String description() default "";
-
+	
 	String permission() default "";
-
-
+	
+	
 }

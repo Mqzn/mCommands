@@ -11,13 +11,13 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Command {
 	String name();
-
+	
 	String permission() default "";
-
+	
 	String description() default "";
-
+	
 	String[] aliases() default {};
-
+	
 	Class<? extends CommandRequirement<?>>[] requirements() default {};
-
+	
 }

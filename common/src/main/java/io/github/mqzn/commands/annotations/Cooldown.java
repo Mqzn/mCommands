@@ -9,9 +9,9 @@ import java.util.concurrent.TimeUnit;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Cooldown {
-
+	
 	long value();
-
+	
 	TimeUnit unit() default TimeUnit.SECONDS;
-
+	
 }

@@ -8,13 +8,13 @@ public final class SpigotSubCommandBuilder<C> extends SubCommandBuilder<CommandS
 	private SpigotSubCommandBuilder(@NotNull Class<C> senderClass, @NotNull String label, @NotNull String name) {
 		super(senderClass, label, name);
 	}
-
+	
 	public static <C> SpigotSubCommandBuilder<C> builder(@NotNull Class<C> senderClass,
 	                                                     @NotNull String label,
 	                                                     @NotNull String name) {
 		return new SpigotSubCommandBuilder<>(senderClass, label, name);
 	}
-
+	
 	public static SpigotSubCommandBuilder<CommandSender> builder(@NotNull String label, @NotNull String name) {
 		return builder(CommandSender.class, label, name);
 	}

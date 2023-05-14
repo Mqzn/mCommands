@@ -1,5 +1,7 @@
 package io.github.mqzn.commands.annotations;
 
+import io.github.mqzn.commands.base.SuggestionProvider;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -8,7 +10,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface Suggest {
-
-	String[] value();
-
+	
+	String[] value() default {};
+	
+	Class<? extends SuggestionProvider> provider() default SuggestionProvider.class;
+	
 }

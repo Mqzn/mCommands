@@ -7,21 +7,18 @@ import io.github.mqzn.commands.annotations.subcommands.SubCommandExecution;
 import io.github.mqzn.commands.annotations.subcommands.SubCommandInfo;
 import io.github.mqzn.commands.test.ClientSender;
 
-@SubCommandInfo(name = "sub1", children = TestSub2.class, aliases = "s1")
-@Syntax(syntax = "<username>")
-public final class TestSub1 {
+@SubCommandInfo(name = "testroot1")
+@Syntax(syntax = "<user>")
+public class TestRoot1 {
 	
 	@Default
 	public void defaultExecution(ClientSender sender) {
-		
-		System.out.println("Default execution for sub 1");
-		
+		System.out.println("DEF FOR TESTROOT1");
 	}
 	
 	@SubCommandExecution
-	public void execute(ClientSender sender,
-	                    @Arg(id = "username") String username) {
-		System.out.println("Executing sub 1 for user '" + username + "'");
+	public void execute(ClientSender sender, @Arg(id = "user") String user) {
+		System.out.println("EXECUTING TESTROOT1, arg= " + user);
 	}
 	
 }

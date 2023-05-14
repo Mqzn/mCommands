@@ -1,37 +1,40 @@
 package io.github.mqzn.commands.test;
 
 import io.github.mqzn.commands.annotations.parser.AnnotationParser;
-import io.github.mqzn.commands.base.syntax.SubCommandSyntax;
 import io.github.mqzn.commands.test.annotations.TestAnnotatedCommand;
 import org.jetbrains.annotations.TestOnly;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Objects;
 
 @TestOnly
 public final class TestBootstrap {
-
+	
 	private final TestCommandManager commandManager;
-
+	
 	private final AnnotationParser<ClientSender> parser;
 	private final ClientSender sender = new ClientSender("mqzen");
-
+	
 	public TestBootstrap() {
 		commandManager = new TestCommandManager(this);
 		commandManager.senderProviderRegistry().registerSenderProvider(ClientSender.class, (provider) -> provider);
 		parser = new AnnotationParser<>(commandManager);
 	}
-
+	
 	@Test
 	public void firstTest() {
 
 
 		/*var sub1 = SubCommandBuilder.<ClientSender, ClientSender>genericBuilder(ClientSender.class,"test","sub1")
-						.argument(Argument.word("username"))
-						.children("sub2")
-						.execute((sender, context)-> {
-							System.out.println("Executing context for sub1 !");
-						})
-						.build();
+			.argument(Argument.word("username"))
+			.children("sub2")
+			.execute((sender, context)-> {
+				System.out.println("Executing context for sub1 !");
+			})
+			.defaultExecution((sender, context)-> {
+				System.out.println("Default sub1 execution");
+			})
+			.build();
 
 
 		var sub2 = SubCommandBuilder.<ClientSender, ClientSender>genericBuilder(ClientSender.class,"test","sub2")
@@ -57,33 +60,18 @@ public final class TestBootstrap {
 
 		commandManager.registerCommand(cmd);*/
 		parser.parse(new TestAnnotatedCommand());
-
+		
 		// /test sub1
-		String[] args1 = new String[]{
-						"sub1",
-						"mqzen",
-						"sub2",
-						"1",
-						"sub3",
-						"egypt"
+		String[] args = new String[]{
+			"sub1",
+			"user",
+			"sub2",
+			"1",
+			"sub3"
 		};
-		var cmd = commandManager.getCommand("testa");
-		Assertions.assertNotNull(cmd);
-
-		commandManager.executeCommand(cmd, sender, args1);
-
-		for (var syntax : cmd.syntaxes()) {
-			if (!(syntax instanceof SubCommandSyntax<ClientSender> subCmd)) continue;
-
-			StringBuilder builder = new StringBuilder();
-			for (var arg : subCmd.getArguments()) {
-				builder.append(arg.id()).append(" ");
-			}
-
-			System.out.println("Arguments: " + builder);
-		}
-
+		
+		commandManager.executeCommand(Objects.requireNonNull(commandManager.getCommand("testa")), sender, args);
 	}
-
-
+	
+	
 }
