@@ -49,14 +49,6 @@ The spigot platform is for minecraft spigot api development
 implementation 'io.github.mqzn:mCommands-spigot:1.0.3'
 ```
 
-### Annotations
-
-This platform allows you to use annotations to declare and register your commands
-
-```gradle
-implementation 'io.github.mqzn:mCommands-annotations:1.0.3'
-```
-
 ### Bungee
 
 This bungeecord platform is for minecraft bungeecord proxy api development, allows you
