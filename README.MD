@@ -35,7 +35,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.github.mqzn:mCommands-<platform>:1.0.3'
+    implementation 'io.github.mqzn:mCommands-<platform>:<LATEST_VERSION>'
 }
 ```
 
@@ -46,7 +46,7 @@ dependencies {
 The spigot platform is for minecraft spigot api development
 
 ```gradle
-implementation 'io.github.mqzn:mCommands-spigot:1.0.3'
+implementation 'io.github.mqzn:mCommands-spigot:<LATEST_VERSION>'
 ```
 
 ### Bungee
@@ -55,7 +55,7 @@ This bungeecord platform is for minecraft bungeecord proxy api development, allo
 to declare and register bungeecord commands.
 
 ```gradle
-implementation 'io.github.mqzn:mCommands-bungee:1.0.3'
+implementation 'io.github.mqzn:mCommands-bungee:<LATEST_VERSION>'
 ```
 
 ## Quick Usage Overview

@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'io.github.mqzn'
-version '1.0.3'
+version '1.0.4'
 
 repositories {
     mavenCentral()
@@ -22,8 +22,8 @@ dependencies {
     //implementation project(":annotations")
     implementation project(":common")
 
-    implementation "net.kyori:adventure-api:4.13.1"
-    implementation "net.kyori:adventure-platform-bukkit:4.3.0"
+    compileOnly "net.kyori:adventure-api:4.13.1"
+    compileOnly "net.kyori:adventure-platform-bukkit:4.3.0"
 
 }
 
