@@ -12,14 +12,14 @@ import io.github.mqzn.commands.base.cooldown.CommandCooldown;
 import io.github.mqzn.commands.base.cooldown.CooldownCaption;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.base.syntax.SubCommandSyntax;
-import io.github.mqzn.commands.base.tree.CommandTree;
+import io.github.mqzn.commands.base.syntax.CommandTree;
 import io.github.mqzn.commands.exceptions.CommandExceptionHandler;
 import io.github.mqzn.commands.exceptions.UnknownCommandSenderType;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import io.github.mqzn.commands.exceptions.types.SyntaxAmbiguityException;
 import io.github.mqzn.commands.help.CommandHelpProvider;
 import io.github.mqzn.commands.help.CommandSyntaxPageDisplayer;
-import io.github.mqzn.commands.sender.SenderWrapper;
+import io.github.mqzn.commands.base.SenderWrapper;
 import io.github.mqzn.commands.utilities.TimeParser;
 import io.github.mqzn.commands.utilities.text.PaginatedText;
 import org.jetbrains.annotations.NotNull;
@@ -194,17 +194,17 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 		
 		CommandTree.TraversingResult<S> result = findSyntax(command, context);
 		
-		if (result.state() == CommandTree.TraversingResultState.NOT_FOUND) {
+		if (result.state == CommandTree.TraversingResultState.NOT_FOUND) {
 			captionRegistry.sendCaption(sender, context, CaptionKey.UNKNOWN_COMMAND);
 			return;
-		} else if (result.state() == CommandTree.TraversingResultState.FOUND_INCOMPLETE) {
-			assert result.data() != null && result.data().isSubCommand();
-			SubCommandSyntax<S> subCmd = (SubCommandSyntax<S>) result.data();
+		} else if (result.state == CommandTree.TraversingResultState.FOUND_INCOMPLETE) {
+			assert result.data != null && result.data.isSubCommand();
+			SubCommandSyntax<S> subCmd = (SubCommandSyntax<S>) result.data;
 			subCmd.defaultExecution(sender, context);
 			return;
 		}
 		
-		CommandSyntax<S> syntax = result.data();
+		CommandSyntax<S> syntax = result.data;
 		assert syntax != null;
 		
 		//log("Found syntax : " + syntaxUsed.formatted());
@@ -364,7 +364,7 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 	
 	@Override
 	public synchronized @NotNull List<CommandSyntax<S>> findAmbiguity(@NotNull List<CommandSyntax<S>> syntaxes) {
-		AmbiguityChecker<S> ambiguityChecker = AmbiguityChecker.of(syntaxes);
+		AmbiguityChecker<S> ambiguityChecker = AmbiguityChecker.Companion.of(syntaxes);
 		return ambiguityChecker.findAmbiguity();
 	}
 	

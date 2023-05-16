@@ -70,7 +70,7 @@ public final class SpigotPluginTest extends JavaPlugin {
 						.info(new CommandInfo("test.perm", "Test cmd", "testis"))
 						.requirement(SpigotCommandRequirement.ONLY_PLAYER_EXECUTABLE)
 						.cooldown(new CommandCooldown(5, TimeUnit.MINUTES))
-						.syntax(
+						.executionMeta(
 										SpigotCommandSyntaxBuilder.builder("test")
 														.argument(Argument.literal("testsub"))
 														.execute((sender, context) -> sender.sendMessage("Test sub works !"))

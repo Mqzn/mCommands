@@ -1,6 +1,6 @@
 package io.github.mqzn.commands.test;
 
-import io.github.mqzn.commands.annotations.parser.AnnotationParser;
+import io.github.mqzn.commands.AnnotationParser;
 import io.github.mqzn.commands.test.annotations.TestAnnotatedCommand;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.jupiter.api.Test;
@@ -64,10 +64,7 @@ public final class TestBootstrap {
 		// /test sub1
 		String[] args = new String[]{
 			"sub1",
-			"user",
-			"sub2",
-			"1",
-			"sub3"
+			"sub2"
 		};
 		
 		commandManager.executeCommand(Objects.requireNonNull(commandManager.getCommand("testa")), sender, args);

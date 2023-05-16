@@ -5,6 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 public final class SpigotSubCommandBuilder<C> extends SubCommandBuilder<CommandSender, C> {
+	
 	private SpigotSubCommandBuilder(@NotNull Class<C> senderClass, @NotNull String label, @NotNull String name) {
 		super(senderClass, label, name);
 	}

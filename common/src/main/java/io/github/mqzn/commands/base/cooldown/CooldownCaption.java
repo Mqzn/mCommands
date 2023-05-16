@@ -39,7 +39,7 @@ public final class CooldownCaption<S> implements Caption<S> {
 		
 		return Message.prefixed(Message.EXECUTION_ERROR)
 			.append(Component.text(String.format("Command '" + context.commandUsed().name()
-				+ "' is in cooldown for %s %s", timeData.getLeft(), formatUnit(timeData.getRight())), NamedTextColor.YELLOW));
+				+ "' is in cooldown for %s %s", timeData.left, formatUnit(timeData.right)), NamedTextColor.YELLOW));
 	}
 	
 }

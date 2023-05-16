@@ -1,4 +1,4 @@
-package io.github.mqzn.commands.annotations;
+package io.github.mqzn.commands.annotations.base;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,10 +7,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-public @interface Range {
+public @interface Flag {
 	
-	String min() default "";
-	
-	String max() default "";
+	String name();
 	
 }

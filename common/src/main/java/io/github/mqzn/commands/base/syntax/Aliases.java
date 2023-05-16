@@ -8,6 +8,6 @@ import lombok.Getter;
 public class Aliases {
 	
 	@Getter
-	private final String[] array;
+	final String[] array;
 	
 }

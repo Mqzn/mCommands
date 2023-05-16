@@ -4,6 +4,7 @@ import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.function.BiFunction;
@@ -78,7 +79,8 @@ public abstract class ArgumentNumber<T extends Number> extends AbstractArgument<
 		return this;
 	}
 	
-	@NotNull @SuppressWarnings("UnusedReturnValue")
+	@NotNull
+	@SuppressWarnings("UnusedReturnValue")
 	public ArgumentNumber<T> max(@NotNull T value) {
 		this.max = value;
 		this.hasMax = true;

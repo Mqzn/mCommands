@@ -1,10 +1,10 @@
 package io.github.mqzn.commands.test.annotations.examples;
 
-import io.github.mqzn.commands.annotations.Syntax;
+import io.github.mqzn.commands.annotations.base.ExecutionMeta;
 import io.github.mqzn.commands.annotations.subcommands.SubCommandInfo;
 
 @SubCommandInfo(name = "experience", parent = AdaptItemSubCommand.class)
-@Syntax(syntax = "<skillName> <amount> [player]")
+@ExecutionMeta(syntax = "<skillName> <amount> [player]")
 public final class AdaptItemExperienceSubCommand {
 
 	/*@SubCommandExecution

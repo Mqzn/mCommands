@@ -1,6 +1,6 @@
 package io.github.mqzn.commands;
 
-import io.github.mqzn.commands.sender.SenderWrapper;
+import io.github.mqzn.commands.base.SenderWrapper;
 import net.kyori.adventure.platform.bungeecord.BungeeAudiences;
 import net.kyori.adventure.text.TextComponent;
 import net.md_5.bungee.api.ChatColor;

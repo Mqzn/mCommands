@@ -3,7 +3,7 @@ package io.github.mqzn.commands;
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.manager.AbstractCommandManager;
 import io.github.mqzn.commands.base.manager.CommandExecutionCoordinator;
-import io.github.mqzn.commands.sender.SenderWrapper;
+import io.github.mqzn.commands.base.SenderWrapper;
 import net.kyori.adventure.text.TextComponent;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ServerTextChannel;

@@ -6,10 +6,10 @@ import io.github.mqzn.commands.base.caption.CaptionRegistry;
 import io.github.mqzn.commands.base.context.Context;
 import io.github.mqzn.commands.base.context.DelegateCommandContext;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
-import io.github.mqzn.commands.base.tree.CommandTree;
+import io.github.mqzn.commands.base.syntax.CommandTree;
 import io.github.mqzn.commands.exceptions.CommandExceptionHandler;
 import io.github.mqzn.commands.help.CommandHelpProvider;
-import io.github.mqzn.commands.sender.SenderWrapper;
+import io.github.mqzn.commands.base.SenderWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

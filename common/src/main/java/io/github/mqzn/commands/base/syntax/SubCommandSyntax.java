@@ -1,6 +1,7 @@
 package io.github.mqzn.commands.base.syntax;
 
 import io.github.mqzn.commands.arguments.Argument;
+import io.github.mqzn.commands.base.context.CommandContext;
 import io.github.mqzn.commands.base.context.DelegateCommandContext;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -14,24 +15,28 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 	
 	@NotNull
 	@Getter
-	private final String name;
+	final String name;
+	
 	@NotNull
 	@Getter
-	private final Aliases aliases;
+	final Aliases aliases;
+	
 	@Getter
-	private final LinkedHashSet<String> children = new LinkedHashSet<>();
+	final LinkedHashSet<String> children = new LinkedHashSet<>();
+	
 	@Nullable
-	private final CommandExecution<S, ?> defaultExecution;
+	final CommandExecution<S, ?> defaultExecution;
+	
 	@Nullable
 	@Getter
-	private String parent;
+	String parent;
 	
 	<C> SubCommandSyntax(@NotNull Class<C> senderClass,
 	                     @NotNull String commandLabel,
 	                     @Nullable String parent,
 	                     @NotNull String name,
 	                     @NotNull Aliases aliases,
-	                     @NotNull CommandExecution<S, C> execution,
+	                     @Nullable CommandExecution<S, C> execution,
 	                     @NotNull SyntaxFlags flags,
 	                     @NotNull List<Argument<?>> arguments,
 	                     @Nullable CommandExecution<S, C> defaultExecution) {
@@ -83,6 +88,23 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 	public <C> void defaultExecution(C sender, DelegateCommandContext<S> context) {
 		if (defaultExecution == null) return;
 		((CommandExecution<S, C>) defaultExecution).execute(sender, context);
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public <C> void execute(C sender, CommandContext<S> commandContext) {
+		if (execution == null) {
+			if (defaultExecution == null) {
+				throw new IllegalStateException(
+					String.format("Failed to execute subcommand `%s`, as it doesn't have an execution or even a default execution", name)
+				);
+			}
+			
+			((CommandExecution<S, C>) defaultExecution).execute(sender, commandContext);
+		} else {
+			((CommandExecution<S, C>) execution).execute(sender, commandContext);
+		}
+		
 	}
 	
 	public boolean matches(String rawArgument) {

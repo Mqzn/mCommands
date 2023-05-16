@@ -1,6 +1,6 @@
 package io.github.mqzn.commands.test.annotations;
 
-import io.github.mqzn.commands.annotations.Command;
+import io.github.mqzn.commands.annotations.base.Command;
 import io.github.mqzn.commands.annotations.subcommands.SubCommand;
 
 @Command(name = "testa")

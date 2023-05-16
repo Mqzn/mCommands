@@ -11,7 +11,7 @@ public interface BungeeCaption {
 	
 	Caption<CommandSender> UNKNOWN_COMMAND = Caption.<CommandSender>builder(CaptionKey.UNKNOWN_COMMAND)
 		.withMessage((sender, context, ex) -> Message.prefixed(Message.EXECUTION_ERROR)
-			.append(Component.text(String.format("Unknown Command In Syntax '%s'", context.rawFormat()))))
+			.append(Component.text(String.format("Unknown Command In ExecutionMeta '%s'", context.rawFormat()))))
 		.build();
 	
 	Caption<CommandSender> NO_PERMISSION = Caption.<CommandSender>builder(CaptionKey.NO_PERMISSION)

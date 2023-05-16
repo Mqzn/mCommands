@@ -16,6 +16,7 @@ import net.kyori.adventure.text.TextComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,23 +30,23 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 	};
 	@NotNull
 	protected final List<Argument<?>> arguments;
+	@Nullable
+	protected final CommandExecution<S, ?> execution;
 	@Getter
-	private final Class<?> senderClass;
+	protected final Class<?> senderClass;
 	@NotNull
-	private final String commandLabel;
-	@NotNull
-	private final CommandExecution<S, ?> execution;
+	protected final String commandLabel;
 	@NotNull
 	@Getter
-	private final SyntaxFlags flags;
+	protected final SyntaxFlags flags;
 	
 	@Nullable
 	@Getter
-	private Information info = null;
+	protected Information info = null;
 	
 	<C> CommandSyntax(Class<C> senderClass,
 	                  @NotNull String commandLabel,
-	                  @NotNull CommandExecution<S, C> execution,
+	                  @Nullable CommandExecution<S, C> execution,
 	                  @NotNull SyntaxFlags flags,
 	                  @NotNull List<Argument<?>> args) {
 		this.senderClass = senderClass;
@@ -55,6 +56,13 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 		this.arguments = args;
 	}
 	
+	
+	public static <S, C> CommandSyntax<S> empty(
+		Class<C> senderClass, String cmdLabel) {
+		return new CommandSyntax<>(senderClass, cmdLabel,
+			(sender, context) -> {
+			}, SyntaxFlags.of(), new ArrayList<>());
+	}
 	
 	public static boolean isArgRequired(String argSyntax) {
 		return argSyntax.startsWith(argumentFormatPrefixSuffix[0]) && argSyntax.endsWith(argumentFormatPrefixSuffix[1]);
@@ -173,6 +181,7 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 	
 	@SuppressWarnings("unchecked")
 	public <C> void execute(C sender, CommandContext<S> commandContext) {
+		if (execution == null) return;
 		((CommandExecution<S, C>) execution).execute(sender, commandContext);
 	}
 	

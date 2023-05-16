@@ -11,10 +11,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 
+@ApiStatus.Internal
 public final class SpigotCommandManager extends AbstractCommandManager<Plugin, CommandSender> {
 	
 	

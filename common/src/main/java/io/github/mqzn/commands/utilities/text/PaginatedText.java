@@ -1,7 +1,7 @@
 package io.github.mqzn.commands.utilities.text;
 
 import io.github.mqzn.commands.help.CommandHelpProvider;
-import io.github.mqzn.commands.sender.SenderWrapper;
+import io.github.mqzn.commands.base.SenderWrapper;
 import lombok.Getter;
 import lombok.NonNull;
 import net.kyori.adventure.text.Component;

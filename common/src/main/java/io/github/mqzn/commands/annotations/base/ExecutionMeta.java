@@ -1,4 +1,4 @@
-package io.github.mqzn.commands.annotations;
+package io.github.mqzn.commands.annotations.base;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -8,9 +8,9 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
-public @interface Syntax {
+public @interface ExecutionMeta {
 	
-	String syntax();
+	String syntax() default "";
 	
 	Class<?> senderType() default Object.class;
 	

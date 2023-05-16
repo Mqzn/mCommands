@@ -1,6 +1,6 @@
 package io.github.mqzn.commands.test;
 
-import io.github.mqzn.commands.sender.SenderWrapper;
+import io.github.mqzn.commands.base.SenderWrapper;
 import net.kyori.adventure.text.TextComponent;
 import org.jetbrains.annotations.Nullable;
 

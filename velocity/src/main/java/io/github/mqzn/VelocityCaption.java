@@ -12,7 +12,7 @@ public interface VelocityCaption {
 	
 	Caption<CommandSource> UNKNOWN_COMMAND = Caption.<CommandSource>builder(CaptionKey.UNKNOWN_COMMAND)
 		.withMessage((sender, context, ex) -> Message.prefixed(Message.EXECUTION_ERROR)
-			.append(Component.text(String.format("Unknown Command In Syntax '%s'", context.rawFormat()))))
+			.append(Component.text(String.format("Unknown Command In ExecutionMeta '%s'", context.rawFormat()))))
 		.build();
 	
 	Caption<CommandSource> NO_PERMISSION = Caption.<CommandSource>builder(CaptionKey.NO_PERMISSION)

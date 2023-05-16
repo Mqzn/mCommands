@@ -1,6 +1,6 @@
-package io.github.mqzn.commands.annotations.parser;
+package io.github.mqzn.commands;
 
-import io.github.mqzn.commands.annotations.*;
+import io.github.mqzn.commands.annotations.base.*;
 import io.github.mqzn.commands.annotations.subcommands.SubCommand;
 import io.github.mqzn.commands.annotations.subcommands.SubCommandExecution;
 import io.github.mqzn.commands.annotations.subcommands.SubCommandInfo;
@@ -19,11 +19,10 @@ import io.github.mqzn.commands.base.syntax.CommandSyntaxBuilder;
 import io.github.mqzn.commands.base.syntax.SubCommandBuilder;
 import io.github.mqzn.commands.base.syntax.SyntaxFlags;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
-import io.github.mqzn.commands.sender.SenderWrapper;
+import io.github.mqzn.commands.base.SenderWrapper;
 import io.github.mqzn.commands.utilities.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.Arrays;
@@ -121,16 +120,16 @@ public final class AnnotationParser<S> {
 			}
 			
 			//manager.log("Parsing method %s", method.getName());
-			Syntax syntaxMeta = method.getAnnotation(Syntax.class);
-			assert syntaxMeta != null;
+			ExecutionMeta executionMetaMeta = method.getAnnotation(ExecutionMeta.class);
+			assert executionMetaMeta != null;
 			
-			var loadedData = loadMethodParameters(manager, cmdAnnotation.name(), syntaxMeta, method);
-			var arguments = loadedData.getRight();
-			var flags = loadedData.getLeft();
+			var loadedData = loadMethodParameters(manager, cmdAnnotation.name(), executionMetaMeta, method);
+			var arguments = loadedData.right;
+			var flags = loadedData.left;
 			
 			
-			if (syntaxMeta.senderType() != Object.class)
-				senderType = syntaxMeta.senderType();
+			if (executionMetaMeta.senderType() != Object.class)
+				senderType = executionMetaMeta.senderType();
 			
 			
 			CommandSyntaxBuilder<S, C> syntaxBuilder = CommandSyntaxBuilder.genericBuilder((Class<C>) senderType, cmdAnnotation.name());
@@ -140,7 +139,7 @@ public final class AnnotationParser<S> {
 				syntaxBuilder = syntaxBuilder.argument(arg);
 			}
 			
-			syntaxBuilder.info(new Information(syntaxMeta.permission(), syntaxMeta.description()))
+			syntaxBuilder.info(new Information(executionMetaMeta.permission(), executionMetaMeta.description()))
 				.flags(flags)
 				.execute((sender, context) -> {
 					Object[] valuesToUse = readValues(method, sender, context);
@@ -168,8 +167,10 @@ public final class AnnotationParser<S> {
 		
 		SubCommandInfo info = subClass.getAnnotation(SubCommandInfo.class);
 		if (info == null) {
-			throw new IllegalArgumentException(subInfoNotFound(subClass));
+			throw new IllegalArgumentException(annotationNotPresent(subClass, SubCommandInfo.class));
 		}
+		
+		checkValidInheritance(subClass, info);
 		
 		var subCommandObject = this.<C>loadSubCommandBuilder(cmd, subClass).build();
 		
@@ -183,7 +184,7 @@ public final class AnnotationParser<S> {
 		if (!info.parent().equals(Object.class)) {
 			SubCommandInfo parentInfo = info.parent().getAnnotation(SubCommandInfo.class);
 			if (parentInfo == null) {
-				throw new IllegalArgumentException(subInfoNotFound(info.parent()));
+				throw new IllegalArgumentException(annotationNotPresent(info.parent(), SubCommandInfo.class));
 			}
 			
 			subCommandObject.setParent(parentInfo.name());
@@ -209,14 +210,14 @@ public final class AnnotationParser<S> {
 			throw new RuntimeException(e);
 		}
 		
-		Syntax subSyntax = subClass.getAnnotation(Syntax.class);
-		if (subSyntax == null) {
-			throw new IllegalArgumentException(String.format("Failed to load subcommand from class '%s' as the class doesn't have @Syntax annotation", subClass.getName()));
+		ExecutionMeta subExecutionMeta = subClass.getAnnotation(ExecutionMeta.class);
+		if (subExecutionMeta == null) {
+			throw new IllegalArgumentException(annotationNotPresent(subClass, ExecutionMeta.class));
 		}
 		
 		SubCommandInfo subCmdInfo = subClass.getAnnotation(SubCommandInfo.class);
 		if (subCmdInfo == null) {
-			throw new IllegalArgumentException(String.format("Failed to load subcommand from class '%s' as the class doesn't have @SubCommandInfo annotation", subClass.getName()));
+			throw new IllegalArgumentException(annotationNotPresent(subClass, SubCommandInfo.class));
 		}
 		
 		Method defaultExecutionMethod = Arrays.stream(subClass.getDeclaredMethods())
@@ -224,7 +225,7 @@ public final class AnnotationParser<S> {
 			.findFirst().orElse(null);
 		
 		
-		Class<C> senderType = (Class<C>) subSyntax.senderType();
+		Class<C> senderType = (Class<C>) subExecutionMeta.senderType();
 		var subBuilder = SubCommandBuilder.<S, C>genericBuilder(senderType, cmd.name(), subCmdInfo.name())
 			.aliases(subCmdInfo.aliases());
 		
@@ -258,26 +259,31 @@ public final class AnnotationParser<S> {
 				&& method.getName().equalsIgnoreCase(SUB_COMMAND_EXECUTE_METHOD))
 			.findFirst().orElse(null);
 		
-		if (executeMethod == null) {
-			throw new IllegalArgumentException(String.format("Failed to load subcommand from class '%s' as the class doesn't have an execute method that is annotated by @SubCommandExecution", subClass.getName()));
+		if (executeMethod == null && defaultExecutionMethod == null) {
+			throw new IllegalArgumentException(
+				String.format("Failed to load subcommand from class '%s' as the class doesn't have a method that is annotated by @SubCommandExecution or @Default", subClass.getName())
+			);
 		}
 		
-		if (!subSyntax.senderType().equals(Object.class)) {
+		if (!subExecutionMeta.senderType().equals(Object.class)) {
 			subBuilder = subBuilder.senderType(senderType);
 		} else {
 			subBuilder = subBuilder.senderType((Class<C>) manager.getSenderWrapper().senderType());
 		}
 		
-		var methodData = loadParentalSubCommandsParameters(manager, cmd.name(), subClass, executeMethod);
+		subBuilder = subBuilder.info(new Information(subExecutionMeta.permission(), subExecutionMeta.description()));
 		
-		for (var arg : methodData.arguments) {
-			subBuilder = subBuilder.argument(arg);
-		}
-		
-		subBuilder = subBuilder.flags(methodData.flags);
-		
-		subBuilder = subBuilder.info(new Information(subSyntax.permission(), subSyntax.description()))
-			.execute((sender, context) -> {
+		if (executeMethod != null) {
+			var methodData = loadParentalSubCommandsParameters(manager, cmd.name(), subClass, executeMethod);
+			
+			for (var arg : methodData.arguments) {
+				subBuilder = subBuilder.argument(arg);
+			}
+			
+			subBuilder = subBuilder.flags(methodData.flags);
+			
+			
+			subBuilder = subBuilder.execute((sender, context) -> {
 				Object[] valuesToUse = readValues(executeMethod, sender, context);
 				
 				try {
@@ -287,6 +293,7 @@ public final class AnnotationParser<S> {
 				}
 				
 			});
+		}
 		
 		
 		return subBuilder;
@@ -305,8 +312,8 @@ public final class AnnotationParser<S> {
 			return false;
 		}
 		
-		if (!method.isAnnotationPresent(Syntax.class)) return false;
-		Syntax meta = method.getAnnotation(Syntax.class);
+		if (!method.isAnnotationPresent(ExecutionMeta.class)) return false;
+		ExecutionMeta meta = method.getAnnotation(ExecutionMeta.class);
 		assert meta != null;
 		
 		if (!this.isSenderParam(meta, parameters[0]))
@@ -394,6 +401,68 @@ public final class AnnotationParser<S> {
 		return flag.name();
 	}
 	
+	/**
+	 * Checks for valid inheritance between subcommands
+	 *
+	 * @param subClassInfo the info of the subclass
+	 */
+	private void checkValidInheritance(@NotNull Class<?> subClass, @NotNull SubCommandInfo subClassInfo) {
+		
+		boolean hasChildren = subClassInfo.children().length > 0;
+		boolean hasParent = !subClassInfo.parent().equals(Object.class);
+		
+		if(hasChildren) {
+			
+			for(Class<?> childClass : subClassInfo.children()) {
+				SubCommandInfo childInfo = childClass.getAnnotation(SubCommandInfo.class);
+				if(childInfo == null) {
+					throw new IllegalArgumentException(
+						String.format("Failed to load subcommand from class '%s' as the class doesn't have @SubCommandInfo annotation", childClass.getName()));
+				}
+				
+				if(!childInfo.parent().equals(subClass)) {
+					throw new IllegalArgumentException(
+						String.format("Failed to load subcommand from class '%s'\n " +
+							"The class has children, but his child `%s` doesn't have him has his parent !", subClass.getName(), childClass.getName()));
+				}
+				
+			}
+			
+		}
+		
+		if(hasParent) {
+			
+			Class<?> parentClass = subClassInfo.parent();
+			@NotNull SubCommandInfo parentClassInfo = parentClass.getAnnotation(SubCommandInfo.class);
+			if(parentClassInfo == null) {
+				throw new IllegalArgumentException(
+					String.format("Failed to load subcommand from class '%s' as the class doesn't have @SubCommandInfo annotation", parentClass.getName()));
+			}
+			boolean foundChild = false;
+			for(var childClass : parentClassInfo.children()) {
+				
+				SubCommandInfo childInfo = childClass.getAnnotation(SubCommandInfo.class);
+				if(childInfo == null) {
+					throw new IllegalArgumentException(
+						String.format("Failed to load subcommand from class '%s' as the class doesn't have @SubCommandInfo annotation", childClass.getName()));
+				}
+				
+				if(childClass.equals(subClass)) {
+					foundChild = true;
+					break;
+				}
+				
+			}
+			
+			if(!foundChild)
+				throw new IllegalArgumentException(
+					String.format("Subcommand class `%s` has parent `%s`, but the parent class doesn't have him as one of his children !",subClass.getName(), parentClass.getName())
+				);
+			
+		}
+		
+	}
+	
 	
 	/**
 	 * Reads values from the context used and links it with the method
@@ -459,23 +528,28 @@ public final class AnnotationParser<S> {
 	) {
 		
 		if (!subCommandClass.isAnnotationPresent(SubCommandInfo.class)) {
-			throw new IllegalArgumentException(subInfoNotFound(subCommandClass));
+			throw new IllegalArgumentException(annotationNotPresent(subCommandClass, SubCommandInfo.class));
 		}
 		
-		if (!subCommandClass.isAnnotationPresent(Syntax.class)) {
-			throw new IllegalArgumentException(String.format("Subcommand class %s is NOT annotated with @Syntax", subCommandClass.getName()));
+		if (!subCommandClass.isAnnotationPresent(ExecutionMeta.class)) {
+			throw new IllegalArgumentException(annotationNotPresent(subCommandClass, ExecutionMeta.class));
 		}
 		
-		Syntax syntax = subCommandClass.getAnnotation(Syntax.class);
-		assert syntax != null;
+		ExecutionMeta executionMeta = subCommandClass.getAnnotation(ExecutionMeta.class);
+		assert executionMeta != null;
+		
+		if (executionMeta.syntax().isEmpty() || executionMeta.syntax().isBlank()) {
+			throw new IllegalArgumentException("ExecutionMeta for this subcommand is empty and you have an execute method present at the same time !");
+		}
+		
 		SubCommandInfo info = subCommandClass.getAnnotation(SubCommandInfo.class);
 		assert info != null;
 		
 		Class<?> parent = info.parent();
 		if (parent.equals(Object.class)) {
 			
-			var data = loadMethodParameters(manager, commandName, syntax, method);
-			var args = data.getRight();
+			var data = loadMethodParameters(manager, commandName, executionMeta, method);
+			var args = data.right;
 			
 			Argument<?>[] modifiedArgs = new Argument[args.length + 1];
 			modifiedArgs[0] = Argument.literal(info.name())
@@ -483,23 +557,23 @@ public final class AnnotationParser<S> {
 			
 			if (args.length - 1 >= 0) System.arraycopy(args, 0, modifiedArgs, 1, args.length - 1);
 			
-			return new ResolvedSubCommandMethod(args, modifiedArgs, data.getLeft());
+			return new ResolvedSubCommandMethod(args, modifiedArgs, data.left);
 		}
 		
 		LinkedList<String> args = new LinkedList<>();
 		
 		args.add(info.name());
-		args.addAll(Arrays.asList(syntax.syntax().split(Pattern.quote(" "))));
+		args.addAll(Arrays.asList(executionMeta.syntax().split(Pattern.quote(" "))));
 		
 		
 		do {
 			SubCommandInfo parentInfo = parent.getAnnotation(SubCommandInfo.class);
 			assert parentInfo != null;
 			
-			Syntax parentSyntax = parent.getAnnotation(Syntax.class);
-			assert parentSyntax != null;
+			ExecutionMeta parentExecutionMeta = parent.getAnnotation(ExecutionMeta.class);
+			assert parentExecutionMeta != null;
 			
-			for (var split : parentSyntax.syntax().split(Pattern.quote(" "))) {
+			for (var split : parentExecutionMeta.syntax().split(Pattern.quote(" "))) {
 				args.addFirst(split);
 			}
 			
@@ -510,13 +584,13 @@ public final class AnnotationParser<S> {
 		} while (!parent.equals(Object.class));
 		
 		
-		Syntax newSyntax = new Syntax() {
+		ExecutionMeta newExecutionMeta = new ExecutionMeta() {
 			
 			private final String syntaxStr = String.join(" ", args);
 			
 			@Override
 			public Class<? extends Annotation> annotationType() {
-				return Syntax.class;
+				return ExecutionMeta.class;
 			}
 			
 			@Override
@@ -526,22 +600,22 @@ public final class AnnotationParser<S> {
 			
 			@Override
 			public Class<?> senderType() {
-				return syntax.senderType();
+				return executionMeta.senderType();
 			}
 			
 			@Override
 			public String description() {
-				return syntax.description();
+				return executionMeta.description();
 			}
 			
 			@Override
 			public String permission() {
-				return syntax.permission();
+				return executionMeta.permission();
 			}
 			
 		};
 		
-		String[] split = syntax.syntax().split(Pattern.quote(" "));
+		String[] split = executionMeta.syntax().split(Pattern.quote(" "));
 		Argument<?>[] arguments = new Argument[split.length];
 		Parameter[] parameters = method.getParameters();
 		for (int i = 0, p = 1; i < arguments.length && p < parameters.length; i++, p++) {
@@ -567,8 +641,8 @@ public final class AnnotationParser<S> {
 			arguments[i] = getArgFromParameter(manager, commandName, parameter);
 		}
 		
-		var data = loadMethodParameters(manager, commandName, newSyntax, method);
-		return new ResolvedSubCommandMethod(arguments, data.getRight(), data.getLeft());
+		var data = loadMethodParameters(manager, commandName, newExecutionMeta, method);
+		return new ResolvedSubCommandMethod(arguments, data.right, data.left);
 	}
 	
 	
@@ -586,11 +660,11 @@ public final class AnnotationParser<S> {
 	private <T> Pair<SyntaxFlags, Argument<?>[]> loadMethodParameters(
 		final @NotNull CommandManager<?, S> manager,
 		final @NotNull String commandName,
-		final @NotNull Syntax syntaxMeta,
+		final @NotNull ExecutionMeta executionMetaMeta,
 		final @NotNull Method method
 	) {
 		
-		String syntax = syntaxMeta.syntax();
+		String syntax = executionMetaMeta.syntax();
 		
 		String[] split = syntax.split(Pattern.quote(" "));
 		Argument<?>[] args = new Argument[split.length];
@@ -675,7 +749,7 @@ public final class AnnotationParser<S> {
 		
 		for (Parameter parameter : typeParameters) {
 			
-			if (isSenderParam(syntaxMeta, parameter)) continue;
+			if (isSenderParam(executionMetaMeta, parameter)) continue;
 			
 			String flag = getFlagFromParameter(parameter);
 			
@@ -696,11 +770,11 @@ public final class AnnotationParser<S> {
 			
 		}
 		
-		return Pair.of(flags, args);
+		return Pair.Companion.of(flags, args);
 	}
 	
 	
-	private boolean isSenderParam(Syntax meta, Parameter parameter) {
+	private boolean isSenderParam(ExecutionMeta meta, Parameter parameter) {
 		
 		return manager.getSenderWrapper().canBeSender(parameter.getType())
 			|| (manager.senderProviderRegistry().hasProviderFor(parameter.getType())
@@ -728,8 +802,8 @@ public final class AnnotationParser<S> {
 		manager.setNumericArgumentSuggestions(argNum);
 	}
 	
-	private String subInfoNotFound(Class<?> subClass) {
-		return String.format("Subcommand class '%s' is NOT annotated with @SubCommandInfo", subClass.getName());
+	private String annotationNotPresent(Class<?> subClass, Class<? extends Annotation> annotation) {
+		return String.format("Subcommand class '%s' is NOT annotated with @%s", subClass.getName(), annotation.getSimpleName());
 	}
 	
 	

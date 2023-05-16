@@ -89,8 +89,8 @@ public class SubCommandBuilder<S, C> extends CommandSyntaxBuilder<S, C> {
 	@Override
 	public SubCommandSyntax<S> build() {
 		assert aliases != null;
-		assert execution != null;
 		assert senderClass != null;
+		
 		
 		SubCommandSyntax<S> subCommandSyntax = new SubCommandSyntax<>(senderClass, commandLabel, parent, name,
 			aliases, execution, flags, arguments, defaultExecution);

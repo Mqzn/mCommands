@@ -1,4 +1,4 @@
-package io.github.mqzn.commands.sender;
+package io.github.mqzn.commands.base;
 
 import net.kyori.adventure.text.TextComponent;
 import org.jetbrains.annotations.Nullable;

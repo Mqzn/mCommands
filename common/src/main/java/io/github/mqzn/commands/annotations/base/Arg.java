@@ -1,4 +1,4 @@
-package io.github.mqzn.commands.annotations;
+package io.github.mqzn.commands.annotations.base;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

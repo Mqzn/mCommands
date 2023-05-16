@@ -4,11 +4,13 @@ import io.github.mqzn.commands.base.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
 
+@ApiStatus.Internal
 final class InternalSpigotCommand extends org.bukkit.command.Command implements PluginIdentifiableCommand {
 	
 	@NotNull
@@ -27,8 +29,8 @@ final class InternalSpigotCommand extends org.bukkit.command.Command implements 
 	}
 	
 	@Override
-	public boolean execute(CommandSender sender,
-	                       String label,
+	public boolean execute(@NotNull CommandSender sender,
+	                       @NotNull String label,
 	                       String[] raw) {
 		
 		try {
@@ -42,12 +44,14 @@ final class InternalSpigotCommand extends org.bukkit.command.Command implements 
 	}
 	
 	@Override
-	public Plugin getPlugin() {
+	public @NotNull Plugin getPlugin() {
 		return manager.getBootstrap();
 	}
 	
 	@Override
-	public List<String> tabComplete(CommandSender sender, String alias, String[] args) throws IllegalArgumentException {
+	public @NotNull List<String> tabComplete(@NotNull CommandSender sender,
+	                                         @NotNull String alias,
+	                                         String[] args) throws IllegalArgumentException {
 		return manager.suggest(command, sender, args);
 	}
 	

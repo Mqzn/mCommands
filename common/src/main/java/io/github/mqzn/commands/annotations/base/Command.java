@@ -1,4 +1,4 @@
-package io.github.mqzn.commands.annotations;
+package io.github.mqzn.commands.annotations.base;
 
 import io.github.mqzn.commands.base.CommandRequirement;
 

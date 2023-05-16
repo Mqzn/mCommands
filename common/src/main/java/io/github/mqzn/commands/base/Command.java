@@ -9,7 +9,7 @@ import io.github.mqzn.commands.base.manager.CommandSuggestionEngine;
 import io.github.mqzn.commands.base.syntax.CommandExecution;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.base.syntax.CommandSyntaxBuilder;
-import io.github.mqzn.commands.base.tree.CommandTree;
+import io.github.mqzn.commands.base.syntax.CommandTree;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
