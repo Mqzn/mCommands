@@ -1,7 +1,6 @@
 package io.github.mqzn.commands.arguments;
 
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
-import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,11 +10,15 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+/**
+ * A class that represents any numeric argument
+ *
+ * @param <T> the type of the number
+ */
 public abstract class ArgumentNumber<T extends Number> extends AbstractArgument<T> {
 	
 	protected final BiFunction<String, Integer, T> radixParser;
 	
-	@Getter
 	protected final Function<String, T> parser;
 	
 	protected final Comparator<T> comparator;
@@ -170,4 +173,9 @@ public abstract class ArgumentNumber<T extends Number> extends AbstractArgument<
 	
 	
 	public abstract T increment(T num);
+	
+	public Function<String, T> getParser() {
+		return parser;
+	}
+	
 }

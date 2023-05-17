@@ -9,8 +9,6 @@ import io.github.mqzn.commands.base.manager.AmbiguityChecker;
 import io.github.mqzn.commands.base.manager.CommandManager;
 import io.github.mqzn.commands.base.manager.flags.ContextFlagRegistry;
 import io.github.mqzn.commands.utilities.text.TextConvertible;
-import lombok.Getter;
-import lombok.NonNull;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.jetbrains.annotations.NotNull;
@@ -28,23 +26,26 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 	private final static String[] argumentFormatPrefixSuffix = {
 		"<", ">", "[", "]"
 	};
+	
 	@NotNull
 	protected final List<Argument<?>> arguments;
+	
 	@Nullable
 	protected final CommandExecution<S, ?> execution;
-	@Getter
+	
+	@NotNull
 	protected final Class<?> senderClass;
+	
 	@NotNull
 	protected final String commandLabel;
+	
 	@NotNull
-	@Getter
 	protected final SyntaxFlags flags;
 	
 	@Nullable
-	@Getter
 	protected Information info = null;
 	
-	<C> CommandSyntax(Class<C> senderClass,
+	<C> CommandSyntax(@NotNull Class<C> senderClass,
 	                  @NotNull String commandLabel,
 	                  @Nullable CommandExecution<S, C> execution,
 	                  @NotNull SyntaxFlags flags,
@@ -85,12 +86,40 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 	}
 	
 	public static boolean aliasesIncludes(Aliases aliases, String name) {
-		for (String aliase : aliases.getArray()) {
+		return aliasesIncludes(aliases.getArray(), name);
+	}
+	
+	public static boolean aliasesIncludes(String[] aliases, String name) {
+		for (String aliase : aliases) {
 			if (aliase.equalsIgnoreCase(name))
 				return true;
 		}
 		
 		return false;
+	}
+	
+	public @NotNull Class<?> getSenderClass() {
+		return senderClass;
+	}
+	
+	public @Nullable CommandExecution<S, ?> getExecution() {
+		return execution;
+	}
+	
+	public @Nullable Information getInfo() {
+		return info;
+	}
+	
+	public void setInfo(@Nullable Information info) {
+		this.info = info;
+	}
+	
+	public @NotNull SyntaxFlags getFlags() {
+		return flags;
+	}
+	
+	public @NotNull String getCommandLabel() {
+		return commandLabel;
 	}
 	
 	@Nullable
@@ -187,7 +216,7 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 	
 	public String formatted(CommandManager<?, S> commandManager) {
 		
-		String start = commandManager.commandStarter() == ' ' ? "" : String.valueOf(commandManager.commandStarter());
+		String start = commandManager.commandPrefix() == ' ' ? "" : String.valueOf(commandManager.commandPrefix());
 		StringBuilder builder = new StringBuilder(start).append(commandLabel).append(" ");
 		
 		for (int i = 0; i < arguments.size(); i++) {
@@ -221,12 +250,8 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 	}
 	
 	@Override
-	public @NonNull TextComponent toText(@NotNull CommandManager<?, S> manager, @NotNull S sender) {
+	public @NotNull TextComponent toText(@NotNull CommandManager<?, S> manager, @NotNull S sender) {
 		return Component.text(this.formatted(manager));
-	}
-	
-	public void setInfo(@Nullable Information info) {
-		this.info = info;
 	}
 	
 	public boolean isSubCommand() {

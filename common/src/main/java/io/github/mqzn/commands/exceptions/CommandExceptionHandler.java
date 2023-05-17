@@ -4,7 +4,6 @@ import io.github.mqzn.commands.base.caption.CaptionKey;
 import io.github.mqzn.commands.base.context.CommandContext;
 import io.github.mqzn.commands.base.manager.CommandManager;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
-import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -12,21 +11,12 @@ import java.util.Map;
 
 public final class CommandExceptionHandler<S> {
 	
-	
-	@NotNull
-	@Getter
-	private final CommandManager<?, S> manager;
-	
 	@NotNull
 	private final Map<Class<? extends CommandException>, ExceptionCallback<?, S>> callBacks = new HashMap<>();
 	
 	public CommandExceptionHandler(@NotNull CommandManager<?, S> manager) {
 		
-		this.manager = manager;
-		
 		registerCallback(ArgumentParseException.class, ((exception, sender, commandContext) -> manager.captionRegistry().sendCaption(sender, commandContext, exception, CaptionKey.INVALID_ARGUMENT)));
-		
-		
 	}
 	
 	public <E extends CommandException> void registerCallback(@NotNull Class<E> exception, @NotNull ExceptionCallback<E, S> callback) {

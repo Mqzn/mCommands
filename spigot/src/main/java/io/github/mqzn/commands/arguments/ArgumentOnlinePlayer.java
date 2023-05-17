@@ -25,8 +25,9 @@ public final class ArgumentOnlinePlayer extends AbstractArgument<Player> {
 	public Player parse(@NotNull String command, @NotNull String input) throws ArgumentParseException {
 		
 		Player player = Bukkit.getPlayer(input);
-		if (player == null || player.isOnline()) {
-			throw new ArgumentParseException(String.format("Player %s is offline or doesn't exist", input), input, command);
+		if (player == null || !player.isOnline()) {
+			throw new ArgumentParseException(
+				String.format("Player %s is offline or doesn't exist", input), input, command);
 		}
 		return player;
 	}

@@ -1,6 +1,6 @@
 package io.github.mqzn.commands.utilities.text;
 
-import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
 import java.util.List;
@@ -21,9 +21,9 @@ public record TextPage<S, T extends TextConvertible<S>>(int pageIndex, int capac
 		otherItems.forEach(this::add);
 	}
 	
-	@NonNull
+	
 	@Override
-	public Iterator<T> iterator() {
+	public @NotNull Iterator<T> iterator() {
 		return pageItems.iterator();
 	}
 	

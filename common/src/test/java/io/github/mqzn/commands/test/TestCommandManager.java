@@ -17,7 +17,7 @@ public final class TestCommandManager extends AbstractCommandManager<TestBootstr
 	}
 	
 	@Override
-	public char commandStarter() {
+	public char commandPrefix() {
 		return '/';
 	}
 	

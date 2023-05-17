@@ -4,7 +4,6 @@ import io.github.mqzn.commands.arguments.Argument
 import io.github.mqzn.commands.base.Command
 import io.github.mqzn.commands.base.context.DelegateCommandContext
 import io.github.mqzn.commands.base.manager.flags.ContextFlagRegistry
-import lombok.Setter
 import java.util.*
 
 /**
@@ -204,7 +203,7 @@ class CommandTree<S> private constructor(private val command: Command<S>) {
     </S> */
     private class CommandNode<S>(
         command: Command<S>,
-        @field:Setter val data: SubCommandSyntax<S>
+        val data: SubCommandSyntax<S>
     ) {
         val nextNodes: MutableSet<CommandNode<S>>
 

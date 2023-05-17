@@ -31,7 +31,7 @@ public final class VelocityCommandManager extends AbstractCommandManager<ProxySe
 	}
 	
 	@Override
-	public char commandStarter() {
+	public char commandPrefix() {
 		return '/';
 	}
 	

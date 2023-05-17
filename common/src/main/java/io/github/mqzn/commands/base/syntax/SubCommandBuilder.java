@@ -15,7 +15,7 @@ public class SubCommandBuilder<S, C> extends CommandSyntaxBuilder<S, C> {
 	@NotNull
 	private final LinkedHashSet<String> children = new LinkedHashSet<>();
 	@Nullable
-	private Aliases aliases = Aliases.of(new String[0]);
+	private Aliases aliases = Aliases.of();
 	@Nullable
 	private String parent = null;
 	

@@ -1,8 +1,8 @@
 package io.github.mqzn.commands.base.manager;
 
-import io.github.mqzn.commands.arguments.ArgumentNumber;
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.CommandRequirement;
+import io.github.mqzn.commands.base.SenderWrapper;
 import io.github.mqzn.commands.base.caption.CaptionKey;
 import io.github.mqzn.commands.base.caption.CaptionRegistry;
 import io.github.mqzn.commands.base.context.CommandContext;
@@ -11,17 +11,14 @@ import io.github.mqzn.commands.base.context.DelegateCommandContext;
 import io.github.mqzn.commands.base.cooldown.CommandCooldown;
 import io.github.mqzn.commands.base.cooldown.CooldownCaption;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
-import io.github.mqzn.commands.base.syntax.SubCommandSyntax;
 import io.github.mqzn.commands.base.syntax.CommandTree;
+import io.github.mqzn.commands.base.syntax.SubCommandSyntax;
 import io.github.mqzn.commands.exceptions.CommandExceptionHandler;
 import io.github.mqzn.commands.exceptions.UnknownCommandSenderType;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import io.github.mqzn.commands.exceptions.types.SyntaxAmbiguityException;
 import io.github.mqzn.commands.help.CommandHelpProvider;
-import io.github.mqzn.commands.help.CommandSyntaxPageDisplayer;
-import io.github.mqzn.commands.base.SenderWrapper;
 import io.github.mqzn.commands.utilities.TimeParser;
-import io.github.mqzn.commands.utilities.text.PaginatedText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,15 +30,15 @@ import java.util.logging.Logger;
  * registering, and coordinating the execution of the
  * available commands
  *
- * @param <P> The bootstrap for the lib to work on
+ * @param <B> The bootstrap for the lib to work on
  * @param <S> The command sender type
  * @see CommandManager
  */
-public abstract class AbstractCommandManager<P, S> implements CommandManager<P, S> {
+public abstract class AbstractCommandManager<B, S> implements CommandManager<B, S> {
 	
 	protected final Logger logger = Logger.getLogger("CommandManager-Logger");
 	
-	protected final P bootstrap;
+	protected final B bootstrap;
 	
 	@NotNull
 	protected final ArgumentNumberSuggestionProcessor argumentNumberSuggestionProcessor;
@@ -80,7 +77,7 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 	@Nullable
 	private CommandHelpProvider commandHelpProvider;
 	
-	public AbstractCommandManager(@NotNull P bootstrap,
+	public AbstractCommandManager(@NotNull B bootstrap,
 	                              @NotNull SenderWrapper<S> wrapper, @NotNull CommandExecutionCoordinator.Type coordinator) {
 		this.bootstrap = bootstrap;
 		this.wrapper = wrapper;
@@ -101,12 +98,12 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 		
 	}
 	
-	public AbstractCommandManager(@NotNull P bootstrap, @NotNull SenderWrapper<S> wrapper) {
+	public AbstractCommandManager(@NotNull B bootstrap, @NotNull SenderWrapper<S> wrapper) {
 		this(bootstrap, wrapper, CommandExecutionCoordinator.Type.SYNC);
 	}
 	
 	@Override
-	public @NotNull P getBootstrap() {
+	public @NotNull B getBootstrap() {
 		return bootstrap;
 	}
 	
@@ -135,27 +132,6 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 		this.commandHelpProvider = helpProvider;
 	}
 	
-	@Override
-	public void handleHelpProvider(@NotNull S sender,
-	                               @NotNull Context<S> context,
-	                               @NotNull String label,
-	                               int page,
-	                               @NotNull List<CommandSyntax<S>> commandSubCommands) {
-		
-		
-		if (commandHelpProvider == null) {
-			captionRegistry.sendCaption(sender, context, CaptionKey.NO_HELP_TOPIC_AVAILABLE);
-			return;
-		}
-		
-		var paginated = PaginatedText.<S, CommandSyntax<S>>create(commandHelpProvider, wrapper)
-			.withDisplayer(new CommandSyntaxPageDisplayer<>(this, commandHelpProvider));
-		
-		commandSubCommands.forEach(paginated::add);
-		
-		paginated.paginate();
-		paginated.displayPage(label, sender, page);
-	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
@@ -349,7 +325,7 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 		CommandSuggestionEngine<S> suggestionEngine = command.suggestions();
 		
 		int index = args.length - 1;
-		Set<CommandSuggestionEngine.SyntaxSuggestionContainer<S>> suggestionsContainer = suggestionEngine.getSuggestions(args);
+		Set<CommandSuggestionEngine<S>.SyntaxSuggestionContainer> suggestionsContainer = suggestionEngine.getSuggestions(args);
 		if (suggestionsContainer.isEmpty()) return Collections.emptyList();
 		
 		List<String> allSuggestions = new ArrayList<>();
@@ -369,8 +345,8 @@ public abstract class AbstractCommandManager<P, S> implements CommandManager<P, 
 	}
 	
 	@Override
-	public <N extends Number> void setNumericArgumentSuggestions(@NotNull ArgumentNumber<N> argNum) {
-		argumentNumberSuggestionProcessor.provide(argNum);
+	public @NotNull ArgumentNumberSuggestionProcessor numericArgumentSuggestionProcessor() {
+		return argumentNumberSuggestionProcessor;
 	}
 	
 	@Override

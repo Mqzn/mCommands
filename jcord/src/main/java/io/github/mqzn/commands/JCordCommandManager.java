@@ -1,9 +1,9 @@
 package io.github.mqzn.commands;
 
 import io.github.mqzn.commands.base.Command;
+import io.github.mqzn.commands.base.SenderWrapper;
 import io.github.mqzn.commands.base.manager.AbstractCommandManager;
 import io.github.mqzn.commands.base.manager.CommandExecutionCoordinator;
-import io.github.mqzn.commands.base.SenderWrapper;
 import net.kyori.adventure.text.TextComponent;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ServerTextChannel;
@@ -42,7 +42,7 @@ public final class JCordCommandManager extends AbstractCommandManager<DiscordApi
 			
 			String cmdUsed = split[0];
 			char prefix = cmdUsed.charAt(0);
-			if (prefix != commandStarter() || e.getChannel().getId() != commandsChannel.getId()) return;
+			if (prefix != commandPrefix() || e.getChannel().getId() != commandsChannel.getId()) return;
 			
 			String cmd = cmdUsed.substring(1);
 			
@@ -60,7 +60,7 @@ public final class JCordCommandManager extends AbstractCommandManager<DiscordApi
 	}
 	
 	@Override
-	public char commandStarter() {
+	public char commandPrefix() {
 		return commandStarter;
 	}
 	

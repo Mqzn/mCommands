@@ -54,7 +54,7 @@ public final class SpigotCommandManager extends AbstractCommandManager<Plugin, C
 	}
 	
 	@Override
-	public char commandStarter() {
+	public char commandPrefix() {
 		return '/';
 	}
 	

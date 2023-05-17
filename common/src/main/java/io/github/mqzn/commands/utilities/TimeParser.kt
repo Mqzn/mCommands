@@ -1,6 +1,5 @@
 package io.github.mqzn.commands.utilities
 
-import lombok.Getter
 import java.util.concurrent.TimeUnit
 
 /**
@@ -11,16 +10,13 @@ import java.util.concurrent.TimeUnit
  * @author Mqzen
  */
 class TimeParser {
-    @Getter
+
     private var days: Long = 0
 
-    @Getter
     private var hours: Long = 0
 
-    @Getter
     private var minutes: Long = 0
 
-    @Getter
     private var seconds: Long = 0
 
     private constructor(millis: Long) {

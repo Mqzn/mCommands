@@ -1,19 +1,17 @@
 package io.github.mqzn.commands.base.cooldown;
 
-import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-@EqualsAndHashCode
 
 public final class CommandCooldown {
 	
 	@NotNull
 	public static final CommandCooldown EMPTY = new CommandCooldown(0, TimeUnit.SECONDS);
 	
-	@EqualsAndHashCode.Exclude
 	private final Duration duration;
 	
 	private final long value;
@@ -43,5 +41,15 @@ public final class CommandCooldown {
 		return unit;
 	}
 	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof CommandCooldown that)) return false;
+		return value == that.value && unit == that.unit;
+	}
 	
+	@Override
+	public int hashCode() {
+		return Objects.hash(value, unit);
+	}
 }

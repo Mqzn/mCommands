@@ -1,17 +1,15 @@
 package io.github.mqzn.commands.arguments;
 
-import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 
-@Data
 public final class ArgumentData {
 	
 	@NotNull
 	private final String id;
 	
-	private boolean optional;
+	private final boolean optional;
 	
-	private boolean useRemainingSpace;
+	private final boolean useRemainingSpace;
 	
 	private ArgumentData(@NotNull String id, boolean optional, boolean useRemainingSpace) {
 		this.id = id;
@@ -29,6 +27,18 @@ public final class ArgumentData {
 	
 	public static ArgumentData of(@NotNull String id) {
 		return new ArgumentData(id);
+	}
+	
+	public @NotNull String getId() {
+		return id;
+	}
+	
+	public boolean isOptional() {
+		return optional;
+	}
+	
+	public boolean isUseRemainingSpace() {
+		return useRemainingSpace;
 	}
 	
 }

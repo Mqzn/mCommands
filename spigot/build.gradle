@@ -11,20 +11,24 @@ version '1.0.5'
 repositories {
     mavenCentral()
     mavenLocal()
+    maven {
+        url 'https://jitpack.io'
+    }
 }
 
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.26'
-    annotationProcessor 'org.projectlombok:lombok:1.18.26'
+    //compileOnly 'org.projectlombok:lombok:1.18.26'
+    //annotationProcessor 'org.projectlombok:lombok:1.18.26'
 
     compileOnly 'org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT'
 
     //implementation project(":annotations")
     implementation project(":common")
 
-    implementation "net.kyori:adventure-api:4.13.1"
-    implementation "net.kyori:adventure-platform-bukkit:4.3.0"
+    compileOnly "net.kyori:adventure-api:4.13.1"
+    compileOnly "net.kyori:adventure-platform-bukkit:4.3.0"
 
+    implementation 'com.github.Revxrsal:asm-invoke-util:1.0'
 }
 
 def targetJavaVersion = 17
@@ -48,7 +52,7 @@ compileJava {
 
 shadowJar {
     setArchiveName("mCommands-Spigot-${project.version}.jar")
-    destinationDirectory.set(file("F:\\Test-Local-Server-MC\\1.19-server\\plugins"))
+    destinationDirectory.set(file("F:\\Test-Local-Server-MC\\1.8-server\\plugins"))
     exclude 'META-INF/**'
     exclude 'LICENSE'
 }

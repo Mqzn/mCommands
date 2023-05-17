@@ -37,7 +37,7 @@ public final class DelegateCommandContext<S> implements Context<S> {
 		this.command = command;
 		this.sender = sender;
 		this.rawArguments.addAll(Arrays.asList(rawInput));
-		this.rawFormatted = manager.commandStarter() + command.name() + " " + String.join(" ", rawInput);
+		this.rawFormatted = manager.commandPrefix() + command.name() + " " + String.join(" ", rawInput);
 		
 		for (var arg : rawInput) if (ContextFlagRegistry.isRawArgumentFlag(arg)) flagsUsedInRaw++;
 		

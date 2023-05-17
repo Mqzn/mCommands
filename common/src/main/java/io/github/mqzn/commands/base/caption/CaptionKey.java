@@ -1,8 +1,8 @@
 package io.github.mqzn.commands.base.caption;
 
-import lombok.EqualsAndHashCode;
 
-@EqualsAndHashCode
+import java.util.Objects;
+
 public final class CaptionKey {
 	
 	
@@ -28,4 +28,15 @@ public final class CaptionKey {
 		return key;
 	}
 	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof CaptionKey key1)) return false;
+		return Objects.equals(key, key1.key);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(key);
+	}
 }

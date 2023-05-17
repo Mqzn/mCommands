@@ -21,11 +21,15 @@ public abstract class AbstractArgument<T> implements Argument<T> {
 	
 	@NotNull
 	private final String id;
+	
 	@NotNull
 	private final Class<T> type;
+	
 	private final boolean useRemainingSpace;
+	
 	@Nullable
 	private String description = null;
+	
 	private boolean optional;
 	
 	@Nullable

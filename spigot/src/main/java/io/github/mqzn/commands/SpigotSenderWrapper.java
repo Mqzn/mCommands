@@ -1,7 +1,6 @@
 package io.github.mqzn.commands;
 
 import io.github.mqzn.commands.base.SenderWrapper;
-import lombok.Getter;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.ChatColor;
@@ -16,7 +15,6 @@ import org.jetbrains.annotations.Nullable;
 final class SpigotSenderWrapper implements SenderWrapper<CommandSender> {
 	
 	@NotNull
-	@Getter
 	private final BukkitAudiences audience;
 	
 	

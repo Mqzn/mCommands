@@ -1,9 +1,7 @@
 package io.github.mqzn.commands.utilities.text;
 
-import io.github.mqzn.commands.help.CommandHelpProvider;
 import io.github.mqzn.commands.base.SenderWrapper;
-import lombok.Getter;
-import lombok.NonNull;
+import io.github.mqzn.commands.help.CommandHelpProvider;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -22,7 +20,6 @@ public final class PaginatedText<S, T extends TextConvertible<S>> {
 	@NotNull
 	private final SenderWrapper<S> wrapper;
 	
-	@Getter
 	private final int itemsPerPage;
 	
 	@NotNull
@@ -67,6 +64,9 @@ public final class PaginatedText<S, T extends TextConvertible<S>> {
 		return new PaginatedText<>(provider, wrapper, itemsPerPage);
 	}
 	
+	public int getItemsPerPage() {
+		return itemsPerPage;
+	}
 	
 	public void add(T object) {
 		textObjects.add(object);
@@ -93,7 +93,7 @@ public final class PaginatedText<S, T extends TextConvertible<S>> {
 		return this;
 	}
 	
-	public PaginatedText<S, T> withDisplayer(@NonNull ItemPageTextDisplayer<S, T> displayer) {
+	public PaginatedText<S, T> withDisplayer(@NotNull ItemPageTextDisplayer<S, T> displayer) {
 		this.displayer = displayer;
 		return this;
 	}
@@ -128,7 +128,7 @@ public final class PaginatedText<S, T extends TextConvertible<S>> {
 		return pages.size();
 	}
 	
-	public void displayPage(@NotNull String label, @NonNull S sender, int page) {
+	public void displayPage(@NotNull String label, @NotNull S sender, int page) {
 		
 		int maxPages = pages.size();
 		if (page > maxPages || page < 1) {

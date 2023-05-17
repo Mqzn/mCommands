@@ -1,13 +1,10 @@
 package io.github.mqzn.commands.base.manager.flags;
 
 import io.github.mqzn.commands.base.Information;
-import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@Getter
 public final class FlagInfo {
-	
 	
 	@NotNull
 	private final String name;
@@ -34,6 +31,18 @@ public final class FlagInfo {
 		
 		return false;
 		
+	}
+	
+	public @NotNull String getName() {
+		return name;
+	}
+	
+	public @Nullable Information getInformation() {
+		return information;
+	}
+	
+	public String[] getAliases() {
+		return aliases;
 	}
 	
 	public static final class Builder {

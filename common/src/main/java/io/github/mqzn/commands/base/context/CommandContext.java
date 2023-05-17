@@ -69,7 +69,7 @@ public final class CommandContext<S> implements Context<S> {
 		}
 		
 		
-		var result = contextFlagRegistry.extractFlags(sender, syntax);
+		var result = contextFlagRegistry.extractFlags(sender, commandUsed(), syntax);
 		if (result == ContextFlagRegistry.FlagExtractionResult.FAILED)
 			return;
 		

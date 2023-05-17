@@ -30,7 +30,7 @@ public final class BungeeCommandManager extends AbstractCommandManager<Plugin, C
 	}
 	
 	@Override
-	public char commandStarter() {
+	public char commandPrefix() {
 		return '/';
 	}
 	

@@ -1,5 +1,6 @@
-package io.github.mqzn.commands;
+package io.github.mqzn.commands.annotations;
 
+import io.github.mqzn.commands.annotations.base.Command;
 import io.github.mqzn.commands.annotations.base.*;
 import io.github.mqzn.commands.annotations.subcommands.SubCommand;
 import io.github.mqzn.commands.annotations.subcommands.SubCommandExecution;
@@ -7,10 +8,7 @@ import io.github.mqzn.commands.annotations.subcommands.SubCommandInfo;
 import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.arguments.ArgumentData;
 import io.github.mqzn.commands.arguments.ArgumentNumber;
-import io.github.mqzn.commands.base.CommandInfo;
-import io.github.mqzn.commands.base.CommandRequirement;
-import io.github.mqzn.commands.base.Information;
-import io.github.mqzn.commands.base.SuggestionProvider;
+import io.github.mqzn.commands.base.*;
 import io.github.mqzn.commands.base.context.Context;
 import io.github.mqzn.commands.base.cooldown.CommandCooldown;
 import io.github.mqzn.commands.base.manager.CommandManager;
@@ -19,10 +17,12 @@ import io.github.mqzn.commands.base.syntax.CommandSyntaxBuilder;
 import io.github.mqzn.commands.base.syntax.SubCommandBuilder;
 import io.github.mqzn.commands.base.syntax.SyntaxFlags;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
-import io.github.mqzn.commands.base.SenderWrapper;
 import io.github.mqzn.commands.utilities.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import revxrsal.asm.BoundMethodCaller;
+import revxrsal.asm.MethodCaller;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.Arrays;
@@ -106,13 +106,8 @@ public final class AnnotationParser<S> {
 					
 					//default Execution
 					builder.defaultExecutor((sender, context) -> {
-						
-						try {
-							method.invoke(annotatedCommand, sender);
-						} catch (IllegalAccessException | InvocationTargetException e) {
-							throw new RuntimeException(e);
-						}
-						
+						BoundMethodCaller caller = MethodCaller.wrap(method).bindTo(annotatedCommand);
+						caller.call(sender);
 					});
 				}
 				
@@ -143,13 +138,8 @@ public final class AnnotationParser<S> {
 				.flags(flags)
 				.execute((sender, context) -> {
 					Object[] valuesToUse = readValues(method, sender, context);
-					
-					try {
-						method.invoke(annotatedCommand, valuesToUse);
-					} catch (IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
-						throw new RuntimeException(e);
-					}
-					
+					BoundMethodCaller caller = MethodCaller.wrap(method).bindTo(annotatedCommand);
+					caller.call(valuesToUse);
 				});
 			
 			builder.syntax(syntaxBuilder.build());
@@ -243,13 +233,8 @@ public final class AnnotationParser<S> {
 			}
 			
 			subBuilder = subBuilder.defaultExecution((sender, context) -> {
-				
-				try {
-					defaultExecutionMethod.invoke(subCommandInstance, sender);
-				} catch (IllegalAccessException | InvocationTargetException e) {
-					throw new RuntimeException(e);
-				}
-				
+				BoundMethodCaller caller = MethodCaller.wrap(defaultExecutionMethod).bindTo(subCommandInstance);
+				caller.call(sender);
 			});
 		}
 		
@@ -285,13 +270,8 @@ public final class AnnotationParser<S> {
 			
 			subBuilder = subBuilder.execute((sender, context) -> {
 				Object[] valuesToUse = readValues(executeMethod, sender, context);
-				
-				try {
-					executeMethod.invoke(subCommandInstance, valuesToUse);
-				} catch (IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
-					throw new RuntimeException(e);
-				}
-				
+				BoundMethodCaller caller = MethodCaller.wrap(executeMethod).bindTo(subCommandInstance);
+				caller.call(valuesToUse);
 			});
 		}
 		
@@ -411,16 +391,16 @@ public final class AnnotationParser<S> {
 		boolean hasChildren = subClassInfo.children().length > 0;
 		boolean hasParent = !subClassInfo.parent().equals(Object.class);
 		
-		if(hasChildren) {
+		if (hasChildren) {
 			
-			for(Class<?> childClass : subClassInfo.children()) {
+			for (Class<?> childClass : subClassInfo.children()) {
 				SubCommandInfo childInfo = childClass.getAnnotation(SubCommandInfo.class);
-				if(childInfo == null) {
+				if (childInfo == null) {
 					throw new IllegalArgumentException(
 						String.format("Failed to load subcommand from class '%s' as the class doesn't have @SubCommandInfo annotation", childClass.getName()));
 				}
 				
-				if(!childInfo.parent().equals(subClass)) {
+				if (!childInfo.parent().equals(subClass)) {
 					throw new IllegalArgumentException(
 						String.format("Failed to load subcommand from class '%s'\n " +
 							"The class has children, but his child `%s` doesn't have him has his parent !", subClass.getName(), childClass.getName()));
@@ -430,33 +410,33 @@ public final class AnnotationParser<S> {
 			
 		}
 		
-		if(hasParent) {
+		if (hasParent) {
 			
 			Class<?> parentClass = subClassInfo.parent();
 			@NotNull SubCommandInfo parentClassInfo = parentClass.getAnnotation(SubCommandInfo.class);
-			if(parentClassInfo == null) {
+			if (parentClassInfo == null) {
 				throw new IllegalArgumentException(
 					String.format("Failed to load subcommand from class '%s' as the class doesn't have @SubCommandInfo annotation", parentClass.getName()));
 			}
 			boolean foundChild = false;
-			for(var childClass : parentClassInfo.children()) {
+			for (var childClass : parentClassInfo.children()) {
 				
 				SubCommandInfo childInfo = childClass.getAnnotation(SubCommandInfo.class);
-				if(childInfo == null) {
+				if (childInfo == null) {
 					throw new IllegalArgumentException(
 						String.format("Failed to load subcommand from class '%s' as the class doesn't have @SubCommandInfo annotation", childClass.getName()));
 				}
 				
-				if(childClass.equals(subClass)) {
+				if (childClass.equals(subClass)) {
 					foundChild = true;
 					break;
 				}
 				
 			}
 			
-			if(!foundChild)
+			if (!foundChild)
 				throw new IllegalArgumentException(
-					String.format("Subcommand class `%s` has parent `%s`, but the parent class doesn't have him as one of his children !",subClass.getName(), parentClass.getName())
+					String.format("Subcommand class `%s` has parent `%s`, but the parent class doesn't have him as one of his children !", subClass.getName(), parentClass.getName())
 				);
 			
 		}
@@ -539,7 +519,9 @@ public final class AnnotationParser<S> {
 		assert executionMeta != null;
 		
 		if (executionMeta.syntax().isEmpty() || executionMeta.syntax().isBlank()) {
-			throw new IllegalArgumentException("ExecutionMeta for this subcommand is empty and you have an execute method present at the same time !");
+			throw new IllegalArgumentException(
+				String.format("ExecutionMeta for subcommand `%s` is empty and you have an execute method present at the same time !", subCommandClass.getName())
+			);
 		}
 		
 		SubCommandInfo info = subCommandClass.getAnnotation(SubCommandInfo.class);
@@ -799,7 +781,7 @@ public final class AnnotationParser<S> {
 			argNum.max(argNum.getParser().apply(range.max()));
 		
 		
-		manager.setNumericArgumentSuggestions(argNum);
+		manager.numericArgumentSuggestionProcessor().provide(argNum);
 	}
 	
 	private String annotationNotPresent(Class<?> subClass, Class<? extends Annotation> annotation) {

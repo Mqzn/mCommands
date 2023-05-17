@@ -3,7 +3,7 @@ package io.github.mqzn.commands.base.manager;
 import io.github.mqzn.commands.arguments.ArgumentNumber;
 import org.jetbrains.annotations.NotNull;
 
-class ArgumentNumberSuggestionProcessor {
+public final class ArgumentNumberSuggestionProcessor {
 	
 	@NotNull
 	private final CommandManager<?, ?> manager;

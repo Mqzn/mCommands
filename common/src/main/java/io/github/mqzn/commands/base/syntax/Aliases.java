@@ -1,13 +1,19 @@
 package io.github.mqzn.commands.base.syntax;
 
-import lombok.Data;
-import lombok.Getter;
 
-@Data(staticConstructor = "of")
-
-public class Aliases {
+public final class Aliases {
 	
-	@Getter
-	final String[] array;
+	private final String[] array;
 	
+	Aliases(String[] array) {
+		this.array = array;
+	}
+	
+	public static Aliases of(String... arr) {
+		return new Aliases(arr);
+	}
+	
+	public String[] getArray() {
+		return array;
+	}
 }

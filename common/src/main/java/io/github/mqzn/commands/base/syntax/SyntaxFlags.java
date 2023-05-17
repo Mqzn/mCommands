@@ -1,14 +1,9 @@
 package io.github.mqzn.commands.base.syntax;
 
-import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
-@EqualsAndHashCode
 public final class SyntaxFlags implements Iterable<String> {
 	
 	@NotNull
@@ -48,6 +43,18 @@ public final class SyntaxFlags implements Iterable<String> {
 	
 	public int count() {
 		return flags.size();
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof SyntaxFlags strings)) return false;
+		return flags.equals(strings.flags);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(flags);
 	}
 	
 }

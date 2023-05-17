@@ -1,20 +1,18 @@
 package io.github.mqzn.commands.base.manager.flags;
 
 import io.github.mqzn.commands.arguments.Argument;
+import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.Information;
 import io.github.mqzn.commands.base.context.CommandContext;
 import io.github.mqzn.commands.base.context.Context;
 import io.github.mqzn.commands.base.manager.CommandManager;
 import io.github.mqzn.commands.base.manager.FlagRegistry;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
-import lombok.Getter;
+import io.github.mqzn.commands.base.syntax.SubCommandSyntax;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,11 +22,9 @@ public final class ContextFlagRegistry<S> {
 	public static final Pattern FLAG_PATTERN = Pattern.compile(FlagRegistry.FLAG_IDENTIFIER + "[a-z]+", Pattern.CASE_INSENSITIVE);
 	
 	@NotNull
-	@Getter
 	private final CommandManager<?, S> manager;
 	
 	@NotNull
-	@Getter
 	private final Context<S> commandContext;
 	
 	@NotNull
@@ -53,11 +49,14 @@ public final class ContextFlagRegistry<S> {
 		return matcher.matches();
 	}
 	
-	public FlagExtractionResult extractFlags(@NotNull S sender, @NotNull CommandSyntax<S> syntax) {
+	public FlagExtractionResult extractFlags(@NotNull S sender, @NotNull Command<S> command, @NotNull CommandSyntax<S> syntax) {
 		
-		for (int i = 0, r = 0; i < syntax.getArguments().size(); i++, r++) {
+		List<Argument<?>> argumentList = (syntax instanceof SubCommandSyntax<S> sub) ? command.tree().getParentalArguments(sub.getName())
+			: syntax.getArguments();
+		
+		for (int i = 0, r = 0; i < argumentList.size(); i++, r++) {
 			
-			Argument<?> argument = syntax.getArguments().get(i);
+			Argument<?> argument = argumentList.get(i);
 			if (argument.useRemainingSpace()) continue;
 			
 			String raw = commandContext.getRawArgument(r);

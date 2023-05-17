@@ -23,6 +23,7 @@ public final class ClientSenderWrapper implements SenderWrapper<ClientSender> {
 	
 	@Override
 	public void sendMessage(ClientSender sender, TextComponent component) {
+		System.out.println("Sending msg to " + sender.name());
 		sendMessage(sender, component.content());
 	}
 	

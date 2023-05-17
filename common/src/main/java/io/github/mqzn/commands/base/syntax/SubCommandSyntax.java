@@ -3,7 +3,6 @@ package io.github.mqzn.commands.base.syntax;
 import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.base.context.CommandContext;
 import io.github.mqzn.commands.base.context.DelegateCommandContext;
-import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,21 +13,17 @@ import java.util.Objects;
 public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 	
 	@NotNull
-	@Getter
 	final String name;
 	
 	@NotNull
-	@Getter
 	final Aliases aliases;
 	
-	@Getter
 	final LinkedHashSet<String> children = new LinkedHashSet<>();
 	
 	@Nullable
 	final CommandExecution<S, ?> defaultExecution;
 	
 	@Nullable
-	@Getter
 	String parent;
 	
 	<C> SubCommandSyntax(@NotNull Class<C> senderClass,
@@ -46,10 +41,6 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 		this.parent = parent;
 		this.aliases = aliases;
 		this.defaultExecution = defaultExecution;
-	}
-	
-	public void setParent(@Nullable String parentName) {
-		this.parent = parentName;
 	}
 	
 	public void addChild(SubCommandSyntax<S> subCommand) {
@@ -130,5 +121,23 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 		return name;
 	}
 	
+	public @NotNull String getName() {
+		return name;
+	}
 	
+	public LinkedHashSet<String> getChildren() {
+		return children;
+	}
+	
+	public @Nullable String getParent() {
+		return parent;
+	}
+	
+	public void setParent(@Nullable String parentName) {
+		this.parent = parentName;
+	}
+	
+	public @NotNull Aliases getAliases() {
+		return aliases;
+	}
 }
