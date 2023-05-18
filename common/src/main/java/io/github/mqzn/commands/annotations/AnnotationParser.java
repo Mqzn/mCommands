@@ -20,9 +20,6 @@ import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import io.github.mqzn.commands.utilities.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import revxrsal.asm.BoundMethodCaller;
-import revxrsal.asm.MethodCaller;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.Arrays;
@@ -30,7 +27,6 @@ import java.util.LinkedList;
 import java.util.regex.Pattern;
 
 public final class AnnotationParser<S> {
-	
 	
 	@NotNull
 	public final static String SUB_COMMAND_EXECUTE_METHOD = "execute";
@@ -58,7 +54,39 @@ public final class AnnotationParser<S> {
 	@SuppressWarnings("unchecked")
 	public <E extends Enum<E>, C, CO> void parse(CO annotatedCommand) {
 		
-		if (!checkAnnotation(annotatedCommand)) return;
+		//load nested classes
+		if(annotatedCommand.getClass().isAnnotationPresent(CommandsGroup.class)) {
+			for (Class<?> innerClass : annotatedCommand.getClass().getDeclaredClasses()) {
+				boolean isStatic = Modifier.isStatic(innerClass.getModifiers());
+				if(!isStatic) {
+					throw new IllegalStateException(
+						String.format("Found a member class `%s` which is NOT static",
+							innerClass.getName())
+					);
+				}
+				try {
+					Constructor<?> constructor = innerClass.getConstructor();
+					if (!constructor.canAccess(null)) {
+						constructor.setAccessible(true);
+					}
+					var innerClassObject = constructor.newInstance();
+					parse(innerClassObject);
+				} catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
+				         InvocationTargetException e) {
+					throw new RuntimeException(e);
+				}
+				
+			}
+		}
+		
+		
+		if (!checkAnnotation(annotatedCommand)) {
+			throw new IllegalStateException(
+				String.format("Failed to load command class `%s`, the class is NOT annotated with `@Command`",
+					annotatedCommand.getClass().getName())
+			);
+		}
+		
 		Command cmdAnnotation = annotatedCommand.getClass().getAnnotation(Command.class);
 		assert cmdAnnotation != null;
 		
@@ -105,10 +133,9 @@ public final class AnnotationParser<S> {
 				if (method.getParameters().length == 1 && method.isAnnotationPresent(Default.class)) {
 					
 					//default Execution
-					builder.defaultExecutor((sender, context) -> {
-						BoundMethodCaller caller = MethodCaller.wrap(method).bindTo(annotatedCommand);
-						caller.call(sender);
-					});
+					builder
+						.defaultExecutor(
+							(sender, context) -> invokeMethod(annotatedCommand,method,sender));
 				}
 				
 				continue;
@@ -138,8 +165,7 @@ public final class AnnotationParser<S> {
 				.flags(flags)
 				.execute((sender, context) -> {
 					Object[] valuesToUse = readValues(method, sender, context);
-					BoundMethodCaller caller = MethodCaller.wrap(method).bindTo(annotatedCommand);
-					caller.call(valuesToUse);
+					invokeMethod(annotatedCommand, method, valuesToUse);
 				});
 			
 			builder.syntax(syntaxBuilder.build());
@@ -232,10 +258,9 @@ public final class AnnotationParser<S> {
 						"has some redundant parameters although it needs only 1 parameter for the command sender", defaultExecutionMethod.getName()));
 			}
 			
-			subBuilder = subBuilder.defaultExecution((sender, context) -> {
-				BoundMethodCaller caller = MethodCaller.wrap(defaultExecutionMethod).bindTo(subCommandInstance);
-				caller.call(sender);
-			});
+			subBuilder = subBuilder
+				.defaultExecution(
+					(sender, context) -> invokeMethod(subCommandInstance, defaultExecutionMethod, sender));
 		}
 		
 		Method executeMethod = Arrays.stream(subClass.getDeclaredMethods())
@@ -270,8 +295,7 @@ public final class AnnotationParser<S> {
 			
 			subBuilder = subBuilder.execute((sender, context) -> {
 				Object[] valuesToUse = readValues(executeMethod, sender, context);
-				BoundMethodCaller caller = MethodCaller.wrap(executeMethod).bindTo(subCommandInstance);
-				caller.call(valuesToUse);
+				invokeMethod(subCommandInstance,executeMethod, valuesToUse);
 			});
 		}
 		
@@ -788,6 +812,13 @@ public final class AnnotationParser<S> {
 		return String.format("Subcommand class '%s' is NOT annotated with @%s", subClass.getName(), annotation.getSimpleName());
 	}
 	
+	private <T> void invokeMethod(T instance, Method method, Object... objects)  {
+		try {
+			method.invoke(instance,objects);
+		} catch (IllegalAccessException | InvocationTargetException e) {
+			throw new RuntimeException(e);
+		}
+	}
 	
 	private record ResolvedSubCommandMethod(Argument<?>[] arguments,
 	                                        Argument<?>[] actualArguments,

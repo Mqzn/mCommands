@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'io.github.mqzn'
-version '1.0.6'
+version '1.0.7'
 
 repositories {
     mavenCentral()
@@ -27,8 +27,6 @@ dependencies {
 
     compileOnly "net.kyori:adventure-api:4.13.1"
     compileOnly "net.kyori:adventure-platform-bukkit:4.3.0"
-
-    implementation 'com.github.Revxrsal:asm-invoke-util:1.0'
 }
 
 def targetJavaVersion = 17

@@ -22,7 +22,6 @@ version '1.0.6'
 
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -33,11 +32,11 @@ dependencies {
     testImplementation 'org.jetbrains:annotations:23.0.0'
     testImplementation "net.kyori:adventure-api:4.13.1"
 
+
     compileOnly 'org.jetbrains:annotations:24.0.1'
     compileOnly "net.kyori:adventure-api:4.13.1"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compileOnly 'com.github.Revxrsal:asm-invoke-util:1.0'
 }
 
 java {
