@@ -62,6 +62,7 @@ implementation 'io.github.mqzn:mCommands-bungee:<LATEST_VERSION>'
 
 ```java
 public final class SpigotPluginTest extends JavaPlugin {
+
 	private SpigotCommandManager commandManager;
 
 	@Override
