@@ -62,22 +62,23 @@ implementation 'io.github.mqzn:mCommands-bungee:<LATEST_VERSION>'
 
 ```java
 public final class SpigotPluginTest extends JavaPlugin {
+
 	private SpigotCommandManager commandManager;
 
 	@Override
 	public void onEnable() {
 		var cmd = Command.builder(commandManager, "test")
-						.info(new CommandInfo("test.perm", "Test cmd", "testis"))
-						.requirement(SpigotCommandRequirement.ONLY_PLAYER_EXECUTABLE)
-						.cooldown(new CommandCooldown(5, TimeUnit.MINUTES))
-						.executionMeta(
-										SpigotCommandSyntaxBuilder.builder("test")
-														.argument(Argument.literal("testsub"))
-														.execute((sender, context) -> sender.sendMessage("Test sub works !"))
-														.build()
-						)
-						.defaultExecutor((s, context) -> s.sendMessage("OMG NO ARGS !"))
-						.build();
+			.info(new CommandInfo("test.perm", "Test cmd", "testis"))
+			.requirement(SpigotCommandRequirement.ONLY_PLAYER_EXECUTABLE)
+			.cooldown(new CommandCooldown(5, TimeUnit.MINUTES))
+			.executionMeta(
+				SpigotCommandSyntaxBuilder.builder("test")
+				.argument(Argument.literal("testsub"))
+				.execute((sender, context) -> sender.sendMessage("Test sub works !"))
+				.build()
+			)
+			.defaultExecutor((s, context) -> s.sendMessage("OMG NO ARGS !"))
+			.build();
 
 		commandManager.register(cmd);
 	}
