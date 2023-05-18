@@ -3,6 +3,7 @@ package io.github.mqzn.commands.test;
 import io.github.mqzn.commands.annotations.base.Arg;
 import io.github.mqzn.commands.annotations.base.Default;
 import io.github.mqzn.commands.annotations.base.ExecutionMeta;
+import io.github.mqzn.commands.annotations.base.Range;
 import io.github.mqzn.commands.annotations.subcommands.SubCommandExecution;
 import io.github.mqzn.commands.annotations.subcommands.SubCommandInfo;
 import org.bukkit.command.CommandSender;
@@ -15,7 +16,7 @@ public final class BoostSubCommand {
 	
 	@SubCommandExecution
 	public void execute(CommandSender sender,
-	                    @Arg(id = "seconds") int seconds,
+	                    @Arg(id = "seconds") @Range(min = "1", max = "5") int seconds,
 	                    @Arg(id = "multiplier") double multiplier,
 	                    @Arg(id = "player", optional = true) @Nullable Player player) {
 		
