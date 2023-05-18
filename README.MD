@@ -72,10 +72,10 @@ public final class SpigotPluginTest extends JavaPlugin {
 						.requirement(SpigotCommandRequirement.ONLY_PLAYER_EXECUTABLE)
 						.cooldown(new CommandCooldown(5, TimeUnit.MINUTES))
 						.executionMeta(
-										SpigotCommandSyntaxBuilder.builder("test")
-														.argument(Argument.literal("testsub"))
-														.execute((sender, context) -> sender.sendMessage("Test sub works !"))
-														.build()
+							SpigotCommandSyntaxBuilder.builder("test")
+							.argument(Argument.literal("testsub"))
+							.execute((sender, context) -> sender.sendMessage("Test sub works !"))
+							.build()
 						)
 						.defaultExecutor((s, context) -> s.sendMessage("OMG NO ARGS !"))
 						.build();
