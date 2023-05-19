@@ -79,11 +79,13 @@ public final class CommandSuggestionEngine<S> {
 		
 		private void fetchArgumentSuggestions() {
 			
-			for (int arg = 0; arg < syntax.length(); arg++) {
+			List<Argument<?>> arguments = (syntax instanceof SubCommandSyntax<S> sub) ?
+				command.tree().getParentalArguments(sub.getName())
+				: syntax.getArguments();
+			
+			for (int arg = 0; arg < arguments.size(); arg++) {
 				
-				Argument<?> argument = (syntax instanceof SubCommandSyntax<S> sub) ?
-					command.tree().getParentalArguments(sub.getName())
-						.get(arg) : syntax.getArgument(arg);
+				Argument<?> argument = arguments.get(arg);
 				
 				if (argument == null) break;
 				
