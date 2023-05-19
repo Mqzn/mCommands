@@ -5,7 +5,6 @@ import io.github.mqzn.commands.base.context.CommandContext;
 import io.github.mqzn.commands.base.context.DelegateCommandContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -13,24 +12,25 @@ import java.util.Objects;
 public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 	
 	@NotNull
-	final String name;
+	private final String name;
 	
 	@NotNull
-	final Aliases aliases;
+	private final CommandAliases commandAliases;
 	
-	final LinkedHashSet<String> children = new LinkedHashSet<>();
-	
-	@Nullable
-	final CommandExecution<S, ?> defaultExecution;
+	@NotNull
+	private final LinkedHashSet<String> children = new LinkedHashSet<>();
 	
 	@Nullable
-	String parent;
+	private final CommandExecution<S, ?> defaultExecution;
+	
+	@Nullable
+	private String parent;
 	
 	<C> SubCommandSyntax(@NotNull Class<C> senderClass,
 	                     @NotNull String commandLabel,
 	                     @Nullable String parent,
 	                     @NotNull String name,
-	                     @NotNull Aliases aliases,
+	                     @NotNull CommandAliases commandAliases,
 	                     @Nullable CommandExecution<S, C> execution,
 	                     @NotNull SyntaxFlags flags,
 	                     @NotNull List<Argument<?>> arguments,
@@ -39,7 +39,7 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 		super(senderClass, commandLabel, execution, flags, arguments);
 		this.name = name;
 		this.parent = parent;
-		this.aliases = aliases;
+		this.commandAliases = commandAliases;
 		this.defaultExecution = defaultExecution;
 	}
 	
@@ -99,8 +99,35 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 	}
 	
 	public boolean matches(String rawArgument) {
-		return this.name.equalsIgnoreCase(rawArgument) || CommandSyntax.aliasesIncludes(aliases, rawArgument);
+		return this.name.equalsIgnoreCase(rawArgument) || CommandSyntax.aliasesIncludes(commandAliases, rawArgument);
 	}
+
+	@Override
+	public String toString() {
+		return name;
+	}
+	
+	public @NotNull String getName() {
+		return name;
+	}
+	
+	public @NotNull LinkedHashSet<String> getChildren() {
+		return children;
+	}
+	
+	public @Nullable String getParent() {
+		return parent;
+	}
+	
+	public void setParent(@Nullable String parentName) {
+		this.parent = parentName;
+	}
+	
+	public @NotNull CommandAliases getAliases() {
+		return commandAliases;
+	}
+	
+	
 	
 	@Override
 	public boolean equals(Object o) {
@@ -116,28 +143,4 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 		return Objects.hash(super.hashCode(), parent, name);
 	}
 	
-	@Override
-	public String toString() {
-		return name;
-	}
-	
-	public @NotNull String getName() {
-		return name;
-	}
-	
-	public LinkedHashSet<String> getChildren() {
-		return children;
-	}
-	
-	public @Nullable String getParent() {
-		return parent;
-	}
-	
-	public void setParent(@Nullable String parentName) {
-		this.parent = parentName;
-	}
-	
-	public @NotNull Aliases getAliases() {
-		return aliases;
-	}
 }

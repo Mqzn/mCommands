@@ -352,7 +352,10 @@ public final class AnnotationParser<S> {
 	
 	
 	@SuppressWarnings("unchecked")
-	private <E extends Enum<E>, T> @Nullable Argument<T> getArgFromParameter(CommandManager<?, S> manager, String command, Parameter parameter) {
+	private <E extends Enum<E>, T> @Nullable Argument<T> getArgFromParameter(CommandManager<?, S> manager,
+	                                                                         String command,
+	                                                                         Method method,
+	                                                                         Parameter parameter) {
 		
 		Arg annotation = parameter.getAnnotation(Arg.class);
 		if (annotation == null) return null;
@@ -376,9 +379,16 @@ public final class AnnotationParser<S> {
 				((Argument<E>) arg).suggest(constant);
 			}
 			
-		} else arg = (Argument<T>) manager.typeRegistry().convertArgument(data, type);
+		} else {
+			arg = (Argument<T>) manager.typeRegistry().convertArgument(data, type);
+			if(arg == null ) {
+				throw new IllegalArgumentException(
+					String.format("Unknown argument type `%s` in method `%s`", type.getName(),  method.getName())
+				);
+			}
+		}
 		
-		if (arg != null && !annotation.defaultValue().isBlank() && !annotation.defaultValue().isEmpty()) {
+		if (!annotation.defaultValue().isBlank() && !annotation.defaultValue().isEmpty()) {
 			try {
 				arg.setDefaultValue(arg.parse(command, annotation.defaultValue()));
 			} catch (ArgumentParseException e) {
@@ -624,27 +634,30 @@ public final class AnnotationParser<S> {
 		String[] split = executionMeta.syntax().split(Pattern.quote(" "));
 		Argument<?>[] arguments = new Argument[split.length];
 		Parameter[] parameters = method.getParameters();
-		for (int i = 0, p = 1; i < arguments.length && p < parameters.length; i++, p++) {
-			
-			Parameter parameter = parameters[p];
-			Arg argAnnotation = parameter.getAnnotation(Arg.class);
-			if (argAnnotation == null) {
-				throw new IllegalStateException(String.format("redundant parameter in method %s doesnt have '@Arg' ", method.getName()));
-			}
-			String id = CommandSyntax.fetchArgId(argAnnotation.id());
-			while (!id.equalsIgnoreCase(split[i])) {
-				p++;
-				if (p >= parameters.length) break;
-				parameter = parameters[p];
-				argAnnotation = parameter.getAnnotation(Arg.class);
+		
+		if(!executionMeta.syntax().isEmpty() ) {
+			for (int i = 0, p = 1; i < arguments.length && p < parameters.length; i++, p++) {
+				
+				Parameter parameter = parameters[p];
+				Arg argAnnotation = parameter.getAnnotation(Arg.class);
 				if (argAnnotation == null) {
 					throw new IllegalStateException(String.format("redundant parameter in method %s doesnt have '@Arg' ", method.getName()));
 				}
+				String id = CommandSyntax.fetchArgId(argAnnotation.id());
+				while (!id.equalsIgnoreCase(split[i])) {
+					p++;
+					if (p >= parameters.length) break;
+					parameter = parameters[p];
+					argAnnotation = parameter.getAnnotation(Arg.class);
+					if (argAnnotation == null) {
+						throw new IllegalStateException(String.format("redundant parameter in method %s doesnt have '@Arg' ", method.getName()));
+					}
+					
+					id = CommandSyntax.fetchArgId(argAnnotation.id());
+				}
 				
-				id = CommandSyntax.fetchArgId(argAnnotation.id());
+				arguments[i] = getArgFromParameter(manager, commandName, method, parameter);
 			}
-			
-			arguments[i] = getArgFromParameter(manager, commandName, parameter);
 		}
 		
 		var data = loadMethodParameters(manager, commandName, newExecutionMeta, method);
@@ -702,7 +715,7 @@ public final class AnnotationParser<S> {
 					throw new IllegalArgumentException(String.format(
 						"Argument optional status(optional=%b) in syntax doesn't match the corresponding parameter optional status(optional=%b)", optional, parameterArgAnnotation.optional()));
 				
-				@Nullable Argument<T> argument = getArgFromParameter(manager, commandName, parameter);
+				@Nullable Argument<T> argument = getArgFromParameter(manager, commandName, method, parameter);
 				
 				if (argument != null) {
 					argument.setOptional(optional);

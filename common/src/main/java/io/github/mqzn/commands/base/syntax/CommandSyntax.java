@@ -13,14 +13,11 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class CommandSyntax<S> implements TextConvertible<S> {
-	
-	// args and execution
 	
 	@NotNull
 	private final static String[] argumentFormatPrefixSuffix = {
@@ -55,6 +52,7 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 		this.execution = execution;
 		this.flags = flags;
 		this.arguments = args;
+		arguments.removeIf(Objects::isNull);
 	}
 	
 	
@@ -85,8 +83,8 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 		return builder.toString();
 	}
 	
-	public static boolean aliasesIncludes(Aliases aliases, String name) {
-		return aliasesIncludes(aliases.getArray(), name);
+	public static boolean aliasesIncludes(CommandAliases commandAliases, String name) {
+		return aliasesIncludes(commandAliases.getArray(), name);
 	}
 	
 	public static boolean aliasesIncludes(String[] aliases, String name) {
@@ -198,6 +196,7 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 	}
 	
 	public boolean useSpace() {
+		
 		for (var arg : arguments)
 			if (arg.useRemainingSpace()) return true;
 		

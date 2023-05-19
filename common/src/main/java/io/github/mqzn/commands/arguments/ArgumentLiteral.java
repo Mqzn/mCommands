@@ -1,13 +1,13 @@
 package io.github.mqzn.commands.arguments;
 
-import io.github.mqzn.commands.base.syntax.Aliases;
+import io.github.mqzn.commands.base.syntax.CommandAliases;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public final class ArgumentLiteral extends AbstractArgument<String> {
 	
 	@NotNull
-	private Aliases aliases = Aliases.of();
+	private CommandAliases commandAliases = CommandAliases.of();
 	
 	ArgumentLiteral(String id) {
 		super(id, String.class);
@@ -40,7 +40,7 @@ public final class ArgumentLiteral extends AbstractArgument<String> {
 	}
 	
 	public ArgumentLiteral aliases(String... aliases) {
-		this.aliases = Aliases.of(aliases);
+		this.commandAliases = CommandAliases.of(aliases);
 		for (String aliase : aliases) {
 			if (!suggestions.contains(aliase)) {
 				suggestions.add(aliase);
@@ -59,8 +59,8 @@ public final class ArgumentLiteral extends AbstractArgument<String> {
 		throw new UnsupportedOperationException("You cannot do that for a literal argument");
 	}
 	
-	public @NotNull Aliases getAliases() {
-		return aliases;
+	public @NotNull CommandAliases getAliases() {
+		return commandAliases;
 	}
 	
 	

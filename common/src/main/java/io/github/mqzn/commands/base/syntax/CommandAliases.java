@@ -1,16 +1,16 @@
 package io.github.mqzn.commands.base.syntax;
 
 
-public final class Aliases {
+public final class CommandAliases {
 	
 	private final String[] array;
 	
-	Aliases(String[] array) {
+	CommandAliases(String[] array) {
 		this.array = array;
 	}
 	
-	public static Aliases of(String... arr) {
-		return new Aliases(arr);
+	public static CommandAliases of(String... arr) {
+		return new CommandAliases(arr);
 	}
 	
 	public String[] getArray() {

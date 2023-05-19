@@ -15,7 +15,7 @@ public class SubCommandBuilder<S, C> extends CommandSyntaxBuilder<S, C> {
 	@NotNull
 	private final LinkedHashSet<String> children = new LinkedHashSet<>();
 	@Nullable
-	private Aliases aliases = Aliases.of();
+	private CommandAliases commandAliases = CommandAliases.of();
 	@Nullable
 	private String parent = null;
 	
@@ -36,7 +36,7 @@ public class SubCommandBuilder<S, C> extends CommandSyntaxBuilder<S, C> {
 	}
 	
 	public SubCommandBuilder<S, C> aliases(String... aliases) {
-		this.aliases = Aliases.of(aliases);
+		this.commandAliases = CommandAliases.of(aliases);
 		return this;
 	}
 	
@@ -88,12 +88,12 @@ public class SubCommandBuilder<S, C> extends CommandSyntaxBuilder<S, C> {
 	
 	@Override
 	public SubCommandSyntax<S> build() {
-		assert aliases != null;
+		assert commandAliases != null;
 		assert senderClass != null;
 		
 		
 		SubCommandSyntax<S> subCommandSyntax = new SubCommandSyntax<>(senderClass, commandLabel, parent, name,
-			aliases, execution, flags, arguments, defaultExecution);
+			commandAliases, execution, flags, arguments, defaultExecution);
 		
 		subCommandSyntax.setInfo(info);
 		
