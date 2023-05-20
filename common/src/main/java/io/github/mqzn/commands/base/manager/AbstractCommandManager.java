@@ -189,6 +189,7 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 		try {
 			commandContext.parse();
 		} catch (ArgumentParseException e) {
+			e.printStackTrace();
 			return;
 		}
 		

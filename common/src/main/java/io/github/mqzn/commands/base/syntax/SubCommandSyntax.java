@@ -3,8 +3,13 @@ package io.github.mqzn.commands.base.syntax;
 import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.base.context.CommandContext;
 import io.github.mqzn.commands.base.context.DelegateCommandContext;
+import io.github.mqzn.commands.base.manager.CommandManager;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -26,15 +31,18 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 	@Nullable
 	private String parent;
 	
+	@NotNull
+	private List<Argument<?>> parentArguments = new ArrayList<>();
+	
 	<C> SubCommandSyntax(@NotNull Class<C> senderClass,
-	                     @NotNull String commandLabel,
-	                     @Nullable String parent,
-	                     @NotNull String name,
-	                     @NotNull CommandAliases commandAliases,
-	                     @Nullable CommandExecution<S, C> execution,
-	                     @NotNull SyntaxFlags flags,
-	                     @NotNull List<Argument<?>> arguments,
-	                     @Nullable CommandExecution<S, C> defaultExecution) {
+	                 @NotNull String commandLabel,
+	                 @Nullable String parent,
+	                 @NotNull String name,
+	                 @NotNull CommandAliases commandAliases,
+	                 @Nullable CommandExecution<S, C> execution,
+	                 @NotNull SyntaxFlags flags,
+	                 @NotNull List<Argument<?>> arguments,
+	                 @Nullable CommandExecution<S, C> defaultExecution) {
 		
 		super(senderClass, commandLabel, execution, flags, arguments);
 		this.name = name;
@@ -42,6 +50,11 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 		this.commandAliases = commandAliases;
 		this.defaultExecution = defaultExecution;
 	}
+	
+	public void setParentArguments(@NotNull List<Argument<?>> parentArguments) {
+		this.parentArguments = parentArguments;
+	}
+	
 	
 	public void addChild(SubCommandSyntax<S> subCommand) {
 		addChild(subCommand.getName());
@@ -127,7 +140,14 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 		return commandAliases;
 	}
 	
+	public @NotNull List<Argument<?>> getCachedParentArguments() {
+		return parentArguments;
+	}
 	
+	@Override
+	public @NotNull TextComponent toText(@NotNull CommandManager<?, S> manager, @NotNull S sender) {
+		return Component.text(format(manager, commandLabel, parentArguments));
+	}
 	
 	@Override
 	public boolean equals(Object o) {

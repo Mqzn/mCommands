@@ -41,7 +41,6 @@ public final class CommandContext<S> implements Context<S> {
 		this.syntax = syntax;
 		this.delegateContext = context;
 		contextFlagRegistry = ContextFlagRegistry.create(manager, this);
-		
 	}
 	
 	public static <S> CommandContext<S> create(@NotNull CommandManager<?, S> manager,

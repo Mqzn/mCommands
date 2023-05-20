@@ -6,14 +6,12 @@ import io.github.mqzn.commands.base.context.Context;
 import io.github.mqzn.commands.base.cooldown.CommandCooldown;
 import io.github.mqzn.commands.base.manager.CommandManager;
 import io.github.mqzn.commands.base.manager.CommandSuggestionEngine;
-import io.github.mqzn.commands.base.syntax.CommandExecution;
-import io.github.mqzn.commands.base.syntax.CommandSyntax;
-import io.github.mqzn.commands.base.syntax.CommandSyntaxBuilder;
-import io.github.mqzn.commands.base.syntax.CommandTree;
+import io.github.mqzn.commands.base.syntax.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl {
 	
@@ -210,8 +208,7 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 			@NotNull
 			private final Set<CommandRequirement<S>> requirements;
 			
-			@NotNull
-			private final List<CommandSyntax<S>> syntaxes;
+			private List<CommandSyntax<S>> syntaxes;
 			
 			@Nullable
 			private final CommandExecution<S, S> execution;
@@ -238,6 +235,12 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 				this.execution = execution;
 				this.tree = CommandTree.create(this);
 				this.suggestionsEngine = CommandSuggestionEngine.create(this);
+				
+				this.syntaxes = syntaxes.stream().map((syntax)-> {
+					if(!(syntax instanceof SubCommandSyntax<S>)) return syntax;
+					((SubCommandSyntax<S>) syntax).setParentArguments(tree.getParentalArguments(((SubCommandSyntax<S>) syntax).getName()));
+					return syntax;
+				}).collect(Collectors.toList());
 			}
 			
 			/**

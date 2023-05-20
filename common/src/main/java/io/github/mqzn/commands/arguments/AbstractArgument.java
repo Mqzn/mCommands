@@ -153,6 +153,11 @@ public abstract class AbstractArgument<T> implements Argument<T> {
 	
 	
 	@Override
+	public String toString() {
+		return id + ":" + type.getSimpleName();
+	}
+	
+	@Override
 	public String toString(T obj) {
 		return obj.toString();
 	}

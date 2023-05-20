@@ -16,7 +16,7 @@ public final class TestBootstrap {
 	
 	public TestBootstrap() {
 		commandManager = new TestCommandManager(this);
-		commandManager.senderProviderRegistry().registerSenderProvider(ClientSender.class, (provider) -> provider);
+		//commandManager.senderProviderRegistry().registerSenderProvider(ClientSender.class, (provider) -> provider);
 		parser = new AnnotationParser<>(commandManager);
 	}
 	
@@ -26,9 +26,14 @@ public final class TestBootstrap {
 		parser.parse(new TestAnnotatedCommand());
 		
 		String[] args = new String[]{
+			"sub1",
+			"a1",
+			"a2",
+			"a3",
+			"sub2"
 		};
 		
-		var cmd = commandManager.getCommand("testinner2");
+		var cmd = commandManager.getCommand("testa");
 		Assertions.assertNotNull(cmd);
 		
 		commandManager.executeCommand(cmd, sender, args);

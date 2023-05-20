@@ -213,7 +213,10 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 		((CommandExecution<S, C>) execution).execute(sender, commandContext);
 	}
 	
-	public String formatted(CommandManager<?, S> commandManager) {
+	public static <S> String format(
+		CommandManager<?, S> commandManager,
+		String commandLabel,
+		List<Argument<?>> arguments) {
 		
 		String start = commandManager.commandPrefix() == ' ' ? "" : String.valueOf(commandManager.commandPrefix());
 		StringBuilder builder = new StringBuilder(start).append(commandLabel).append(" ");
@@ -250,11 +253,17 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 	
 	@Override
 	public @NotNull TextComponent toText(@NotNull CommandManager<?, S> manager, @NotNull S sender) {
-		return Component.text(this.formatted(manager));
+		return Component.text(format(manager, commandLabel, arguments));
 	}
 	
 	public boolean isSubCommand() {
 		return this instanceof SubCommandSyntax<S>;
+	}
+	
+	public static <S> List<Argument<?>> getArguments(CommandTree<S> tree, CommandSyntax<S> syntax)
+	{
+		if(syntax instanceof SubCommandSyntax<S> sub) return tree.getParentalArguments(sub.getName());
+		return syntax.getArguments();
 	}
 	
 	@Override

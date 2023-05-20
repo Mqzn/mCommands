@@ -202,7 +202,7 @@ public interface CommandManager<B, S> {
 	                                @NotNull Context<S> context,
 	                                @NotNull String label,
 	                                int page,
-	                                @NotNull List<CommandSyntax<S>> commandSubCommands) {
+	                                @NotNull List<CommandSyntax<S>> syntaxes) {
 		
 		CommandHelpProvider commandHelpProvider = helpProvider();
 		CaptionRegistry<S> captionRegistry = captionRegistry();
@@ -214,7 +214,7 @@ public interface CommandManager<B, S> {
 		var paginated = PaginatedText.<S, CommandSyntax<S>>create(commandHelpProvider, getSenderWrapper())
 			.withDisplayer(new CommandSyntaxPageDisplayer<>(this, commandHelpProvider));
 		
-		commandSubCommands.forEach(paginated::add);
+		syntaxes.forEach(paginated::add);
 		
 		paginated.paginate();
 		paginated.displayPage(label, sender, page);

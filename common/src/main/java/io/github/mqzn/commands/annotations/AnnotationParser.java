@@ -128,7 +128,6 @@ public final class AnnotationParser<S> {
 		
 		Method[] methods = annotatedCommand.getClass().getMethods();
 		for (var method : methods) {
-			//manager.log("Checking method %s", method.getName());
 			if (!checkMethod(method)) {
 				if (method.getParameters().length == 1 && method.isAnnotationPresent(Default.class)) {
 					
@@ -141,7 +140,6 @@ public final class AnnotationParser<S> {
 				continue;
 			}
 			
-			//manager.log("Parsing method %s", method.getName());
 			ExecutionMeta executionMetaMeta = method.getAnnotation(ExecutionMeta.class);
 			assert executionMetaMeta != null;
 			
@@ -295,7 +293,7 @@ public final class AnnotationParser<S> {
 			
 			subBuilder = subBuilder.execute((sender, context) -> {
 				Object[] valuesToUse = readValues(executeMethod, sender, context);
-				invokeMethod(subCommandInstance,executeMethod, valuesToUse);
+				invokeMethod(subCommandInstance, executeMethod, valuesToUse);
 			});
 		}
 		
@@ -395,12 +393,11 @@ public final class AnnotationParser<S> {
 				throw new RuntimeException(e);
 			}
 			
-			if (annotation.description().isEmpty() || annotation.description().isBlank()) {
-				arg = arg.description(annotation.description());
-			}
-			
 		}
 		
+		if (annotation.description().isEmpty() || annotation.description().isBlank()) {
+			arg = arg.description(annotation.description());
+		}
 		
 		return arg;
 	}
@@ -576,10 +573,11 @@ public final class AnnotationParser<S> {
 			return new ResolvedSubCommandMethod(args, modifiedArgs, data.left);
 		}
 		
+		String[] split = executionMeta.syntax().isEmpty() ? new String[0] : executionMeta.syntax().split(Pattern.quote(" "));
 		LinkedList<String> args = new LinkedList<>();
 		
 		args.add(info.name());
-		args.addAll(Arrays.asList(executionMeta.syntax().split(Pattern.quote(" "))));
+		args.addAll(Arrays.asList(split));
 		
 		
 		do {
@@ -589,8 +587,11 @@ public final class AnnotationParser<S> {
 			ExecutionMeta parentExecutionMeta = parent.getAnnotation(ExecutionMeta.class);
 			assert parentExecutionMeta != null;
 			
-			for (var split : parentExecutionMeta.syntax().split(Pattern.quote(" "))) {
-				args.addFirst(split);
+			if(!parentExecutionMeta.syntax().isEmpty()) {
+ 			  String[] parentSplit = parentExecutionMeta.syntax().split(Pattern.quote(" "));
+				for (int i = parentSplit.length-1; i >= 0; i--) {
+					args.addFirst(parentSplit[i]);
+				}
 			}
 			
 			args.addFirst(parentInfo.name());
@@ -598,6 +599,31 @@ public final class AnnotationParser<S> {
 			parent = parentInfo.parent();
 			
 		} while (!parent.equals(Object.class));
+		
+		Argument<?>[] arguments = new Argument[split.length];
+		Parameter[] parameters = method.getParameters();
+		
+		for (int i = 0, p = 1; i < arguments.length && p < parameters.length; i++, p++) {
+			
+			Parameter parameter = parameters[p];
+			Arg argAnnotation = parameter.getAnnotation(Arg.class);
+			if (argAnnotation == null) {
+				throw new IllegalStateException(String.format("redundant parameter in method %s doesnt have '@Arg' ", method.getName()));
+			}
+			String id = CommandSyntax.fetchArgId(split[i]);
+			while (!id.equalsIgnoreCase(argAnnotation.id())) {
+				p++;
+				if (p >= parameters.length) break;
+				parameter = parameters[p];
+				argAnnotation = parameter.getAnnotation(Arg.class);
+				if (argAnnotation == null) {
+					throw new IllegalStateException(
+						String.format("redundant parameter in method %s doesnt have '@Arg' ", method.getName())
+					);
+				}
+			}
+			arguments[i] = getArgFromParameter(manager, commandName, method, parameter);
+		}
 		
 		
 		ExecutionMeta newExecutionMeta = new ExecutionMeta() {
@@ -630,35 +656,6 @@ public final class AnnotationParser<S> {
 			}
 			
 		};
-		
-		String[] split = executionMeta.syntax().split(Pattern.quote(" "));
-		Argument<?>[] arguments = new Argument[split.length];
-		Parameter[] parameters = method.getParameters();
-		
-		if(!executionMeta.syntax().isEmpty() ) {
-			for (int i = 0, p = 1; i < arguments.length && p < parameters.length; i++, p++) {
-				
-				Parameter parameter = parameters[p];
-				Arg argAnnotation = parameter.getAnnotation(Arg.class);
-				if (argAnnotation == null) {
-					throw new IllegalStateException(String.format("redundant parameter in method %s doesnt have '@Arg' ", method.getName()));
-				}
-				String id = CommandSyntax.fetchArgId(argAnnotation.id());
-				while (!id.equalsIgnoreCase(split[i])) {
-					p++;
-					if (p >= parameters.length) break;
-					parameter = parameters[p];
-					argAnnotation = parameter.getAnnotation(Arg.class);
-					if (argAnnotation == null) {
-						throw new IllegalStateException(String.format("redundant parameter in method %s doesnt have '@Arg' ", method.getName()));
-					}
-					
-					id = CommandSyntax.fetchArgId(argAnnotation.id());
-				}
-				
-				arguments[i] = getArgFromParameter(manager, commandName, method, parameter);
-			}
-		}
 		
 		var data = loadMethodParameters(manager, commandName, newExecutionMeta, method);
 		return new ResolvedSubCommandMethod(arguments, data.right, data.left);

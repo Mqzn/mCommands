@@ -3,7 +3,6 @@ package io.github.mqzn.commands.base.manager;
 import io.github.mqzn.commands.base.context.CommandContext;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import org.jetbrains.annotations.NotNull;
-
 import java.util.concurrent.CompletableFuture;
 
 public abstract class CommandExecutionCoordinator<S> {
@@ -32,7 +31,6 @@ public abstract class CommandExecutionCoordinator<S> {
 	public abstract <C> CompletableFuture<ExecutionResult> coordinateExecution(@NotNull C sender,
 	                                                                           @NotNull CommandSyntax<S> syntax,
 	                                                                           @NotNull CommandContext<S> context);
-	
 	
 	public enum ExecutionResult {
 		SUCCESS,
