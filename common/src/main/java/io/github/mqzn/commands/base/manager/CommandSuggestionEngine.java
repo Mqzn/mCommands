@@ -109,6 +109,7 @@ public final class CommandSuggestionEngine<S> {
 			if (isArgumentDynamic(argIndex)) {
 				Argument<T> argument = (Argument<T>) syntax.getArgument(argIndex);
 				assert argument != null;
+				
 				return argument.suggestions().stream().map(argument::toString)
 					.collect(Collectors.toList());
 			}
