@@ -708,7 +708,7 @@ public final class AnnotationParser<S> {
 		}
 		
 		//add a check for single literal
-		if(!syntax.contains(" ") && !syntax.isEmpty() && syntax.isBlank()) {
+		if(!syntax.contains(" ") && !syntax.isEmpty() && !syntax.isBlank()) {
 			return Pair.Companion.of(flags, new Argument<?>[]{Argument.literal(syntax)});
 		}
 		
