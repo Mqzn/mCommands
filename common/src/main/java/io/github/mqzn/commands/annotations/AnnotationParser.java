@@ -682,12 +682,41 @@ public final class AnnotationParser<S> {
 		
 		String syntax = executionMetaMeta.syntax();
 		
+		SyntaxFlags flags = SyntaxFlags.of();
+		
+		for (Parameter parameter : method.getParameters()) {
+			
+			if (isSenderParam(executionMetaMeta, parameter)) continue;
+			
+			String flag = getFlagFromParameter(parameter);
+			
+			String exceptionMessage = null;
+			
+			if (!isParamArgument(parameter))
+				exceptionMessage = String.format("Redundant parameter '%s' in method '%s' with type '%s'",
+					parameter.getName(), method.getName(), parameter.getType().getName());
+			else if (flag != null && !manager.flagRegistry().flagExists(flag))
+				exceptionMessage = String.format("Unknown flag '%s' parameter in method '%s'", flag, method.getName());
+			
+			
+			if (exceptionMessage != null)
+				throw new IllegalArgumentException(exceptionMessage);
+			
+			//adding the collected flag
+			flags.addFlag(flag);
+			
+		}
+		
+		//add a check for single literal
+		if(!syntax.contains(" ") && !syntax.isEmpty() && syntax.isBlank()) {
+			return Pair.Companion.of(flags, new Argument<?>[]{Argument.literal(syntax)});
+		}
+		
 		String[] split = syntax.split(Pattern.quote(" "));
 		Argument<?>[] args = new Argument[split.length];
 		Parameter[] typeParameters = method.getParameters();
 		
-		SyntaxFlags flags = SyntaxFlags.of();
-		
+
 		for (int i = 0, p = 1; i < split.length && p < typeParameters.length; i++, p++) {
 			String arg = split[i];
 			
@@ -763,28 +792,7 @@ public final class AnnotationParser<S> {
 			
 		}
 		
-		for (Parameter parameter : typeParameters) {
-			
-			if (isSenderParam(executionMetaMeta, parameter)) continue;
-			
-			String flag = getFlagFromParameter(parameter);
-			
-			String exceptionMessage = null;
-			
-			if (!isParamArgument(parameter))
-				exceptionMessage = String.format("Redundant parameter '%s' in method '%s' with type '%s'",
-					parameter.getName(), method.getName(), parameter.getType().getName());
-			else if (flag != null && !manager.flagRegistry().flagExists(flag))
-				exceptionMessage = String.format("Unknown flag '%s' parameter in method '%s'", flag, method.getName());
-			
-			
-			if (exceptionMessage != null)
-				throw new IllegalArgumentException(exceptionMessage);
-			
-			//adding the collected flag
-			flags.addFlag(flag);
-			
-		}
+
 		
 		return Pair.Companion.of(flags, args);
 	}

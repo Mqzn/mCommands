@@ -8,6 +8,7 @@ class AmbiguityChecker<S> private constructor(private val syntaxes: List<Command
     fun findAmbiguity(): List<CommandSyntax<S>> {
         for (syntax in syntaxes) {
             if (syntax.useSpace() && !hasLiteralArgs(syntax) && syntaxes.size > 1) {
+                println("found ambiguity of spaces")
                 return syntaxes
             }
         }
@@ -19,6 +20,7 @@ class AmbiguityChecker<S> private constructor(private val syntaxes: List<Command
                 val secondSyntax = syntaxes[second]
                 val areAmbigious = areAmbigious(firstSyntax, secondSyntax)
                 if (areAmbigious) {
+                    println("found ambiguity due to args conflict. first syntax has ${firstSyntax.length()} args while second syntax has ${secondSyntax.length()}")
                     ambigious.add(firstSyntax)
                     ambigious.add(secondSyntax)
                 }
