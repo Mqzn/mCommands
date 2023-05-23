@@ -107,11 +107,19 @@ public final class CommandSuggestionEngine<S> {
 		@SuppressWarnings("unchecked")
 		public <T> List<String> getArgumentSuggestions(int argIndex) {
 			if (isArgumentDynamic(argIndex)) {
-				Argument<T> argument = (Argument<T>) syntax.getArgument(argIndex);
-				assert argument != null;
 				
-				return argument.suggestions().stream().map(argument::toString)
-					.collect(Collectors.toList());
+				try {
+					List<Argument<?>> arguments = CommandSyntax.getArguments(command.tree(), syntax);
+					Argument<T> argument = (Argument<T>) arguments.get(argIndex);
+					assert argument != null;
+					
+					return argument.suggestions().stream().map(argument::toString)
+						.collect(Collectors.toList());
+					
+				}catch (ArrayIndexOutOfBoundsException ex) {
+					ex.printStackTrace();
+					return Collections.emptyList();
+				}
 			}
 			
 			return suggestions.get(argIndex);

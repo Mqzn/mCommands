@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * The class responsible for handling,
@@ -336,7 +337,8 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 			allSuggestions.addAll(argSuggestions);
 		}
 		
-		return allSuggestions;
+		return allSuggestions.stream().distinct()
+			.collect(Collectors.toList());
 	}
 	
 	@Override

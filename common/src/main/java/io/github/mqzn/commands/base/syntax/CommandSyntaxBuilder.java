@@ -72,6 +72,7 @@ public class CommandSyntaxBuilder<S, C> {
 	}
 	
 	public CommandSyntax<S> build() {
+		assert senderClass != null;
 		CommandSyntax<S> syntax = new CommandSyntax<>(senderClass, commandLabel,
 			execution == null ? (s, c) -> {
 			} : execution, flags, arguments);
