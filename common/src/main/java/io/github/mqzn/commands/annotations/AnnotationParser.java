@@ -707,24 +707,32 @@ public final class AnnotationParser<S> {
 			
 		}
 		
-		//add a check for single literal
-		if(!syntax.contains(" ") && !syntax.isEmpty() && !syntax.isBlank()) {
-			return Pair.Companion.of(flags, new Argument<?>[]{Argument.literal(syntax)});
-		}
-		
 		String[] split = syntax.split(Pattern.quote(" "));
 		Argument<?>[] args = new Argument[split.length];
 		Parameter[] typeParameters = method.getParameters();
-		
 
-		for (int i = 0, p = 1; i < split.length && p < typeParameters.length; i++, p++) {
+		for (int i = 0, p = 1; i < split.length; i++, p++) {
 			String arg = split[i];
-			
+
 			if (CommandSyntax.isArgLiteral(arg)) {
 				args[i] = Argument.literal(arg);
 				p--;
 				
 			} else {
+				
+				if(p >= typeParameters.length) {
+					
+					long inputArgsCount = Arrays.stream(split).filter((s)-> !CommandSyntax.isArgLiteral(s)).count();
+					int parametersLength = typeParameters.length-1;
+					
+					if(!method.isAnnotationPresent(SubCommandExecution.class) && inputArgsCount != parametersLength) {
+						throw new IllegalStateException(
+							String.format( "Syntax in @ExecutionMeta for method `%s` doesn't match the method parameters in input arguments length", method.getName())
+						);
+					}
+					
+					break;
+				}
 				
 				Parameter parameter = typeParameters[p];
 				Arg parameterArgAnnotation = parameter.getAnnotation(Arg.class);

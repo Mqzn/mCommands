@@ -5,6 +5,8 @@ import io.github.mqzn.commands.test.annotations.TestAnnotatedCommand;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import java.util.Arrays;
+import java.util.regex.Pattern;
 
 @TestOnly
 public final class TestBootstrap {
@@ -23,20 +25,39 @@ public final class TestBootstrap {
 	@Test
 	public void firstTest() {
 		
-		parser.parse(new TestAnnotatedCommand());
+		Assertions.assertThrows(IllegalStateException.class, ()-> parser.parse(new TestAnnotatedCommand()));
 		
 		String[] args = new String[]{
-			"sub1",
-			"a1",
-			"a2",
-			"a3",
-			"sub2"
+			"disband"
+		};
+		
+		var cmd = commandManager.getCommand("testa");
+		Assertions.assertNull(cmd);
+		
+		//commandManager.executeCommand(cmd, sender, args);
+	}
+	
+	@Test
+	public void executionTest() {
+		Assertions.assertDoesNotThrow(()-> parser.parse(new TestAnnotatedCommand()));
+		
+		String[] args = new String[]{
+			"disband"
 		};
 		
 		var cmd = commandManager.getCommand("testa");
 		Assertions.assertNotNull(cmd);
 		
 		commandManager.executeCommand(cmd, sender, args);
+	}
+	
+	@Test
+	public void syntaxParsingTest() {
+		
+		String syntax = "disband ";
+		
+		String[] split = syntax.split(Pattern.quote(" "));
+		System.out.println(Arrays.toString(split));
 	}
 	
 	

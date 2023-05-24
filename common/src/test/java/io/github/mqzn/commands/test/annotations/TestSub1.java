@@ -7,9 +7,9 @@ import io.github.mqzn.commands.annotations.subcommands.SubCommandExecution;
 import io.github.mqzn.commands.annotations.subcommands.SubCommandInfo;
 import io.github.mqzn.commands.test.ClientSender;
 
-@SubCommandInfo(name = "sub1", children = TestSub2.class, aliases = "s1")
+@SubCommandInfo(name = "sub1", aliases = "s1")
 @ExecutionMeta(
-	syntax = "<arg1> <arg2> <arg3>"
+	syntax = "<arg1>"
 )
 public final class TestSub1 {
 	
@@ -21,11 +21,9 @@ public final class TestSub1 {
 	
 	@SubCommandExecution
 	public void execute(ClientSender sender,
-	                    @Arg(id = "arg1") String arg1,
-	                    @Arg(id = "arg2") String arg2,
-	                    @Arg(id = "arg3") String arg3) {
+	                    @Arg(id = "arg1") String arg1) {
 		
-		System.out.printf("arg1=%s, arg2=%s, arg3=%s \n", arg1, arg2, arg3);
+		System.out.printf("arg1=%s \n", arg1);
 	}
 	
 }

@@ -154,10 +154,10 @@ public interface CommandManager<B, S> {
 	/**
 	 * Finds syntaxes that are ambigious
 	 *
-	 * @param syntaxes the syntaxes to check upon for ambiguity
+	 * @param command the syntaxes provider to check upon for ambiguity
 	 * @return the ambigious syntaxes
 	 */
-	@NotNull List<CommandSyntax<S>> findAmbiguity(@NotNull List<CommandSyntax<S>> syntaxes);
+	@NotNull List<CommandSyntax<S>> findAmbiguity(@NotNull Command<S> command);
 	
 	/**
 	 * Finds the most suitable syntax for the context
@@ -179,6 +179,8 @@ public interface CommandManager<B, S> {
 	 * @return the suggestions
 	 */
 	@NotNull List<String> suggest(Command<S> command, S sender, String[] args);
+	
+
 	
 	/**
 	 * Numeric argument suggestion processor

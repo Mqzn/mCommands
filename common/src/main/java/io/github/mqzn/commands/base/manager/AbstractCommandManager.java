@@ -265,7 +265,7 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 	@Override
 	public <C extends Command<S>> void registerCommand(C command) {
 		
-		List<CommandSyntax<S>> check = this.findAmbiguity(command.syntaxes());
+		List<CommandSyntax<S>> check = this.findAmbiguity(command);
 		
 		if (!check.isEmpty()) {
 			
@@ -342,8 +342,8 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 	}
 	
 	@Override
-	public synchronized @NotNull List<CommandSyntax<S>> findAmbiguity(@NotNull List<CommandSyntax<S>> syntaxes) {
-		AmbiguityChecker<S> ambiguityChecker = AmbiguityChecker.Companion.of(syntaxes);
+	public synchronized @NotNull List<CommandSyntax<S>> findAmbiguity(@NotNull Command<S> command) {
+		AmbiguityChecker<S> ambiguityChecker = AmbiguityChecker.Companion.of(command);
 		return ambiguityChecker.findAmbiguity();
 	}
 	

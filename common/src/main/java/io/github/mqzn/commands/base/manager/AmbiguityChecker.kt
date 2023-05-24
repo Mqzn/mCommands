@@ -1,9 +1,11 @@
 package io.github.mqzn.commands.base.manager
 
 import io.github.mqzn.commands.arguments.ArgumentLiteral
+import io.github.mqzn.commands.base.Command
 import io.github.mqzn.commands.base.syntax.CommandSyntax
 
-class AmbiguityChecker<S> private constructor(private val syntaxes: List<CommandSyntax<S>>) {
+class AmbiguityChecker<S> private constructor(private  val command: Command<S>,
+                                              private val syntaxes: List<CommandSyntax<S>> = command.syntaxes()) {
     @Synchronized
     fun findAmbiguity(): List<CommandSyntax<S>> {
         for (syntax in syntaxes) {
@@ -30,15 +32,16 @@ class AmbiguityChecker<S> private constructor(private val syntaxes: List<Command
     private fun areAmbigious(s1: CommandSyntax<S>, s2: CommandSyntax<S>): Boolean {
 
         // first condition is that 2 or more syntaxes without literal args and same length
-        // second condition is just a duplicate syntax
-        val firstCondition = !hasLiteralArgs(s1) && !hasLiteralArgs(s2) && s1.length() == s2.length()
-        val secondCondition = s1 == s2
-        return firstCondition || secondCondition
+        val s1Length = CommandSyntax.getArguments(command.tree(), s1)
+        val s2Length = CommandSyntax.getArguments(command.tree(), s2)
+
+        return (!hasLiteralArgs(s1) && !hasLiteralArgs(s2) && s1Length == s2Length) ||
+                (s1Length==s2Length && s1 == s2)
     }
 
     companion object {
-        fun <S> of(syntaxes: List<CommandSyntax<S>>): AmbiguityChecker<S> {
-            return AmbiguityChecker(syntaxes)
+        fun <S> of(command : Command<S>): AmbiguityChecker<S> {
+            return AmbiguityChecker(command)
         }
 
         @JvmStatic
