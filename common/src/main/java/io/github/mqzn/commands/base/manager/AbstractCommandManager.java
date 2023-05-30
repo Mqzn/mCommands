@@ -143,6 +143,12 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 	) {
 		
 		DelegateCommandContext<S> context = DelegateCommandContext.create(this, command, sender, args);
+		String cmdPermission = command.info().permission();
+		
+		if(cmdPermission != null && !cmdPermission.isEmpty()  && !wrapper.hasPermission(sender, cmdPermission)) {
+			captionRegistry.sendCaption(sender, context, CaptionKey.NO_PERMISSION);
+			return;
+		}
 		
 		if (!checkRequirements(command, sender, context)) return;
 		
@@ -172,11 +178,18 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 		CommandTree.TraversingResult<S> result = findSyntax(command, context);
 		
 		if (result.state == CommandTree.TraversingResultState.NOT_FOUND) {
-			captionRegistry.sendCaption(sender, context, CaptionKey.UNKNOWN_COMMAND);
+			CaptionKey key = args.length == 1 && args[0].equalsIgnoreCase("help") ? CaptionKey.NO_HELP_TOPIC_AVAILABLE : CaptionKey.UNKNOWN_COMMAND;
+			captionRegistry.sendCaption(sender, context, key);
 			return;
 		} else if (result.state == CommandTree.TraversingResultState.FOUND_INCOMPLETE) {
 			assert result.data != null && result.data.isSubCommand();
 			SubCommandSyntax<S> subCmd = (SubCommandSyntax<S>) result.data;
+			
+			var subInfo = subCmd.getInfo();
+			if(subInfo != null && !wrapper.hasPermission(sender, subInfo.permission())) {
+				captionRegistry.sendCaption(sender, context, CaptionKey.NO_PERMISSION);
+				return;
+			}
 			subCmd.defaultExecution(sender, context);
 			return;
 		}
@@ -338,6 +351,11 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 		}
 		
 		return allSuggestions.stream().distinct()
+			.filter((suggestion)-> {
+				SubCommandSyntax<S> subCmd = command.tree().getSubCommand(suggestion);
+				if(subCmd != null) return wrapper.hasPermission(sender, subCmd.getName());
+				return true;
+			})
 			.collect(Collectors.toList());
 	}
 	
