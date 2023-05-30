@@ -3,8 +3,10 @@ package io.github.mqzn.commands;
 import io.github.mqzn.commands.base.Command;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.TabExecutor;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
+@ApiStatus.Internal
 final class InternalBungeeCommand extends net.md_5.bungee.api.plugin.Command implements TabExecutor {
 	
 	@NotNull

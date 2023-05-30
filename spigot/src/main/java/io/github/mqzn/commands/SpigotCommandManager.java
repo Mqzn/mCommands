@@ -2,17 +2,21 @@ package io.github.mqzn.commands;
 
 import io.github.mqzn.commands.arguments.ArgumentOfflinePlayer;
 import io.github.mqzn.commands.arguments.ArgumentOnlinePlayer;
+import io.github.mqzn.commands.arguments.ArgumentUUID;
+import io.github.mqzn.commands.arguments.ArgumentWorld;
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.manager.AbstractCommandManager;
 import io.github.mqzn.commands.base.manager.CommandExecutionCoordinator;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Field;
+import java.util.UUID;
 
 public final class SpigotCommandManager extends AbstractCommandManager<Plugin, CommandSender> {
 	
@@ -73,6 +77,9 @@ public final class SpigotCommandManager extends AbstractCommandManager<Plugin, C
 	private void registerTypes() {
 		typeRegistry().registerArgumentConverter(OfflinePlayer.class, ArgumentOfflinePlayer::new);
 		typeRegistry().registerArgumentConverter(Player.class, ArgumentOnlinePlayer::new);
+		typeRegistry().registerArgumentConverter(World.class, ArgumentWorld::new);
+		typeRegistry().registerArgumentConverter(UUID.class, ArgumentUUID::new);
+		
 	}
 	
 }
