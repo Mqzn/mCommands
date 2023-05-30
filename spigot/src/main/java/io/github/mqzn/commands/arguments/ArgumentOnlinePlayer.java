@@ -5,24 +5,36 @@ import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Online-player argument class
+ */
 public final class ArgumentOnlinePlayer extends AbstractArgument<Player> {
 	
 	
+	/**
+	 * Creating argument using the id
+	 * @param id the name/id of the argument
+	 */
 	public ArgumentOnlinePlayer(
 		@NotNull String id) {
 		super(id, Player.class);
 	}
 	
+	/**
+	 * Creating argument using the data
+	 * @param data the data of the arguments
+	 */
 	public ArgumentOnlinePlayer(@NotNull ArgumentData data) {
 		super(data, Player.class);
 	}
 	
 	@Override
-	public Player parse(@NotNull String command, @NotNull String input) throws ArgumentParseException {
+	public <S> Player parse(@UnknownNullability S sender, @NotNull String command, @NotNull String input) throws ArgumentParseException {
 		
 		Player player = Bukkit.getPlayer(input);
 		if (player == null || !player.isOnline()) {

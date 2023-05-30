@@ -2,6 +2,7 @@ package io.github.mqzn.commands.arguments;
 
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,7 +17,7 @@ public final class ArgumentBoolean extends AbstractArgument<Boolean> {
 	}
 	
 	@Override
-	public Boolean parse(@NotNull String command, @NotNull String input) throws ArgumentParseException {
+	public <S> Boolean parse(@UnknownNullability S sender, @NotNull String command, @NotNull String input) throws ArgumentParseException {
 		
 		if (!input.equalsIgnoreCase("true") && !input.equalsIgnoreCase("false") && !input.equalsIgnoreCase("no") && !input.equalsIgnoreCase("yes"))
 			throw new ArgumentParseException("Argument '" + id() + "' should be boolean, the input '" + input + "' is not a valid boolean", input, command);

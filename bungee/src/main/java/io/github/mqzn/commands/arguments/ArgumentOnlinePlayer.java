@@ -4,7 +4,7 @@ import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.jetbrains.annotations.NotNull;
-
+import org.jetbrains.annotations.UnknownNullability;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +28,7 @@ public final class ArgumentOnlinePlayer extends AbstractArgument<ProxiedPlayer> 
 	}
 	
 	@Override
-	public ProxiedPlayer parse(@NotNull String command, @NotNull String input) throws ArgumentParseException {
+	public <S> ProxiedPlayer parse(@UnknownNullability S sender, @NotNull String command, @NotNull String input) throws ArgumentParseException {
 		
 		ProxiedPlayer player = ProxyServer.getInstance().getPlayer(input);
 		if (player == null || !player.isConnected()) {

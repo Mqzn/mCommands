@@ -1,6 +1,7 @@
 package io.github.mqzn.commands.arguments;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnknownNullability;
 
 public final class ArgumentWord extends AbstractArgument<String> {
 	
@@ -13,7 +14,9 @@ public final class ArgumentWord extends AbstractArgument<String> {
 	}
 	
 	@Override
-	public String parse(@NotNull String command, @NotNull String input) {
+	public <S> String parse(@UnknownNullability S sender,
+	                        @NotNull String command,
+	                        @NotNull String input) {
 		return input;
 	}
 	

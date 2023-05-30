@@ -109,7 +109,7 @@ public final class CommandContext<S> implements Context<S> {
 			if (rawArg != null) {
 				try {
 					if (argument.useRemainingSpace()) value = (T) rawArg;
-					else value = argument.parse(delegateContext.commandUsed().name(), rawArg);
+					else value = argument.parse(sender, delegateContext.commandUsed().name(), rawArg);
 				} catch (ArgumentParseException ex) {
 					manager.exceptionHandler().handleException(ex, sender, this);
 					throw ex;

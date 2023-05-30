@@ -3,6 +3,7 @@ package io.github.mqzn.commands.arguments;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -50,7 +51,9 @@ public abstract class ArgumentNumber<T extends Number> extends AbstractArgument<
 	}
 	
 	@Override
-	public @NotNull T parse(@NotNull String command, @NotNull String input) throws ArgumentParseException {
+	public <S> @NotNull T parse(@UnknownNullability S sender,
+	                            @NotNull String command,
+	                            @NotNull String input) throws ArgumentParseException {
 		try {
 			final T value;
 			final int radix = getRadix(input);

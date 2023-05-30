@@ -35,7 +35,9 @@ public final class ArgumentEnum<E extends Enum<E>> extends AbstractArgument<E> {
 	
 	@NotNull
 	@Override
-	public E parse(@NotNull String command, @NotNull String input) throws ArgumentParseException {
+	public <S> E parse(@NotNull S sender,
+	                   @NotNull String command,
+	                   @NotNull String input) throws ArgumentParseException {
 		for (E value : this.values) {
 			if (this.format.formatter.apply(value.name()).equals(input)) {
 				return value;

@@ -3,6 +3,7 @@ package io.github.mqzn.commands.arguments;
 import io.github.mqzn.commands.base.syntax.CommandAliases;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 
 public final class ArgumentLiteral extends AbstractArgument<String> {
 	
@@ -20,7 +21,7 @@ public final class ArgumentLiteral extends AbstractArgument<String> {
 	}
 	
 	@Override
-	public String parse(@NotNull String command, @NotNull String input) {
+	public <S> String parse(@UnknownNullability S sender, @NotNull String command, @NotNull String input) {
 		return input;
 	}
 	

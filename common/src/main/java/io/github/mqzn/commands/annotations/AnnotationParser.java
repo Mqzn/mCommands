@@ -388,7 +388,7 @@ public final class AnnotationParser<S> {
 		
 		if (!annotation.defaultValue().isBlank() && !annotation.defaultValue().isEmpty()) {
 			try {
-				arg.setDefaultValue(arg.parse(command, annotation.defaultValue()));
+				arg.setDefaultValue(arg.parse(null, command, annotation.defaultValue()));
 			} catch (ArgumentParseException e) {
 				throw new RuntimeException(e);
 			}
@@ -763,7 +763,7 @@ public final class AnnotationParser<S> {
 						for (var suggestion : suggest.value()) {
 							
 							try {
-								argument.suggest(argument.parse(commandName, suggestion));
+								argument.suggest(argument.parse(null, commandName, suggestion));
 							} catch (ArgumentParseException e) {
 								throw new RuntimeException(e);
 							}
@@ -776,7 +776,7 @@ public final class AnnotationParser<S> {
 							}
 							for (String suggestion : provider.suggestions())
 								try {
-									argument.suggest(argument.parse(commandName, suggestion));
+									argument.suggest(argument.parse(null, commandName, suggestion));
 								} catch (ArgumentParseException e) {
 									throw new RuntimeException(e);
 								}

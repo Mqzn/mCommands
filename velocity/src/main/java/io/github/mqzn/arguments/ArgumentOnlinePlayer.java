@@ -6,6 +6,7 @@ import io.github.mqzn.commands.arguments.AbstractArgument;
 import io.github.mqzn.commands.arguments.ArgumentData;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,9 @@ public final class ArgumentOnlinePlayer extends AbstractArgument<Player> {
 	}
 	
 	@Override
-	public Player parse(@NotNull String command, @NotNull String input) throws ArgumentParseException {
+	public <S> Player parse(@UnknownNullability S sender,
+	                        @NotNull String command,
+	                        @NotNull String input) throws ArgumentParseException {
 		
 		Optional<Player> player = proxyServer.getPlayer(input);
 		if (player.isEmpty()) {

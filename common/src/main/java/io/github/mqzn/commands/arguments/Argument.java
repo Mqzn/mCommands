@@ -3,6 +3,7 @@ package io.github.mqzn.commands.arguments;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.List;
 import java.util.Optional;
@@ -133,7 +134,9 @@ public interface Argument<T> {
 	@SuppressWarnings("UnusedReturnValue")
 	@NotNull Argument<T> setDefaultValue(T value);
 	
-	T parse(@NotNull String command, @NotNull String input) throws ArgumentParseException;
+	<S> T parse(@UnknownNullability S sender,
+	            @NotNull String command,
+	            @NotNull String input) throws ArgumentParseException;
 	
 	default boolean isOptional() {
 		return false;
