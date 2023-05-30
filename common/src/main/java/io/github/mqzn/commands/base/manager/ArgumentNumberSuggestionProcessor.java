@@ -25,7 +25,7 @@ public final class ArgumentNumberSuggestionProcessor {
 		N end = argumentNumber.getMax();
 		N start = argumentNumber.getMin();
 		
-		while (comparator.lessThan(start, end)) {
+		while (comparator.lessThanOrEqual(start, end)) {
 			argumentNumber.suggest(start);
 			start = argumentNumber.increment(start);
 		}
