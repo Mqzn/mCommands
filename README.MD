@@ -41,6 +41,13 @@ dependencies {
 
 ## Platforms
 
+### Common
+
+The main platform that contain the core of the library
+```gradle
+implementation 'io.github.mqzn:mCommands-common:<LATEST_VERSION>'
+```
+
 ### Spigot
 
 The spigot platform is for minecraft spigot api development
