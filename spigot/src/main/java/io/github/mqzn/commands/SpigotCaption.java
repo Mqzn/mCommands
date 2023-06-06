@@ -22,7 +22,7 @@ interface SpigotCaption {
 		.withMessage((sender, context, ex) -> (TextComponent) Message.prefixed(Message.EXECUTION_ERROR)
 			.append(Component.text(String.format("Unknown Command In Syntax '%s'", context.rawFormat()), NamedTextColor.YELLOW))
 			.appendNewline()
-			.append(Component.text("Try `/" + context.commandUsed().name() + " help &f`")))
+			.append(Message.prefixed(Component.text("Try `/" + context.commandUsed().name() + " help`", NamedTextColor.GRAY))))
 		.build();
 	
 	/**
