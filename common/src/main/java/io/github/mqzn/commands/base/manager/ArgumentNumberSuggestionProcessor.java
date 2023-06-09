@@ -2,6 +2,7 @@ package io.github.mqzn.commands.base.manager;
 
 import io.github.mqzn.commands.arguments.ArgumentNumber;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class ArgumentNumberSuggestionProcessor {
 	
@@ -22,8 +23,18 @@ public final class ArgumentNumberSuggestionProcessor {
 		ArgumentNumberComparator.ArgumentComparator<N> comparator
 			= manager.typeRegistry().getComparator((Class<? extends ArgumentNumber<N>>) argumentNumber.getClass());
 		
-		N end = argumentNumber.getMax();
-		N start = argumentNumber.getMin();
+		@Nullable N end = argumentNumber.getMax();
+		@Nullable N start = argumentNumber.getMin();
+		
+		if(start == null && end == null) {
+			return;
+		}else if(end == null) {
+			argumentNumber.suggest(start);
+			return;
+		}else if(start == null) {
+			argumentNumber.suggest(end);
+			return;
+		}
 		
 		while (comparator.lessThanOrEqual(start, end)) {
 			argumentNumber.suggest(start);
