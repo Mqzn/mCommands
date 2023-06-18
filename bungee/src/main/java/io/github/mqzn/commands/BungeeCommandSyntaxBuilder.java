@@ -6,16 +6,17 @@ import org.jetbrains.annotations.NotNull;
 
 public final class BungeeCommandSyntaxBuilder<C> extends CommandSyntaxBuilder<CommandSender, C> {
 	
-	private BungeeCommandSyntaxBuilder(@NotNull Class<C> senderClass, @NotNull String label) {
-		super(senderClass, label);
+	private BungeeCommandSyntaxBuilder(BungeeCommandManager commandManager,
+	                                   @NotNull Class<C> senderClass, @NotNull String label) {
+		super(commandManager, senderClass, label);
 	}
 	
-	public static <C> BungeeCommandSyntaxBuilder<C> builder(@NotNull Class<C> senderClass, @NotNull String label) {
-		return new BungeeCommandSyntaxBuilder<>(senderClass, label);
+	public static <C> BungeeCommandSyntaxBuilder<C> builder(BungeeCommandManager manager, @NotNull Class<C> senderClass, @NotNull String label) {
+		return new BungeeCommandSyntaxBuilder<>(manager, senderClass, label);
 	}
 	
-	public static BungeeCommandSyntaxBuilder<CommandSender> builder(@NotNull String label) {
-		return builder(CommandSender.class, label);
+	public static BungeeCommandSyntaxBuilder<CommandSender> builder(BungeeCommandManager manager, @NotNull String label) {
+		return builder(manager, CommandSender.class, label);
 	}
 	
 }

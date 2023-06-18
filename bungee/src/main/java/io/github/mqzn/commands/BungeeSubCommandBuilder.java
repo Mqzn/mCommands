@@ -5,17 +5,29 @@ import net.md_5.bungee.api.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 public final class BungeeSubCommandBuilder<C> extends SubCommandBuilder<CommandSender, C> {
-	private BungeeSubCommandBuilder(@NotNull Class<C> senderClass, @NotNull String label, @NotNull String name) {
-		super(senderClass, label, name);
+	private BungeeSubCommandBuilder(BungeeCommandManager manager, @NotNull Class<C> senderClass, @NotNull String label, @NotNull String name) {
+		super(manager, senderClass, label, name);
 	}
 	
-	public static <C> BungeeSubCommandBuilder<C> builder(@NotNull Class<C> senderClass,
+	/**
+	 *
+	 *
+	 * @param manager the bungee command-manager
+	 * @param senderClass the type of the sender to use
+	 * @param label the command label
+	 * @param name the name of the subcommand
+	 *
+	 * @return the builder of subcommands in the bungee-cord platform
+	 * @param <C> the type of the sender to use while building the subcommand's syntax
+	 */
+	public static <C> BungeeSubCommandBuilder<C> builder(BungeeCommandManager manager,
+	                                                     @NotNull Class<C> senderClass,
 	                                                     @NotNull String label,
 	                                                     @NotNull String name) {
-		return new BungeeSubCommandBuilder<>(senderClass, label, name);
+		return new BungeeSubCommandBuilder<>(manager, senderClass, label, name);
 	}
 	
-	public static BungeeSubCommandBuilder<CommandSender> builder(@NotNull String label, @NotNull String name) {
-		return builder(CommandSender.class, label, name);
+	public static BungeeSubCommandBuilder<CommandSender> builder(BungeeCommandManager manager, @NotNull String label, @NotNull String name) {
+		return builder(manager, CommandSender.class, label, name);
 	}
 }

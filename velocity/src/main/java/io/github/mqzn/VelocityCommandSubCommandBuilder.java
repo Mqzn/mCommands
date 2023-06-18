@@ -6,17 +6,17 @@ import org.jetbrains.annotations.NotNull;
 
 public final class VelocityCommandSubCommandBuilder<C> extends CommandSyntaxBuilder<CommandSource, C> {
 	
-	private VelocityCommandSubCommandBuilder(@NotNull Class<C> senderClass, @NotNull String label) {
-		super(senderClass, label);
+	private VelocityCommandSubCommandBuilder(@NotNull VelocityCommandManager manager,@NotNull Class<C> senderClass, @NotNull String label) {
+		super(manager, senderClass, label);
 	}
 	
-	public static <C> VelocityCommandSubCommandBuilder<C> builder(@NotNull Class<C> senderClass,
+	public static <C> VelocityCommandSubCommandBuilder<C> builder(@NotNull VelocityCommandManager manager, @NotNull Class<C> senderClass,
 	                                                              @NotNull String commandLabel) {
-		return new VelocityCommandSubCommandBuilder<>(senderClass, commandLabel);
+		return new VelocityCommandSubCommandBuilder<>(manager, senderClass, commandLabel);
 	}
 	
-	public static VelocityCommandSubCommandBuilder<CommandSource> builder(@NotNull String commandLabel) {
-		return builder(CommandSource.class, commandLabel);
+	public static VelocityCommandSubCommandBuilder<CommandSource> builder(@NotNull VelocityCommandManager manager, @NotNull String commandLabel) {
+		return builder(manager, CommandSource.class, commandLabel);
 	}
 	
 }
