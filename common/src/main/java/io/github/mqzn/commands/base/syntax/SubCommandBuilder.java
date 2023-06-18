@@ -2,6 +2,7 @@ package io.github.mqzn.commands.base.syntax;
 
 import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.base.Information;
+import io.github.mqzn.commands.base.manager.CommandManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,17 +23,19 @@ public class SubCommandBuilder<S, C> extends CommandSyntaxBuilder<S, C> {
 	@Nullable
 	private CommandExecution<S, C> defaultExecution = null;
 	
-	protected SubCommandBuilder(@NotNull Class<C> senderClass,
+	protected SubCommandBuilder(@NotNull CommandManager<?, S> manager,
+	                            @NotNull Class<C> senderClass,
 	                            @NotNull String label,
 	                            @NotNull String name) {
-		super(senderClass, label);
+		super(manager, senderClass, label);
 		this.name = name;
 	}
 	
-	public static <S, C> SubCommandBuilder<S, C> genericBuilder(@NotNull Class<C> senderClass,
+	public static <S, C> SubCommandBuilder<S, C> genericBuilder(CommandManager<?, S> manager,
+	                                                            @NotNull Class<C> senderClass,
 	                                                            @NotNull String label,
 	                                                            @NotNull String name) {
-		return new SubCommandBuilder<>(senderClass, label, name);
+		return new SubCommandBuilder<>(manager, senderClass, label, name);
 	}
 	
 	public SubCommandBuilder<S, C> aliases(String... aliases) {
@@ -92,7 +95,7 @@ public class SubCommandBuilder<S, C> extends CommandSyntaxBuilder<S, C> {
 		assert senderClass != null;
 		
 		
-		SubCommandSyntax<S> subCommandSyntax = new SubCommandSyntax<>(senderClass, commandLabel, parent, name,
+		SubCommandSyntax<S> subCommandSyntax = new SubCommandSyntax<>(manager, senderClass, commandLabel, parent, name,
 			commandAliases, execution, flags, arguments, defaultExecution);
 		
 		subCommandSyntax.setInfo(info);

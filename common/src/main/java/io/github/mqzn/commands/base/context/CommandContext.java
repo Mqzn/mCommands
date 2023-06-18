@@ -73,7 +73,11 @@ public final class CommandContext<S> implements Context<S> {
 			return;
 		
 		List<Argument<?>> syntaxArgs = syntax.isSubCommand() ? this.commandUsed()
-			.tree().getParentalArguments(((SubCommandSyntax<S>) syntax).getName()) : syntax.getArguments();
+			.tree().getParentalArguments(((SubCommandSyntax<S>) syntax).key()) : syntax.getArguments();
+		
+		for (var arg : syntaxArgs) {
+			System.out.println(arg);
+		}
 		
 		for (int required = 0, rawIndex = 0; required < syntaxArgs.size(); required++) {
 			Argument<T> argument = (Argument<T>) syntaxArgs.get(required);

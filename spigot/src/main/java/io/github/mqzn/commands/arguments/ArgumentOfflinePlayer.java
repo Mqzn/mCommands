@@ -12,6 +12,7 @@ public final class ArgumentOfflinePlayer extends AbstractArgument<OfflinePlayer>
 	
 	/**
 	 * Creating argument using the id
+	 *
 	 * @param id the name/id of the argument
 	 */
 	public ArgumentOfflinePlayer(@NotNull String id) {
@@ -20,6 +21,7 @@ public final class ArgumentOfflinePlayer extends AbstractArgument<OfflinePlayer>
 	
 	/**
 	 * Creating argument using the data
+	 *
 	 * @param data the data of the arguments
 	 */
 	public ArgumentOfflinePlayer(@NotNull ArgumentData data) {

@@ -15,6 +15,7 @@ import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+
 import java.lang.reflect.Field;
 import java.util.UUID;
 
@@ -34,7 +35,6 @@ public final class SpigotCommandManager extends AbstractCommandManager<Plugin, C
 			Field commandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
 			commandMap.setAccessible(true);
 			cmdMap = (SimpleCommandMap) commandMap.get(Bukkit.getServer());
-			
 		} catch (NoSuchFieldException | IllegalAccessException e) {
 			throw new RuntimeException(e);
 		}

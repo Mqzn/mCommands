@@ -8,7 +8,7 @@ import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.List;
 
-public final class ArgumentWorld  extends AbstractArgument<World> {
+public final class ArgumentWorld extends AbstractArgument<World> {
 	
 	public ArgumentWorld(@NotNull String id) {
 		super(id, World.class);
@@ -20,13 +20,13 @@ public final class ArgumentWorld  extends AbstractArgument<World> {
 	
 	@Override
 	public <S> World parse(@UnknownNullability S sender, @NotNull String command, @NotNull String input) throws ArgumentParseException {
-			World world = Bukkit.getWorld(input);
-			if(world == null) {
-				throw new ArgumentParseException(
-					String.format("Unknown world `%s` provided", input), input, command
-				);
-			}
-			return world;
+		World world = Bukkit.getWorld(input);
+		if (world == null) {
+			throw new ArgumentParseException(
+				String.format("Unknown world `%s` provided", input), input, command
+			);
+		}
+		return world;
 	}
 	
 	@Override

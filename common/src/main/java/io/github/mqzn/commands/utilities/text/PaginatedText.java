@@ -1,7 +1,7 @@
 package io.github.mqzn.commands.utilities.text;
 
 import io.github.mqzn.commands.base.SenderWrapper;
-import io.github.mqzn.commands.help.CommandHelpProvider;
+import io.github.mqzn.commands.help.CommandHelpStyle;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -29,7 +29,7 @@ public final class PaginatedText<S, T extends TextConvertible<S>> {
 	private final Map<Integer, TextPage<S, T>> pages = new HashMap<>();
 	
 	@NotNull
-	private final CommandHelpProvider provider;
+	private final CommandHelpStyle<S> style;
 	
 	@NotNull
 	private TextComponent headerLine = Component.text("===========");
@@ -40,25 +40,25 @@ public final class PaginatedText<S, T extends TextConvertible<S>> {
 	@NotNull
 	private NamedTextColor primaryColor = NamedTextColor.YELLOW, secondaryColor = NamedTextColor.GOLD;
 	
-	private PaginatedText(@NotNull CommandHelpProvider provider,
+	private PaginatedText(@NotNull CommandHelpStyle<S> provider,
 	                      @NotNull SenderWrapper<S> wrapper) {
 		this(provider, wrapper, DEFAULT_ITEMS_PER_PAGE);
 	}
 	
-	private PaginatedText(@NotNull CommandHelpProvider provider,
+	private PaginatedText(@NotNull CommandHelpStyle<S> style,
 	                      @NotNull SenderWrapper<S> wrapper,
 	                      int itemsPerPage) {
-		this.provider = provider;
+		this.style = style;
 		this.wrapper = wrapper;
 		this.itemsPerPage = itemsPerPage;
 	}
 	
-	public static <S, T extends TextConvertible<S>> PaginatedText<S, T> create(@NotNull CommandHelpProvider provider,
+	public static <S, T extends TextConvertible<S>> PaginatedText<S, T> create(@NotNull CommandHelpStyle<S> provider,
 	                                                                           @NotNull SenderWrapper<S> wrapper) {
 		return new PaginatedText<>(provider, wrapper);
 	}
 	
-	public static <S, T extends TextConvertible<S>> PaginatedText<S, T> create(@NotNull CommandHelpProvider provider,
+	public static <S, T extends TextConvertible<S>> PaginatedText<S, T> create(@NotNull CommandHelpStyle<S> provider,
 	                                                                           @NotNull SenderWrapper<S> wrapper,
 	                                                                           int itemsPerPage) {
 		return new PaginatedText<>(provider, wrapper, itemsPerPage);
@@ -99,7 +99,6 @@ public final class PaginatedText<S, T extends TextConvertible<S>> {
 	}
 	
 	public void paginate() {
-		
 		for (int i = 1; i <= textObjects.size(); i++) {
 			T obj = textObjects.get(i - 1);
 			//calculate the page from it's index and the items per page
@@ -143,10 +142,10 @@ public final class PaginatedText<S, T extends TextConvertible<S>> {
 		if (textPage == null) return;
 		
 		
-		TextComponent line = headerLine.style(provider.lineStyle());
+		TextComponent line = headerLine.style(style.lineStyle());
 		TextComponent firstLine = Component.empty().append(line)
 			.append(Component.space()).append(Component.space().decorations(new HashMap<>()))
-			.append(provider.header(label))
+			.append(style.header(label))
 			.append(Component.space()).append(Component.space())
 			.append(Component.text("(", secondaryColor))
 			.append(Component.text(page, primaryColor))

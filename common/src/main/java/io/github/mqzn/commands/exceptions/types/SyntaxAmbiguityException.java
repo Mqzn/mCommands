@@ -2,6 +2,7 @@ package io.github.mqzn.commands.exceptions.types;
 
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.manager.CommandManager;
+import io.github.mqzn.commands.base.syntax.ArgumentSyntaxUtility;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.exceptions.CommandException;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +17,7 @@ public final class SyntaxAmbiguityException extends CommandException {
 	                                    Collection<CommandSyntax<S>> syntaxes) {
 		
 		super("Similar syntaxes detected (duplicate execution logic) : " + String.join("\n",
-			syntaxes.stream().map((syntax) -> CommandSyntax.format(manager, command.name(), CommandSyntax.getArguments(command.tree(), syntax)))
+			syntaxes.stream().map((syntax) -> ArgumentSyntaxUtility.format(manager, command.name(), CommandSyntax.getArguments(command.tree(), syntax)))
 				.collect(Collectors.toSet())), command.name());
 		
 	}

@@ -18,6 +18,7 @@ public final class ArgumentOnlinePlayer extends AbstractArgument<Player> {
 	
 	/**
 	 * Creating argument using the id
+	 *
 	 * @param id the name/id of the argument
 	 */
 	public ArgumentOnlinePlayer(
@@ -27,6 +28,7 @@ public final class ArgumentOnlinePlayer extends AbstractArgument<Player> {
 	
 	/**
 	 * Creating argument using the data
+	 *
 	 * @param data the data of the arguments
 	 */
 	public ArgumentOnlinePlayer(@NotNull ArgumentData data) {

@@ -1,19 +1,23 @@
 package io.github.mqzn.commands.base.syntax;
 
 import io.github.mqzn.commands.arguments.Argument;
+import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.context.CommandContext;
 import io.github.mqzn.commands.base.context.DelegateCommandContext;
 import io.github.mqzn.commands.base.manager.CommandManager;
+import io.github.mqzn.commands.base.manager.flags.ContextFlagRegistry;
+import io.github.mqzn.commands.base.syntax.tree.CommandTree;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import java.util.ArrayList;
+
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
-public final class SubCommandSyntax<S> extends CommandSyntax<S> {
+public class SubCommandSyntax<S> extends CommandSyntax<S> {
 	
 	@NotNull
 	private final String name;
@@ -22,7 +26,7 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 	private final CommandAliases commandAliases;
 	
 	@NotNull
-	private final LinkedHashSet<String> children = new LinkedHashSet<>();
+	private final LinkedHashSet<@NotNull String> children = new LinkedHashSet<>();
 	
 	@Nullable
 	private final CommandExecution<S, ?> defaultExecution;
@@ -30,30 +34,33 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 	@Nullable
 	private String parent;
 	
-	@NotNull
-	private List<Argument<?>> parentArguments = new ArrayList<>();
-	
-	<C> SubCommandSyntax(@NotNull Class<C> senderClass,
-	                 @NotNull String commandLabel,
-	                 @Nullable String parent,
-	                 @NotNull String name,
-	                 @NotNull CommandAliases commandAliases,
-	                 @Nullable CommandExecution<S, C> execution,
-	                 @NotNull SyntaxFlags flags,
-	                 @NotNull List<Argument<?>> arguments,
-	                 @Nullable CommandExecution<S, C> defaultExecution) {
+	protected <C> SubCommandSyntax(
+		@NotNull CommandManager<?, S> manager,
+		@NotNull Class<C> senderClass,
+		@NotNull String commandLabel,
+		@Nullable String parent,
+		@NotNull String name,
+		@NotNull CommandAliases commandAliases,
+		@Nullable CommandExecution<S, C> execution,
+		@NotNull SyntaxFlags flags,
+		@NotNull List<Argument<?>> arguments,
+		@Nullable CommandExecution<S, C> defaultExecution
+	) {
 		
-		super(senderClass, commandLabel, execution, flags, arguments);
+		super(manager, senderClass, commandLabel, execution, flags, arguments);
 		this.name = name;
 		this.parent = parent;
 		this.commandAliases = commandAliases;
 		this.defaultExecution = defaultExecution;
+		
 	}
 	
-	public void setParentArguments(@NotNull List<Argument<?>> parentArguments) {
-		this.parentArguments = parentArguments;
+	public static <S> List<String> getSubCommandsUsed(CommandTree<S> tree, DelegateCommandContext<S> context) {
+		return context.getRawArguments().stream()
+			.filter((raw) -> !ContextFlagRegistry.isRawArgumentFlag(raw)
+				&& tree.searchForSub(raw) != null)
+			.collect(Collectors.toList());
 	}
-	
 	
 	public void addChild(SubCommandSyntax<S> subCommand) {
 		addChild(subCommand.getName());
@@ -77,6 +84,10 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 	
 	public void removeChild(String name) {
 		children.remove(name);
+	}
+	
+	public boolean isLeafChild() {
+		return !hasChildren() && !isOrphan();
 	}
 	
 	public boolean hasChildren() {
@@ -111,9 +122,13 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 	}
 	
 	public boolean matches(String rawArgument) {
-		return this.name.equalsIgnoreCase(rawArgument) || CommandSyntax.aliasesIncludes(commandAliases, rawArgument);
+		if (rawArgument == null) {
+			return false;
+		}
+		return this.name.equalsIgnoreCase(rawArgument)
+			|| ArgumentSyntaxUtility.aliasesIncludes(commandAliases, rawArgument);
 	}
-
+	
 	@Override
 	public String toString() {
 		return name;
@@ -139,13 +154,21 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 		return commandAliases;
 	}
 	
-	public @NotNull List<Argument<?>> getCachedParentArguments() {
-		return parentArguments;
-	}
 	
 	@Override
 	public @NotNull TextComponent toText(@NotNull CommandManager<?, S> manager, @NotNull S sender) {
-		return Component.text(format(manager, commandLabel, parentArguments));
+		Command<S> command = manager.getCommand(commandLabel);
+		if (command == null) {
+			return Component.empty();
+		}
+		
+		CommandTree<S> tree = command.tree();
+		
+		return Component.text(ArgumentSyntaxUtility.format(manager, commandLabel, tree.getParentalArguments(key())));
+	}
+	
+	public CommandTree.SubCommandKey<S> key() {
+		return new CommandTree.SubCommandKey<>(parent, name);
 	}
 	
 	@Override
@@ -161,5 +184,6 @@ public final class SubCommandSyntax<S> extends CommandSyntax<S> {
 	public int hashCode() {
 		return Objects.hash(super.hashCode(), parent, name);
 	}
+	
 	
 }

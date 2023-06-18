@@ -2,16 +2,20 @@ package io.github.mqzn.commands.base;
 
 import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.arguments.ArgumentInteger;
+import io.github.mqzn.commands.base.caption.CaptionKey;
 import io.github.mqzn.commands.base.context.Context;
 import io.github.mqzn.commands.base.cooldown.CommandCooldown;
 import io.github.mqzn.commands.base.manager.CommandManager;
 import io.github.mqzn.commands.base.manager.CommandSuggestionEngine;
-import io.github.mqzn.commands.base.syntax.*;
+import io.github.mqzn.commands.base.syntax.CommandExecution;
+import io.github.mqzn.commands.base.syntax.CommandSyntax;
+import io.github.mqzn.commands.base.syntax.CommandSyntaxBuilder;
+import io.github.mqzn.commands.base.syntax.SubCommandSyntax;
+import io.github.mqzn.commands.base.syntax.tree.CommandTree;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl {
 	
@@ -106,6 +110,14 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 	}
 	
 	/**
+	 * Fetches a subcommand from the name
+	 *
+	 * @param name subcommand name
+	 * @return the name of the subcommand
+	 */
+	Optional<SubCommandSyntax<S>> getSubCommand(@Nullable String name);
+	
+	/**
 	 * An internal builder class for the command
 	 * class {@link Command<S>}
 	 *
@@ -176,13 +188,21 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 				pageArg.setDefaultValue(1);
 				
 				CommandSyntax<S> helpSyntax =
-					CommandSyntaxBuilder.<S, S>genericBuilder(manager.getSenderWrapper().senderType(), name).execute((sender, context) -> {
-							
-							@Nullable Integer page = context.getArgument("page");
-							if (page == null) return;
-							manager.handleHelpProvider(sender, context, name, page, syntaxes);
-						}
-					).argument(Argument.literal("help")).argument(pageArg).build();
+					CommandSyntaxBuilder.genericBuilder(manager, manager.getSenderWrapper().senderType(), name)
+						.info(new Information("command." + name + ".help", "Shows this help menu"))
+						.execute((sender, context) -> {
+								
+								@Nullable Integer page = context.getArgument("page");
+								if (page == null) page = 1;
+								
+								try {
+									manager.handleHelpRequest(sender, context, name, page, context.commandUsed().syntaxes());
+								} catch (IllegalArgumentException ex) {
+									manager.captionRegistry().sendCaption(sender, context, CaptionKey.UNKNOWN_HELP_PAGE);
+								}
+								
+							}
+						).argument(Argument.literal("help")).argument(pageArg).build();
 				
 				syntaxes.add(helpSyntax);
 			}
@@ -207,17 +227,16 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 			
 			@NotNull
 			private final Set<CommandRequirement<S>> requirements;
-			
-			private List<CommandSyntax<S>> syntaxes;
-			
 			@Nullable
 			private final CommandExecution<S, S> execution;
-			
 			@NotNull
 			private final CommandTree<S> tree;
 			
 			@NotNull
 			private final CommandSuggestionEngine<S> suggestionsEngine;
+			
+			@NotNull
+			private final List<@NotNull CommandSyntax<S>> syntaxes;
 			
 			ImmutableCommandImpl(@NotNull CommandManager<?, S> manager,
 			                     @NotNull String name,
@@ -231,16 +250,14 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 				this.info = info;
 				this.cooldown = cooldown;
 				this.requirements = requirements;
+				
 				this.syntaxes = syntaxes;
+				Collections.sort(syntaxes);
+				
 				this.execution = execution;
 				this.tree = CommandTree.create(this);
+				//this.helpTree = CommandHelpTree.create(this);
 				this.suggestionsEngine = CommandSuggestionEngine.create(this);
-				
-				this.syntaxes = syntaxes.stream().map((syntax)-> {
-					if(!(syntax instanceof SubCommandSyntax<S>)) return syntax;
-					((SubCommandSyntax<S>) syntax).setParentArguments(tree.getParentalArguments(((SubCommandSyntax<S>) syntax).getName()));
-					return syntax;
-				}).collect(Collectors.toList());
 			}
 			
 			/**
@@ -294,6 +311,20 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 			@Override
 			public @NotNull CommandSuggestionEngine<S> suggestions() {
 				return suggestionsEngine;
+			}
+			
+			/**
+			 * Fetches a subcommand from the name
+			 *
+			 * @param name subcommand name
+			 * @return the name of the subcommand
+			 */
+			@Override
+			public Optional<SubCommandSyntax<S>> getSubCommand(@Nullable String name) {
+				return syntaxes.stream()
+					.filter(syntax -> syntax instanceof SubCommandSyntax<S> sub && sub.getName().equalsIgnoreCase(name))
+					.map((syntax) -> (SubCommandSyntax<S>) syntax)
+					.findFirst();
 			}
 			
 			@Override

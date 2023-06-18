@@ -2,6 +2,7 @@ package io.github.mqzn.commands.base.syntax;
 
 import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.base.Information;
+import io.github.mqzn.commands.base.manager.CommandManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -9,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CommandSyntaxBuilder<S, C> {
+	@NotNull
+	protected final CommandManager<?, S> manager;
 	
 	@NotNull
 	protected final String commandLabel;
@@ -28,15 +31,18 @@ public class CommandSyntaxBuilder<S, C> {
 	@Nullable
 	protected Information info = null;
 	
-	protected CommandSyntaxBuilder(@NotNull Class<C> senderClass,
+	protected CommandSyntaxBuilder(@NotNull CommandManager<?, S> manager,
+	                               @NotNull Class<C> senderClass,
 	                               @NotNull String label) {
+		this.manager = manager;
 		this.senderClass = senderClass;
 		this.commandLabel = label;
 	}
 	
-	public static <S, C> CommandSyntaxBuilder<S, C> genericBuilder(@NotNull Class<C> senderClass,
+	public static <S, C> CommandSyntaxBuilder<S, C> genericBuilder(@NotNull CommandManager<?, S> manager,
+	                                                               @NotNull Class<C> senderClass,
 	                                                               @NotNull String label) {
-		return new CommandSyntaxBuilder<>(senderClass, label);
+		return new CommandSyntaxBuilder<>(manager, senderClass, label);
 	}
 	
 	public CommandSyntaxBuilder<S, C> info(@Nullable Information info) {
@@ -73,7 +79,7 @@ public class CommandSyntaxBuilder<S, C> {
 	
 	public CommandSyntax<S> build() {
 		assert senderClass != null;
-		CommandSyntax<S> syntax = new CommandSyntax<>(senderClass, commandLabel,
+		CommandSyntax<S> syntax = new CommandSyntax<>(manager, senderClass, commandLabel,
 			execution == null ? (s, c) -> {
 			} : execution, flags, arguments);
 		syntax.setInfo(info);

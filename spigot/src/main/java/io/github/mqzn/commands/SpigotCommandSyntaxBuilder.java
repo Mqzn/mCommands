@@ -6,40 +6,40 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * The builder for syntax in spigot's platform
+ *
  * @param <C> the sender type
  */
 public final class SpigotCommandSyntaxBuilder<C> extends CommandSyntaxBuilder<CommandSender, C> {
 	
-	private SpigotCommandSyntaxBuilder(@NotNull Class<C> senderClass, @NotNull String label) {
-		super(senderClass, label);
+	private SpigotCommandSyntaxBuilder(SpigotCommandManager commandManager,
+	                                   @NotNull Class<C> senderClass, @NotNull String label) {
+		super(commandManager, senderClass, label);
 	}
 	
 	/**
 	 * Creating the builder's instance
-	 * @see CommandSyntaxBuilder
 	 *
-	 * @param senderClass custom sender class (optional)
+	 * @param senderClass  custom sender class (optional)
 	 * @param commandLabel the command name
-	 *
+	 * @param <C>          the sender type
 	 * @return the syntax builder
-	 *
-	 * @param <C> the sender type
+	 * @see CommandSyntaxBuilder
 	 */
-	public static <C> SpigotCommandSyntaxBuilder<C> builder(@NotNull Class<C> senderClass,
+	public static <C> SpigotCommandSyntaxBuilder<C> builder(@NotNull SpigotCommandManager commandManager,
+	                                                        @NotNull Class<C> senderClass,
 	                                                        @NotNull String commandLabel) {
-		return new SpigotCommandSyntaxBuilder<>(senderClass, commandLabel);
+		return new SpigotCommandSyntaxBuilder<>(commandManager, senderClass, commandLabel);
 	}
 	
 	/**
 	 * Creating the builder's instance
-	 * @see CommandSyntaxBuilder
 	 *
 	 * @param commandLabel the command name
-	 *
 	 * @return the syntax builder
-	 * */
-	public static SpigotCommandSyntaxBuilder<CommandSender> builder(@NotNull String commandLabel) {
-		return builder(CommandSender.class, commandLabel);
+	 * @see CommandSyntaxBuilder
+	 */
+	public static SpigotCommandSyntaxBuilder<CommandSender> builder(@NotNull SpigotCommandManager commandManager, @NotNull String commandLabel) {
+		return builder(commandManager, CommandSender.class, commandLabel);
 	}
 	
 }

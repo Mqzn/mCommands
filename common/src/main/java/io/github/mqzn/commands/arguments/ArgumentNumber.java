@@ -27,6 +27,7 @@ public abstract class ArgumentNumber<T extends Number> extends AbstractArgument<
 	
 	protected boolean hasMin, hasMax;
 	
+	@Nullable
 	protected T min, max;
 	
 	ArgumentNumber(@NotNull String id, Class<T> type,
@@ -118,8 +119,7 @@ public abstract class ArgumentNumber<T extends Number> extends AbstractArgument<
 	 *
 	 * @return the minimum of this argument
 	 */
-	@NotNull
-	public T getMin() {
+	public @Nullable T getMin() {
 		return min;
 	}
 	
@@ -137,8 +137,7 @@ public abstract class ArgumentNumber<T extends Number> extends AbstractArgument<
 	 *
 	 * @return the maximum of this argument
 	 */
-	@NotNull
-	public T getMax() {
+	public @Nullable T getMax() {
 		return max;
 	}
 	

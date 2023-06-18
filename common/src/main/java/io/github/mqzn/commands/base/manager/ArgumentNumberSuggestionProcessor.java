@@ -26,12 +26,12 @@ public final class ArgumentNumberSuggestionProcessor {
 		@Nullable N end = argumentNumber.getMax();
 		@Nullable N start = argumentNumber.getMin();
 		
-		if(start == null && end == null) {
+		if (start == null && end == null) {
 			return;
-		}else if(end == null) {
+		} else if (end == null) {
 			argumentNumber.suggest(start);
 			return;
-		}else if(start == null) {
+		} else if (start == null) {
 			argumentNumber.suggest(end);
 			return;
 		}

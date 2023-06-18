@@ -3,10 +3,12 @@ package io.github.mqzn.commands.base.manager;
 import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.arguments.ArgumentLiteral;
 import io.github.mqzn.commands.base.Command;
+import io.github.mqzn.commands.base.syntax.ArgumentSyntaxUtility;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.base.syntax.SubCommandSyntax;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -33,9 +35,13 @@ public final class CommandSuggestionEngine<S> {
 		
 		Argument<T> argument = (Argument<T>) arg;
 		
-		return new ArrayList<>(argument.suggestions().stream()
+		var list = new ArrayList<>(argument.suggestions().stream()
 			.map(argument::toString)
 			.toList());
+		
+		if (list.isEmpty()) list.add(ArgumentSyntaxUtility.formatArg(argument));
+		
+		return list;
 	}
 	
 	private void initialize() {
@@ -80,7 +86,7 @@ public final class CommandSuggestionEngine<S> {
 		private void fetchArgumentSuggestions() {
 			
 			List<Argument<?>> arguments = (syntax instanceof SubCommandSyntax<S> sub) ?
-				command.tree().getParentalArguments(sub.getName())
+				command.tree().getParentalArguments(sub.key())
 				: syntax.getArguments();
 			
 			for (int arg = 0; arg < arguments.size(); arg++) {
@@ -116,7 +122,7 @@ public final class CommandSuggestionEngine<S> {
 					return argument.suggestions().stream().map(argument::toString)
 						.collect(Collectors.toList());
 					
-				}catch (ArrayIndexOutOfBoundsException ex) {
+				} catch (ArrayIndexOutOfBoundsException ex) {
 					ex.printStackTrace();
 					return Collections.emptyList();
 				}
@@ -144,13 +150,12 @@ public final class CommandSuggestionEngine<S> {
 		}
 		
 		
-		
 		/**
 		 * Creates a condition to accept a specific tab completion of a specific syntax
 		 */
 		private void init(CommandSyntax<S> syntax) {
 			
-			List<Argument<?>> arguments = (syntax instanceof SubCommandSyntax<S> sub) ? command.tree().getParentalArguments(sub.getName()) : syntax.getArguments();
+			List<Argument<?>> arguments = (syntax instanceof SubCommandSyntax<S> sub) ? command.tree().getParentalArguments(sub.key()) : syntax.getArguments();
 			
 			for (int index = 0; index < arguments.size(); index++) {
 				
@@ -161,7 +166,7 @@ public final class CommandSuggestionEngine<S> {
 				rawPredicates.put(index, (args) -> {
 					String raw = args[finalIndex];
 					if (raw == null || raw.isBlank() || raw.isEmpty()) return true;
-					return raw.equalsIgnoreCase(argument.id()) || CommandSyntax.aliasesIncludes(literal.getAliases(), raw);
+					return raw.equalsIgnoreCase(argument.id()) || ArgumentSyntaxUtility.aliasesIncludes(literal.getAliases(), raw);
 				});
 				
 			}

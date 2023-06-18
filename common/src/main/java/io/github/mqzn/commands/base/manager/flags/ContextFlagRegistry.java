@@ -51,7 +51,7 @@ public final class ContextFlagRegistry<S> {
 	
 	public FlagExtractionResult extractFlags(@NotNull S sender, @NotNull Command<S> command, @NotNull CommandSyntax<S> syntax) {
 		
-		List<Argument<?>> argumentList = (syntax instanceof SubCommandSyntax<S> sub) ? command.tree().getParentalArguments(sub.getName())
+		List<Argument<?>> argumentList = (syntax instanceof SubCommandSyntax<S> sub) ? command.tree().getParentalArguments(sub.key())
 			: syntax.getArguments();
 		
 		for (int i = 0, r = 0; i < argumentList.size(); i++, r++) {

@@ -17,10 +17,10 @@ public final class ArgumentUUID extends AbstractArgument<UUID> {
 	}
 	
 	@Override
-	public <S> UUID parse(@UnknownNullability S sender,  @NotNull String command, @NotNull String input) throws ArgumentParseException {
+	public <S> UUID parse(@UnknownNullability S sender, @NotNull String command, @NotNull String input) throws ArgumentParseException {
 		try {
 			return UUID.fromString(input);
-		}catch (Exception ex) {
+		} catch (Exception ex) {
 			throw new ArgumentParseException(
 				String.format("The uuid `%s` is not valid", input), input, command
 			);

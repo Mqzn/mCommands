@@ -3,6 +3,7 @@ package io.github.mqzn.commands.base.manager;
 import io.github.mqzn.commands.base.context.CommandContext;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import org.jetbrains.annotations.NotNull;
+
 import java.util.concurrent.CompletableFuture;
 
 public abstract class CommandExecutionCoordinator<S> {

@@ -11,13 +11,14 @@ import io.github.mqzn.commands.base.context.DelegateCommandContext;
 import io.github.mqzn.commands.base.cooldown.CommandCooldown;
 import io.github.mqzn.commands.base.cooldown.CooldownCaption;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
-import io.github.mqzn.commands.base.syntax.CommandTree;
 import io.github.mqzn.commands.base.syntax.SubCommandSyntax;
+import io.github.mqzn.commands.base.syntax.tree.CommandTree;
 import io.github.mqzn.commands.exceptions.CommandExceptionHandler;
 import io.github.mqzn.commands.exceptions.UnknownCommandSenderType;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import io.github.mqzn.commands.exceptions.types.SyntaxAmbiguityException;
 import io.github.mqzn.commands.help.CommandHelpProvider;
+import io.github.mqzn.commands.help.UnknownPageCaption;
 import io.github.mqzn.commands.utilities.TimeParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,7 +60,6 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 	@NotNull
 	private final CommandExecutionCoordinator<S> coordinator;
 	
-	
 	@NotNull
 	private final Map<String, Command<S>> commands;
 	
@@ -76,7 +76,7 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 	private final Map<String, Long> cooldowns = new HashMap<>();
 	
 	@Nullable
-	private CommandHelpProvider commandHelpProvider;
+	private CommandHelpProvider<S> commandHelpProvider;
 	
 	public AbstractCommandManager(@NotNull B bootstrap,
 	                              @NotNull SenderWrapper<S> wrapper, @NotNull CommandExecutionCoordinator.Type coordinator) {
@@ -91,7 +91,10 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 			throw new RuntimeException(e);
 		}
 		this.suggestionProviderRegistry = new SuggestionProviderRegistry();
+		
 		this.captionRegistry = new CaptionRegistry<>(this);
+		captionRegistry.registerCaption(new UnknownPageCaption<>());
+		
 		this.senderProviderRegistry = new SenderProviderRegistry<>();
 		this.exceptionHandler = new CommandExceptionHandler<>(this);
 		
@@ -124,12 +127,12 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 	}
 	
 	@Override
-	public @Nullable CommandHelpProvider helpProvider() {
+	public @Nullable CommandHelpProvider<S> helpProvider() {
 		return commandHelpProvider;
 	}
 	
 	@Override
-	public void setHelpProvider(@Nullable CommandHelpProvider helpProvider) {
+	public void setHelpProvider(@Nullable CommandHelpProvider<S> helpProvider) {
 		this.commandHelpProvider = helpProvider;
 	}
 	
@@ -145,7 +148,7 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 		DelegateCommandContext<S> context = DelegateCommandContext.create(this, command, sender, args);
 		String cmdPermission = command.info().permission();
 		
-		if(cmdPermission != null && !cmdPermission.isEmpty()  && !wrapper.hasPermission(sender, cmdPermission)) {
+		if (cmdPermission != null && !cmdPermission.isEmpty() && !wrapper.hasPermission(sender, cmdPermission)) {
 			captionRegistry.sendCaption(sender, context, CaptionKey.NO_PERMISSION);
 			return;
 		}
@@ -161,7 +164,6 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 				cooldowns.put(senderName, System.currentTimeMillis());
 			} else {
 				//send a caption telling the user that he's in a cool down
-				
 				//calculating remaining time
 				TimeParser parser = TimeParser.parse(calculateRemainingTime(lastTimeCommandExecuted, cooldown));
 				captionRegistry.sendCaption(sender, context, null, new CooldownCaption<>(parser));
@@ -175,29 +177,32 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 			return;
 		}
 		
-		CommandTree.TraversingResult<S> result = findSyntax(command, context);
+		CommandTree.CommandSearchResult<S> result = findSyntax(command, context);
+		System.out.println("Result = " + result.state);
+		if (result.data instanceof SubCommandSyntax<S> sub) {
+			System.out.println("Sub key found = " + sub.key());
+		}
 		
-		if (result.state == CommandTree.TraversingResultState.NOT_FOUND) {
+		if (result.state == CommandTree.CommandSearchResultState.NOT_FOUND) {
 			CaptionKey key = args.length == 1 && args[0].equalsIgnoreCase("help") ? CaptionKey.NO_HELP_TOPIC_AVAILABLE : CaptionKey.UNKNOWN_COMMAND;
 			captionRegistry.sendCaption(sender, context, key);
 			return;
-		} else if (result.state == CommandTree.TraversingResultState.FOUND_INCOMPLETE) {
-			assert result.data != null && result.data.isSubCommand();
-			SubCommandSyntax<S> subCmd = (SubCommandSyntax<S>) result.data;
+		} else if (result.state == CommandTree.CommandSearchResultState.FOUND_INCOMPLETE) {
 			
-			var subInfo = subCmd.getInfo();
-			if(subInfo != null && !wrapper.hasPermission(sender, subInfo.permission())) {
-				captionRegistry.sendCaption(sender, context, CaptionKey.NO_PERMISSION);
-				return;
+			if (result.data == null) return;
+			if (result.data instanceof SubCommandSyntax<S> subCmd) {
+				var subInfo = subCmd.getInfo();
+				
+				if (subInfo != null && !wrapper.hasPermission(sender, subInfo.permission()))
+					captionRegistry.sendCaption(sender, context, CaptionKey.NO_PERMISSION);
+				else
+					subCmd.defaultExecution(sender, context);
 			}
-			subCmd.defaultExecution(sender, context);
 			return;
 		}
 		
 		CommandSyntax<S> syntax = result.data;
 		assert syntax != null;
-		
-		//log("Found syntax : " + syntaxUsed.formatted());
 		
 		CommandContext<S> commandContext = CommandContext.create(this, syntax, context);
 		try {
@@ -230,12 +235,12 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 	
 	
 	@Override
-	public CommandTree.TraversingResult<S> findSyntax(final @NotNull Command<S> command,
-	                                                  final @NotNull DelegateCommandContext<S> commandContext) {
+	public CommandTree.CommandSearchResult<S> findSyntax(final @NotNull Command<S> command,
+	                                                     final @NotNull DelegateCommandContext<S> commandContext) {
 		
 		for (CommandSyntax<S> syntax : command.syntaxes()) {
 			if (!syntax.isSubCommand() && syntax.matchesContext(commandContext))
-				return new CommandTree.TraversingResult<>(syntax, CommandTree.TraversingResultState.FOUND);
+				return new CommandTree.CommandSearchResult<>(syntax, CommandTree.CommandSearchResultState.FOUND);
 		}
 		
 		return command.tree().traverse(commandContext);
@@ -278,20 +283,23 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 	@Override
 	public <C extends Command<S>> void registerCommand(C command) {
 		
-		List<CommandSyntax<S>> check = this.findAmbiguity(command);
-		
-		if (!check.isEmpty()) {
+		synchronized (bootstrap) {
+			List<CommandSyntax<S>> check = this.findAmbiguity(command);
 			
-			try {
-				throw new SyntaxAmbiguityException(this, command, check);
-			} catch (SyntaxAmbiguityException e) {
-				e.printStackTrace();
-				return;
+			if (!check.isEmpty()) {
+				
+				try {
+					throw new SyntaxAmbiguityException(this, command, check);
+				} catch (SyntaxAmbiguityException e) {
+					e.printStackTrace();
+					return;
+				}
+				
 			}
 			
+			commands.put(command.name(), command);
 		}
 		
-		commands.put(command.name(), command);
 	}
 	
 	@Override
@@ -351,9 +359,9 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 		}
 		
 		return allSuggestions.stream().distinct()
-			.filter((suggestion)-> {
-				SubCommandSyntax<S> subCmd = command.tree().getSubCommand(suggestion);
-				if(subCmd != null) return wrapper.hasPermission(sender, subCmd.getName());
+			.filter((suggestion) -> {
+				SubCommandSyntax<S> subCmd = command.tree().searchForSub(suggestion);
+				if (subCmd != null) return wrapper.hasPermission(sender, subCmd.getName());
 				return true;
 			})
 			.collect(Collectors.toList());
@@ -361,7 +369,7 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 	
 	@Override
 	public synchronized @NotNull List<CommandSyntax<S>> findAmbiguity(@NotNull Command<S> command) {
-		AmbiguityChecker<S> ambiguityChecker = AmbiguityChecker.Companion.of(command);
+		AmbiguityChecker<S> ambiguityChecker = AmbiguityChecker.of(command);
 		return ambiguityChecker.findAmbiguity();
 	}
 	

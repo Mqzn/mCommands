@@ -4,8 +4,10 @@ import io.github.mqzn.commands.arguments.ArgumentLiteral
 import io.github.mqzn.commands.base.Command
 import io.github.mqzn.commands.base.syntax.CommandSyntax
 
-class AmbiguityChecker<S> private constructor(private  val command: Command<S>,
-                                              private val syntaxes: List<CommandSyntax<S>> = command.syntaxes()) {
+class AmbiguityChecker<S> private constructor(
+    private val command: Command<S>,
+    private val syntaxes: List<CommandSyntax<S>> = command.syntaxes()
+) {
     @Synchronized
     fun findAmbiguity(): List<CommandSyntax<S>> {
         for (syntax in syntaxes) {
@@ -36,11 +38,13 @@ class AmbiguityChecker<S> private constructor(private  val command: Command<S>,
         val s2Length = CommandSyntax.getArguments(command.tree(), s2)
 
         return (!hasLiteralArgs(s1) && !hasLiteralArgs(s2) && s1Length == s2Length) ||
-                (s1Length==s2Length && s1 == s2)
+                (s1Length == s2Length && s1 == s2)
     }
 
     companion object {
-        fun <S> of(command : Command<S>): AmbiguityChecker<S> {
+
+        @JvmStatic
+        fun <S> of(command: Command<S>): AmbiguityChecker<S> {
             return AmbiguityChecker(command)
         }
 

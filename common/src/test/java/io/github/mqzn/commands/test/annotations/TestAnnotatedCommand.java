@@ -20,6 +20,6 @@ public class TestAnnotatedCommand {
 	public void disband(ClientSender sender) {
 		System.out.println("Disbands shit !");
 	}
-
-
+	
+	
 }

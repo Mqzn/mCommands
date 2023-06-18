@@ -7,11 +7,13 @@ import io.github.mqzn.commands.base.caption.CaptionKey;
 import io.github.mqzn.commands.base.caption.CaptionRegistry;
 import io.github.mqzn.commands.base.context.Context;
 import io.github.mqzn.commands.base.context.DelegateCommandContext;
+import io.github.mqzn.commands.base.syntax.ArgumentSyntaxUtility;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
-import io.github.mqzn.commands.base.syntax.CommandTree;
+import io.github.mqzn.commands.base.syntax.SubCommandSyntax;
+import io.github.mqzn.commands.base.syntax.tree.CommandTree;
 import io.github.mqzn.commands.exceptions.CommandExceptionHandler;
 import io.github.mqzn.commands.help.CommandHelpProvider;
-import io.github.mqzn.commands.help.CommandSyntaxPageDisplayer;
+import io.github.mqzn.commands.help.CommandHelpStyle;
 import io.github.mqzn.commands.utilities.text.PaginatedText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -139,9 +141,10 @@ public interface CommandManager<B, S> {
 	 * during command execution of '/cmd help'
 	 *
 	 * @return the sender provider registry
+	 * @see CommandHelpStyle
 	 * @see CommandHelpProvider
 	 */
-	@Nullable CommandHelpProvider helpProvider();
+	@Nullable CommandHelpProvider<S> helpProvider();
 	
 	/**
 	 * Sets the help menu provider for
@@ -149,7 +152,7 @@ public interface CommandManager<B, S> {
 	 *
 	 * @param helpProvider the new help provider
 	 */
-	void setHelpProvider(@Nullable CommandHelpProvider helpProvider);
+	void setHelpProvider(@Nullable CommandHelpProvider<S> helpProvider);
 	
 	/**
 	 * Finds syntaxes that are ambigious
@@ -167,7 +170,7 @@ public interface CommandManager<B, S> {
 	 * @param delegateContext the delegate command context (context containing only raws)
 	 * @return the traversing result of the search
 	 */
-	CommandTree.TraversingResult<S> findSyntax(@NotNull Command<S> command, DelegateCommandContext<S> delegateContext);
+	CommandTree.CommandSearchResult<S> findSyntax(@NotNull Command<S> command, DelegateCommandContext<S> delegateContext);
 	
 	/**
 	 * Suggests the suggestions in correspond to the args being used
@@ -180,7 +183,6 @@ public interface CommandManager<B, S> {
 	 */
 	@NotNull List<String> suggest(Command<S> command, S sender, String[] args);
 	
-
 	
 	/**
 	 * Numeric argument suggestion processor
@@ -200,23 +202,31 @@ public interface CommandManager<B, S> {
 	void log(String msg, Object... args);
 	
 	
-	default void handleHelpProvider(@NotNull S sender,
-	                                @NotNull Context<S> context,
-	                                @NotNull String label,
-	                                int page,
-	                                @NotNull List<CommandSyntax<S>> syntaxes) {
+	default void handleHelpRequest(@NotNull S sender,
+	                               @NotNull Context<S> context,
+	                               @NotNull String label,
+	                               int page,
+	                               @NotNull List<? extends CommandSyntax<S>> syntaxes) throws IllegalArgumentException {
 		
-		CommandHelpProvider commandHelpProvider = helpProvider();
+		CommandHelpProvider<S> helpProvider = helpProvider();
 		CaptionRegistry<S> captionRegistry = captionRegistry();
-		if (commandHelpProvider == null) {
+		if (helpProvider == null) {
 			captionRegistry.sendCaption(sender, context, CaptionKey.NO_HELP_TOPIC_AVAILABLE);
 			return;
 		}
 		
-		var paginated = PaginatedText.<S, CommandSyntax<S>>create(commandHelpProvider, getSenderWrapper())
-			.withDisplayer(new CommandSyntaxPageDisplayer<>(this, commandHelpProvider));
+		CommandHelpStyle<S> style = helpProvider.menuStyle();
 		
-		syntaxes.forEach(paginated::add);
+		var paginated = PaginatedText.<S, CommandSyntax<S>>create(style, getSenderWrapper())
+			.withDisplayer(helpProvider.syntaxDisplayer(this, context.commandUsed(), style));
+		
+		Command<S> command = context.commandUsed();
+		for (var syntax : syntaxes) {
+			if (label.equalsIgnoreCase(command.name()) || ArgumentSyntaxUtility.aliasesIncludes(command.info().aliases(), label)) {
+				if ((syntax instanceof SubCommandSyntax<S> sub) && (!sub.isOrphan())) continue;
+			}
+			paginated.add(syntax);
+		}
 		
 		paginated.paginate();
 		paginated.displayPage(label, sender, page);

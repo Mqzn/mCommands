@@ -8,21 +8,18 @@ import io.github.mqzn.commands.base.context.DelegateCommandContext;
 import io.github.mqzn.commands.base.manager.AmbiguityChecker;
 import io.github.mqzn.commands.base.manager.CommandManager;
 import io.github.mqzn.commands.base.manager.flags.ContextFlagRegistry;
+import io.github.mqzn.commands.base.syntax.tree.CommandTree;
 import io.github.mqzn.commands.utilities.text.TextConvertible;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Objects;
 
-public class CommandSyntax<S> implements TextConvertible<S> {
+public class CommandSyntax<S> implements TextConvertible<S>, Comparable<CommandSyntax<S>> {
 	
-	@NotNull
-	private final static String[] argumentFormatPrefixSuffix = {
-		"<", ">", "[", "]"
-	};
 	
 	@NotNull
 	protected final List<Argument<?>> arguments;
@@ -38,15 +35,17 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 	
 	@NotNull
 	protected final SyntaxFlags flags;
-	
+	private final CommandManager<?, S> manager;
 	@Nullable
 	protected Information info = null;
 	
-	<C> CommandSyntax(@NotNull Class<C> senderClass,
+	<C> CommandSyntax(@NotNull CommandManager<?, S> manager,
+	                  @NotNull Class<C> senderClass,
 	                  @NotNull String commandLabel,
 	                  @Nullable CommandExecution<S, C> execution,
 	                  @NotNull SyntaxFlags flags,
 	                  @NotNull List<Argument<?>> args) {
+		this.manager = manager;
 		this.senderClass = senderClass;
 		this.commandLabel = commandLabel;
 		this.execution = execution;
@@ -55,45 +54,9 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 		arguments.removeIf(Objects::isNull);
 	}
 	
-	
-	public static <S, C> CommandSyntax<S> empty(
-		Class<C> senderClass, String cmdLabel) {
-		return new CommandSyntax<>(senderClass, cmdLabel,
-			(sender, context) -> {
-			}, SyntaxFlags.of(), new ArrayList<>());
-	}
-	
-	public static boolean isArgRequired(String argSyntax) {
-		return argSyntax.startsWith(argumentFormatPrefixSuffix[0]) && argSyntax.endsWith(argumentFormatPrefixSuffix[1]);
-	}
-	
-	public static boolean isArgOptional(String argSyntax) {
-		return argSyntax.startsWith(argumentFormatPrefixSuffix[2]) && argSyntax.endsWith(argumentFormatPrefixSuffix[3]);
-	}
-	
-	public static boolean isArgLiteral(String argSyntax) {
-		return !isArgRequired(argSyntax) && !isArgOptional(argSyntax);
-	}
-	
-	public static String fetchArgId(String argSyntax) {
-		StringBuilder builder = new StringBuilder(argSyntax);
-		builder.deleteCharAt(argSyntax.length() - 1);
-		builder.deleteCharAt(0);
-		
-		return builder.toString();
-	}
-	
-	public static boolean aliasesIncludes(CommandAliases commandAliases, String name) {
-		return aliasesIncludes(commandAliases.getArray(), name);
-	}
-	
-	public static boolean aliasesIncludes(String[] aliases, String name) {
-		for (String aliase : aliases) {
-			if (aliase.equalsIgnoreCase(name))
-				return true;
-		}
-		
-		return false;
+	public static <S> List<Argument<?>> getArguments(CommandTree<S> tree, CommandSyntax<S> syntax) {
+		if (syntax instanceof SubCommandSyntax<S> sub) return tree.getParentalArguments(sub.key());
+		return syntax.getArguments();
 	}
 	
 	public @NotNull Class<?> getSenderClass() {
@@ -137,7 +100,6 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 	
 	/**
 	 * Checks if the syntax matches the context input
-	 * Here are some examples:
 	 *
 	 * @param commandContext the input
 	 * @return whether the syntax is suitable for the context used !
@@ -181,7 +143,7 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 			
 			if (required instanceof ArgumentLiteral) {
 				
-				if (!required.id().equalsIgnoreCase(raw) && !aliasesIncludes(((ArgumentLiteral) required).getAliases(), raw)) {
+				if (!required.id().equalsIgnoreCase(raw) && !ArgumentSyntaxUtility.aliasesIncludes(((ArgumentLiteral) required).getAliases(), raw)) {
 					return false;
 				}
 				
@@ -207,63 +169,28 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 		return arguments;
 	}
 	
+	public boolean hasArg(Argument<?> argument) {
+		return arguments.contains(argument);
+	}
+	
 	@SuppressWarnings("unchecked")
 	public <C> void execute(C sender, CommandContext<S> commandContext) {
 		if (execution == null) return;
 		((CommandExecution<S, C>) execution).execute(sender, commandContext);
 	}
 	
-	public static <S> String format(
-		CommandManager<?, S> commandManager,
-		String commandLabel,
-		List<Argument<?>> arguments) {
-		
-		String start = commandManager.commandPrefix() == ' ' ? "" : String.valueOf(commandManager.commandPrefix());
-		StringBuilder builder = new StringBuilder(start).append(commandLabel).append(" ");
-		
-		for (int i = 0; i < arguments.size(); i++) {
-			
-			var arg = arguments.get(i);
-			
-			if (arg instanceof ArgumentLiteral) {
-				builder.append(arg.id()).append(" ");
-				continue;
-			}
-			
-			String prefix, suffix;
-			if (arg.isOptional()) {
-				prefix = argumentFormatPrefixSuffix[2];
-				suffix = argumentFormatPrefixSuffix[3];
-			} else {
-				prefix = argumentFormatPrefixSuffix[0];
-				suffix = argumentFormatPrefixSuffix[1];
-			}
-			
-			builder.append(prefix)
-				.append(arg.id())
-				.append(suffix);
-			
-			if (i != arguments.size() - 1) builder.append(" ");
-			
-			
-		}
-		
-		return builder.toString();
-	}
-	
 	@Override
 	public @NotNull TextComponent toText(@NotNull CommandManager<?, S> manager, @NotNull S sender) {
-		return Component.text(format(manager, commandLabel, arguments));
+		return Component.text(ArgumentSyntaxUtility.format(manager, commandLabel, arguments));
 	}
 	
 	public boolean isSubCommand() {
 		return this instanceof SubCommandSyntax<S>;
 	}
 	
-	public static <S> List<Argument<?>> getArguments(CommandTree<S> tree, CommandSyntax<S> syntax)
-	{
-		if(syntax instanceof SubCommandSyntax<S> sub) return tree.getParentalArguments(sub.getName());
-		return syntax.getArguments();
+	@Override
+	public String toString() {
+		return ArgumentSyntaxUtility.format(manager, "", arguments);
 	}
 	
 	@Override
@@ -276,6 +203,30 @@ public class CommandSyntax<S> implements TextConvertible<S> {
 	@Override
 	public int hashCode() {
 		return Objects.hash(commandLabel, arguments);
+	}
+	
+	@Override
+	public int compareTo(@NotNull CommandSyntax<S> other) {
+		List<Argument<?>> args = this.getArguments();
+		List<Argument<?>> otherArgs = other.getArguments();
+		
+		if (args.isEmpty() && otherArgs.isEmpty()) return 0;
+		if (args.isEmpty()) return -1;
+		if (otherArgs.isEmpty()) return 1;
+		
+		var firstArg = args.get(0);
+		var otherFirstArg = otherArgs.get(0);
+		
+		if (firstArg instanceof ArgumentLiteral && otherFirstArg instanceof ArgumentLiteral)
+			return args.size() - otherArgs.size();
+		
+		else if (firstArg instanceof ArgumentLiteral)
+			return -1;
+		
+		else if (otherFirstArg instanceof ArgumentLiteral)
+			return 1;
+		
+		return args.size() - otherArgs.size();
 	}
 	
 }

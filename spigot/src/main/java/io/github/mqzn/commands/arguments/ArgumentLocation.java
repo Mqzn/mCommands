@@ -22,13 +22,13 @@ public final class ArgumentLocation extends AbstractArgument<Location> {
 	public <S> Location parse(@UnknownNullability S sender,
 	                          @NotNull String command,
 	                          @NotNull String input) throws ArgumentParseException {
-		if(!(sender instanceof Player player)) {
+		if (!(sender instanceof Player player)) {
 			throw new ArgumentParseException("Location cannot be parsed," +
 				" cannot find the world since the sender is not a player !", input, command);
 		}
 		
 		String[] split = input.split(",");
-		if(split.length != 3) {
+		if (split.length != 3) {
 			throw new ArgumentParseException(EXCEPTION_MESSAGE, input, command);
 		}
 		
@@ -38,7 +38,7 @@ public final class ArgumentLocation extends AbstractArgument<Location> {
 			double z = Double.parseDouble(split[2]);
 			
 			return new Location(player.getWorld(), x, y, z);
-		}catch (NumberFormatException ex) {
+		} catch (NumberFormatException ex) {
 			throw new ArgumentParseException(EXCEPTION_MESSAGE, input, command);
 		}
 		

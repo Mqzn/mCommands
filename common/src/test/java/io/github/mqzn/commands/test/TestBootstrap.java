@@ -5,6 +5,7 @@ import io.github.mqzn.commands.test.annotations.TestAnnotatedCommand;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
@@ -25,21 +26,20 @@ public final class TestBootstrap {
 	@Test
 	public void firstTest() {
 		
-		Assertions.assertThrows(IllegalStateException.class, ()-> parser.parse(new TestAnnotatedCommand()));
-		
+		parser.parse(new TestAnnotatedCommand());
 		String[] args = new String[]{
 			"disband"
 		};
 		
 		var cmd = commandManager.getCommand("testa");
-		Assertions.assertNull(cmd);
+		Assertions.assertNotNull(cmd);
 		
-		//commandManager.executeCommand(cmd, sender, args);
+		commandManager.executeCommand(cmd, sender, args);
 	}
 	
 	@Test
 	public void executionTest() {
-		Assertions.assertDoesNotThrow(()-> parser.parse(new TestAnnotatedCommand()));
+		Assertions.assertDoesNotThrow(() -> parser.parse(new TestAnnotatedCommand()));
 		
 		String[] args = new String[]{
 			"disband"

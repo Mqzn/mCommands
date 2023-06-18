@@ -10,48 +10,47 @@ import org.jetbrains.annotations.NotNull;
  * Class that reperesents a builder for subcommands in
  * the platform "spigot"
  *
+ * @param <C> the sender type
  * @see CommandSyntaxBuilder
  * @see SubCommandSyntax
  * @see SubCommandBuilder
- *
- * @param <C> the sender type
  */
 public final class SpigotSubCommandBuilder<C> extends SubCommandBuilder<CommandSender, C> {
 	
-	private SpigotSubCommandBuilder(@NotNull Class<C> senderClass, @NotNull String label, @NotNull String name) {
-		super(senderClass, label, name);
+	private SpigotSubCommandBuilder(@NotNull SpigotCommandManager commandManager, @NotNull Class<C> senderClass, @NotNull String label, @NotNull String name) {
+		super(commandManager, senderClass, label, name);
 	}
 	
 	/**
 	 * Creating the builder's instance, that will be used to build the syntax
 	 * of the subcommand
-	 * @see CommandSyntaxBuilder
 	 *
-	 * @param senderClass custom sender class (optional)
+	 * @param senderClass  custom sender class (optional)
 	 * @param commandLabel the command name
-	 * @param name the subcommand name
-	 *
+	 * @param name         the subcommand name
+	 * @param <C>          the sender type
 	 * @return the syntax builder
-	 *
-	 * @param <C> the sender type
+	 * @see CommandSyntaxBuilder
 	 */
-	public static <C> SpigotSubCommandBuilder<C> builder(@NotNull Class<C> senderClass,
+	public static <C> SpigotSubCommandBuilder<C> builder(@NotNull SpigotCommandManager commandManager,
+	                                                     @NotNull Class<C> senderClass,
 	                                                     @NotNull String commandLabel,
 	                                                     @NotNull String name) {
-		return new SpigotSubCommandBuilder<>(senderClass, commandLabel, name);
+		return new SpigotSubCommandBuilder<>(commandManager, senderClass, commandLabel, name);
 	}
+	
 	/**
 	 * Creating the builder's instance, that will be used to build the syntax
 	 * of the subcommand
-	 * @see CommandSyntaxBuilder
 	 *
 	 * @param commandLabel the command name
-	 * @param name the subcommand name
-	 *
+	 * @param name         the subcommand name
 	 * @return the subcommand-syntax builder
+	 * @see CommandSyntaxBuilder
 	 */
-	public static SpigotSubCommandBuilder<CommandSender> builder(@NotNull String commandLabel, @NotNull String name) {
-		return builder(CommandSender.class, commandLabel, name);
+	public static SpigotSubCommandBuilder<CommandSender> builder(@NotNull SpigotCommandManager commandManager,
+	                                                             @NotNull String commandLabel, @NotNull String name) {
+		return builder(commandManager, CommandSender.class, commandLabel, name);
 	}
 	
 }

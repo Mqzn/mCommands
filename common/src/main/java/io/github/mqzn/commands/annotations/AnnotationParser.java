@@ -12,7 +12,7 @@ import io.github.mqzn.commands.base.*;
 import io.github.mqzn.commands.base.context.Context;
 import io.github.mqzn.commands.base.cooldown.CommandCooldown;
 import io.github.mqzn.commands.base.manager.CommandManager;
-import io.github.mqzn.commands.base.syntax.CommandSyntax;
+import io.github.mqzn.commands.base.syntax.ArgumentSyntaxUtility;
 import io.github.mqzn.commands.base.syntax.CommandSyntaxBuilder;
 import io.github.mqzn.commands.base.syntax.SubCommandBuilder;
 import io.github.mqzn.commands.base.syntax.SyntaxFlags;
@@ -20,6 +20,7 @@ import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import io.github.mqzn.commands.utilities.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.Arrays;
@@ -55,10 +56,10 @@ public final class AnnotationParser<S> {
 	public <E extends Enum<E>, C, CO> void parse(CO annotatedCommand) {
 		
 		//load nested classes
-		if(annotatedCommand.getClass().isAnnotationPresent(CommandsGroup.class)) {
+		if (annotatedCommand.getClass().isAnnotationPresent(CommandsGroup.class)) {
 			for (Class<?> innerClass : annotatedCommand.getClass().getDeclaredClasses()) {
 				boolean isStatic = Modifier.isStatic(innerClass.getModifiers());
-				if(!isStatic) {
+				if (!isStatic) {
 					throw new IllegalStateException(
 						String.format("Found a member class `%s` which is NOT static",
 							innerClass.getName())
@@ -123,10 +124,10 @@ public final class AnnotationParser<S> {
 		
 		SubCommand[] subs = annotatedCommand.getClass().getAnnotationsByType(SubCommand.class);
 		for (SubCommand subCommand : subs) {
-			builder = this.loadSub(cmdAnnotation, subCommand, builder);
+			builder = this.loadSub(annotatedCommand.getClass(), cmdAnnotation, subCommand, builder);
 		}
 		
-		Method[] methods = annotatedCommand.getClass().getMethods();
+		Method[] methods = annotatedCommand.getClass().getDeclaredMethods();
 		for (var method : methods) {
 			if (!checkMethod(method)) {
 				if (method.getParameters().length == 1 && method.isAnnotationPresent(Default.class)) {
@@ -134,16 +135,15 @@ public final class AnnotationParser<S> {
 					//default Execution
 					builder
 						.defaultExecutor(
-							(sender, context) -> invokeMethod(annotatedCommand,method,sender));
+							(sender, context) -> invokeMethod(annotatedCommand, method, sender));
 				}
 				
 				continue;
 			}
-			
 			ExecutionMeta executionMetaMeta = method.getAnnotation(ExecutionMeta.class);
 			assert executionMetaMeta != null;
 			
-			var loadedData = loadMethodParameters(manager, cmdAnnotation.name(), executionMetaMeta, method);
+			var loadedData = loadMethodParameters(manager, cmdAnnotation.name(), executionMetaMeta, annotatedCommand.getClass(), method);
 			var arguments = loadedData.right;
 			var flags = loadedData.left;
 			
@@ -152,7 +152,7 @@ public final class AnnotationParser<S> {
 				senderType = executionMetaMeta.senderType();
 			
 			
-			CommandSyntaxBuilder<S, C> syntaxBuilder = CommandSyntaxBuilder.genericBuilder((Class<C>) senderType, cmdAnnotation.name());
+			CommandSyntaxBuilder<S, C> syntaxBuilder = CommandSyntaxBuilder.genericBuilder(manager, (Class<C>) senderType, cmdAnnotation.name());
 			
 			for (var arg : arguments) {
 				if (arg == null) continue;
@@ -173,7 +173,8 @@ public final class AnnotationParser<S> {
 		manager.registerCommand(builder.build());
 	}
 	
-	private <C> io.github.mqzn.commands.base.Command.Builder<S> loadSub(Command cmd,
+	private <C> io.github.mqzn.commands.base.Command.Builder<S> loadSub(Class<?> commandClass,
+	                                                                    Command cmd,
 	                                                                    SubCommand subCommand,
 	                                                                    io.github.mqzn.commands.base.Command.Builder<S> builder) {
 		
@@ -203,7 +204,6 @@ public final class AnnotationParser<S> {
 			
 			subCommandObject.setParent(parentInfo.name());
 		}
-		
 		return builder.syntax(subCommandObject);
 	}
 	
@@ -240,7 +240,7 @@ public final class AnnotationParser<S> {
 		
 		
 		Class<C> senderType = (Class<C>) subExecutionMeta.senderType();
-		var subBuilder = SubCommandBuilder.<S, C>genericBuilder(senderType, cmd.name(), subCmdInfo.name())
+		var subBuilder = SubCommandBuilder.genericBuilder(manager, senderType, cmd.name(), subCmdInfo.name())
 			.aliases(subCmdInfo.aliases());
 		
 		if (defaultExecutionMethod != null) {
@@ -379,9 +379,9 @@ public final class AnnotationParser<S> {
 			
 		} else {
 			arg = (Argument<T>) manager.typeRegistry().convertArgument(data, type);
-			if(arg == null ) {
+			if (arg == null) {
 				throw new IllegalArgumentException(
-					String.format("Unknown argument type `%s` in method `%s`", type.getName(),  method.getName())
+					String.format("Unknown argument type `%s` in method `%s`", type.getName(), method.getName())
 				);
 			}
 		}
@@ -417,10 +417,14 @@ public final class AnnotationParser<S> {
 	 *
 	 * @param subClassInfo the info of the subclass
 	 */
-	private void checkValidInheritance(@NotNull Class<?> subClass, @NotNull SubCommandInfo subClassInfo) {
+	private void checkValidInheritance(@NotNull Class<?> subClass,
+	                                   @NotNull SubCommandInfo subClassInfo) {
 		
 		boolean hasChildren = subClassInfo.children().length > 0;
 		boolean hasParent = !subClassInfo.parent().equals(Object.class);
+		
+		boolean found = false;
+		
 		
 		if (hasChildren) {
 			
@@ -561,7 +565,7 @@ public final class AnnotationParser<S> {
 		Class<?> parent = info.parent();
 		if (parent.equals(Object.class)) {
 			
-			var data = loadMethodParameters(manager, commandName, executionMeta, method);
+			var data = loadMethodParameters(manager, commandName, executionMeta, subCommandClass, method);
 			var args = data.right;
 			
 			Argument<?>[] modifiedArgs = new Argument[args.length + 1];
@@ -587,9 +591,9 @@ public final class AnnotationParser<S> {
 			ExecutionMeta parentExecutionMeta = parent.getAnnotation(ExecutionMeta.class);
 			assert parentExecutionMeta != null;
 			
-			if(!parentExecutionMeta.syntax().isEmpty()) {
- 			  String[] parentSplit = parentExecutionMeta.syntax().split(Pattern.quote(" "));
-				for (int i = parentSplit.length-1; i >= 0; i--) {
+			if (!parentExecutionMeta.syntax().isEmpty()) {
+				String[] parentSplit = parentExecutionMeta.syntax().split(Pattern.quote(" "));
+				for (int i = parentSplit.length - 1; i >= 0; i--) {
 					args.addFirst(parentSplit[i]);
 				}
 			}
@@ -610,7 +614,7 @@ public final class AnnotationParser<S> {
 			if (argAnnotation == null) {
 				throw new IllegalStateException(String.format("redundant parameter in method %s doesnt have '@Arg' ", method.getName()));
 			}
-			String id = CommandSyntax.fetchArgId(split[i]);
+			String id = ArgumentSyntaxUtility.fetchArgId(split[i]);
 			while (!id.equalsIgnoreCase(argAnnotation.id())) {
 				p++;
 				if (p >= parameters.length) break;
@@ -624,7 +628,6 @@ public final class AnnotationParser<S> {
 			}
 			arguments[i] = getArgFromParameter(manager, commandName, method, parameter);
 		}
-		
 		
 		ExecutionMeta newExecutionMeta = new ExecutionMeta() {
 			
@@ -657,7 +660,7 @@ public final class AnnotationParser<S> {
 			
 		};
 		
-		var data = loadMethodParameters(manager, commandName, newExecutionMeta, method);
+		var data = loadMethodParameters(manager, commandName, newExecutionMeta, subCommandClass, method);
 		return new ResolvedSubCommandMethod(arguments, data.right, data.left);
 	}
 	
@@ -677,6 +680,7 @@ public final class AnnotationParser<S> {
 		final @NotNull CommandManager<?, S> manager,
 		final @NotNull String commandName,
 		final @NotNull ExecutionMeta executionMetaMeta,
+		final @NotNull Class<?> targetClass,
 		final @NotNull Method method
 	) {
 		
@@ -710,24 +714,24 @@ public final class AnnotationParser<S> {
 		String[] split = syntax.split(Pattern.quote(" "));
 		Argument<?>[] args = new Argument[split.length];
 		Parameter[] typeParameters = method.getParameters();
-
+		
 		for (int i = 0, p = 1; i < split.length; i++, p++) {
 			String arg = split[i];
-
-			if (CommandSyntax.isArgLiteral(arg)) {
+			
+			if (ArgumentSyntaxUtility.isArgLiteral(arg)) {
 				args[i] = Argument.literal(arg);
 				p--;
 				
 			} else {
 				
-				if(p >= typeParameters.length) {
+				if (p >= typeParameters.length) {
 					
-					long inputArgsCount = Arrays.stream(split).filter((s)-> !CommandSyntax.isArgLiteral(s)).count();
-					int parametersLength = typeParameters.length-1;
+					long inputArgsCount = Arrays.stream(split).filter((s) -> !ArgumentSyntaxUtility.isArgLiteral(s)).count();
+					int parametersLength = typeParameters.length - 1;
 					
-					if(!method.isAnnotationPresent(SubCommandExecution.class) && inputArgsCount != parametersLength) {
+					if (!method.isAnnotationPresent(SubCommandExecution.class) && inputArgsCount != parametersLength) {
 						throw new IllegalStateException(
-							String.format( "Syntax in @ExecutionMeta for method `%s` doesn't match the method parameters in input arguments length", method.getName())
+							String.format("Syntax in @ExecutionMeta for method `%s` doesn't match the method parameters in input arguments length", method.getName())
 						);
 					}
 					
@@ -738,13 +742,24 @@ public final class AnnotationParser<S> {
 				Arg parameterArgAnnotation = parameter.getAnnotation(Arg.class);
 				assert parameterArgAnnotation != null;
 				
-				String syntaxId = CommandSyntax.fetchArgId(arg);
-				if (!syntaxId.equals(parameterArgAnnotation.id()))
-					throw new IllegalArgumentException(String.format(
-						"Argument id in syntax '%s' doesn't match the corresponding parameter arg id '%s'", syntaxId, parameterArgAnnotation.id()));
+				String syntaxId = ArgumentSyntaxUtility.fetchArgId(arg);
+				int index = i;
+				while (!syntaxId.equals(parameterArgAnnotation.id())) {
+					index++;
+					
+					if (index >= split.length) {
+						throw new IllegalArgumentException(
+							String.format("Argument id in syntax '%s' doesn't match the corresponding parameter arg id '%s' in method %s of class %s",
+								syntaxId, parameterArgAnnotation.id(), method.getName(), targetClass.getName())
+						);
+					}
+					
+					arg = split[index];
+					syntaxId = ArgumentSyntaxUtility.fetchArgId(arg);
+				}
 				
 				
-				boolean optional = CommandSyntax.isArgOptional(arg);
+				boolean optional = ArgumentSyntaxUtility.isArgOptional(arg);
 				if (optional != parameterArgAnnotation.optional())
 					throw new IllegalArgumentException(String.format(
 						"Argument optional status(optional=%b) in syntax doesn't match the corresponding parameter optional status(optional=%b)", optional, parameterArgAnnotation.optional()));
@@ -800,7 +815,6 @@ public final class AnnotationParser<S> {
 			
 		}
 		
-
 		
 		return Pair.Companion.of(flags, args);
 	}
@@ -838,9 +852,9 @@ public final class AnnotationParser<S> {
 		return String.format("Subcommand class '%s' is NOT annotated with @%s", subClass.getName(), annotation.getSimpleName());
 	}
 	
-	private <T> void invokeMethod(T instance, Method method, Object... objects)  {
+	private <T> void invokeMethod(T instance, Method method, Object... objects) {
 		try {
-			method.invoke(instance,objects);
+			method.invoke(instance, objects);
 		} catch (IllegalAccessException | InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}
