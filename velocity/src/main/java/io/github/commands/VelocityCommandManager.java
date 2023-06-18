@@ -1,10 +1,10 @@
-package io.github.mqzn;
+package io.github.commands;
 
 import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
-import io.github.mqzn.arguments.ArgumentOnlinePlayer;
+import io.github.commands.arguments.ArgumentOnlinePlayer;
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.manager.AbstractCommandManager;
 import io.github.mqzn.commands.base.manager.CommandExecutionCoordinator;

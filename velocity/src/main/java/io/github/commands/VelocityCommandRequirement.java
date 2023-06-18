@@ -1,4 +1,4 @@
-package io.github.mqzn;
+package io.github.commands;
 
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;

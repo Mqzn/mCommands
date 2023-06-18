@@ -1,4 +1,4 @@
-package io.github.mqzn.arguments;
+package io.github.commands.arguments;
 
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
