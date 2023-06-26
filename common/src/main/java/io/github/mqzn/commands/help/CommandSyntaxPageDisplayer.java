@@ -24,11 +24,11 @@ import org.jetbrains.annotations.NotNull;
 public class CommandSyntaxPageDisplayer<S> implements ItemPageTextDisplayer<S, CommandSyntax<S>> {
 	
 	@NotNull
-	private final CommandManager<?, S> manager;
+	protected final CommandManager<?, S> manager;
 	
 	@NotNull
-	private final CommandHelpStyle<S> provider;
-	private final Command<S> command;
+	protected final CommandHelpStyle<S> provider;
+	protected final Command<S> command;
 	
 	public CommandSyntaxPageDisplayer(@NotNull CommandManager<?, S> manager,
 	                                  @NotNull Command<S> command,
