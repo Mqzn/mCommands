@@ -20,7 +20,6 @@ import java.util.Objects;
 
 public class CommandSyntax<S> implements TextConvertible<S>, Comparable<CommandSyntax<S>> {
 	
-	
 	@NotNull
 	protected final List<Argument<?>> arguments;
 	
@@ -36,6 +35,7 @@ public class CommandSyntax<S> implements TextConvertible<S>, Comparable<CommandS
 	@NotNull
 	protected final SyntaxFlags flags;
 	private final CommandManager<?, S> manager;
+	
 	@Nullable
 	protected Information info = null;
 	
@@ -110,22 +110,36 @@ public class CommandSyntax<S> implements TextConvertible<S>, Comparable<CommandS
 			return true;
 		}
 		
-		final int capacity = this.arguments.size();
+		final int capacity = arguments.size();
 		
 		int minSyntaxLength = (int) arguments.stream()
-			.filter((arg) -> !arg.isOptional())
+			.filter((arg) -> !arg.isOptional() && !arg.useRemainingSpace())
 			.count() - flags.count();
 		
-		int maxSyntaxLength = arguments.size() + flags.count();
+		int maxSyntaxLength = capacity + flags.count();
+		
+		int greedyIndex = -1;
+		for (int i = 0; i < arguments.size(); i++) {
+			if(arguments.get(i).useRemainingSpace()) {
+				greedyIndex = i;
+				break;
+			}
+		}
+		
 		int rawLength = commandContext.getRawArguments().size();
+		if(greedyIndex != -1) {
+			final int originalRawLength = rawLength;
+			rawLength = originalRawLength-(originalRawLength-greedyIndex);
+		}
 		
 		if (rawLength < minSyntaxLength || rawLength > maxSyntaxLength) return false;
 		
 		for (int index = 0, rawIndex = 0; index < capacity; index++) {
 			
-			Argument<?> required = arguments.get(index);
-			
+			Argument<?> required = getArgument(index);
 			String raw = commandContext.getRawArgument(rawIndex);
+			
+			assert required != null;
 			
 			if (raw == null) {
 				
