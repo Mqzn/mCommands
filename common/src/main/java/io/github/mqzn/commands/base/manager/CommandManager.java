@@ -198,6 +198,8 @@ public interface CommandManager<B, S> {
 	 * @see SuggestionProvider
 	 */
 	@NotNull SuggestionProviderRegistry suggestionProviderRegistry();
+
+	@Nullable Long getCommandCooldown(String senderName);
 	
 	void log(String msg, Object... args);
 	

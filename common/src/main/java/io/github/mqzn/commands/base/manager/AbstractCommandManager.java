@@ -19,10 +19,8 @@ import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import io.github.mqzn.commands.exceptions.types.SyntaxAmbiguityException;
 import io.github.mqzn.commands.help.CommandHelpProvider;
 import io.github.mqzn.commands.help.UnknownPageCaption;
-import io.github.mqzn.commands.utilities.TimeParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -94,6 +92,7 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 		
 		this.captionRegistry = new CaptionRegistry<>(this);
 		captionRegistry.registerCaption(new UnknownPageCaption<>());
+		captionRegistry.registerCaption(new CooldownCaption<>());
 		
 		this.senderProviderRegistry = new SenderProviderRegistry<>();
 		this.exceptionHandler = new CommandExceptionHandler<>(this);
@@ -164,9 +163,7 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 				cooldowns.put(senderName, System.currentTimeMillis());
 			} else {
 				//send a caption telling the user that he's in a cool down
-				//calculating remaining time
-				TimeParser parser = TimeParser.parse(calculateRemainingTime(lastTimeCommandExecuted, cooldown));
-				captionRegistry.sendCaption(sender, context, null, new CooldownCaption<>(parser));
+				captionRegistry.sendCaption(sender, context, CaptionKey.COMMAND_IN_COOLDOWN);
 				return;
 			}
 			
@@ -178,10 +175,6 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 		}
 		
 		CommandTree.CommandSearchResult<S> result = findSyntax(command, context);
-		System.out.println("Result = " + result.state);
-		if (result.data instanceof SubCommandSyntax<S> sub) {
-			System.out.println("Sub key found = " + sub.key());
-		}
 		
 		if (result.state == CommandTree.CommandSearchResultState.NOT_FOUND) {
 			CaptionKey key = args.length == 1 && args[0].equalsIgnoreCase("help") ? CaptionKey.NO_HELP_TOPIC_AVAILABLE : CaptionKey.UNKNOWN_COMMAND;
@@ -233,6 +226,10 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 		
 	}
 	
+	@Override
+	public @Nullable Long getCommandCooldown(String senderName) {
+		return cooldowns.get(senderName);
+	}
 	
 	@Override
 	public CommandTree.CommandSearchResult<S> findSyntax(final @NotNull Command<S> command,
@@ -250,11 +247,6 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 		return System.currentTimeMillis() > lastTime + cooldown.toMillis();
 	}
 	
-	private long calculateRemainingTime(@NotNull Long lastTime, @NotNull CommandCooldown commandCooldown) {
-		long diff = (System.currentTimeMillis() - lastTime);
-		
-		return commandCooldown.toMillis() - diff;
-	}
 	
 	private boolean checkRequirements(final @NotNull Command<S> command,
 	                                  final @NotNull S sender,
