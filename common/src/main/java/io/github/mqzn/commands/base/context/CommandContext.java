@@ -75,10 +75,6 @@ public final class CommandContext<S> implements Context<S> {
 		List<Argument<?>> syntaxArgs = syntax.isSubCommand() ? this.commandUsed()
 			.tree().getParentalArguments(((SubCommandSyntax<S>) syntax).key()) : syntax.getArguments();
 		
-		for (var arg : syntaxArgs) {
-			System.out.println(arg);
-		}
-		
 		for (int required = 0, rawIndex = 0; required < syntaxArgs.size(); required++) {
 			Argument<T> argument = (Argument<T>) syntaxArgs.get(required);
 			
@@ -290,7 +286,8 @@ public final class CommandContext<S> implements Context<S> {
 	
 	}
 	
-	private record ParsedArgument<T>(@NotNull Argument<T> argToParse, @Nullable T value, int index, int rawIndex,
+	private record ParsedArgument<T>(@NotNull Argument<T> argToParse, @Nullable T value,
+	                                 int index, int rawIndex,
 	                                 @Nullable String rawValue) {
 		
 	}

@@ -256,9 +256,15 @@ class CommandTree<S : Any> private constructor(private val command: Command<S>) 
             .count().toInt()
 
         val maxSyntaxLength = arguments.size + if (flagsUsed) flagsCount else 0
-        val rawArgsLength = commandContext.rawArguments.size
+
+        val greedyIndex = arguments.indexOfFirst { arg -> arg.useRemainingSpace() }.or(-1)
+        var rawArgsLength = commandContext.rawArguments.size
+        if (greedyIndex != -1) {
+            val originalRawLength = rawArgsLength
+            rawArgsLength = originalRawLength - (originalRawLength - greedyIndex)
+        }
+
         val rawLength = rawArgsLength - subPosition - 1
-        println("rawArgsLength = $rawArgsLength, rawLength= $rawLength, pos=$subPosition  min=$minSyntaxLength, max=$maxSyntaxLength, sub=${subCommand.key()}")
         return rawLength in minSyntaxLength..maxSyntaxLength
     }
 
