@@ -7,7 +7,7 @@ import io.github.mqzn.commands.base.caption.CaptionKey;
 import io.github.mqzn.commands.base.caption.CaptionRegistry;
 import io.github.mqzn.commands.base.context.Context;
 import io.github.mqzn.commands.base.context.DelegateCommandContext;
-import io.github.mqzn.commands.base.syntax.ArgumentSyntaxUtility;
+import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.base.syntax.SubCommandSyntax;
 import io.github.mqzn.commands.base.syntax.tree.CommandTree;

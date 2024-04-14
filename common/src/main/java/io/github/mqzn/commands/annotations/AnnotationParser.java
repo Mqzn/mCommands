@@ -12,7 +12,7 @@ import io.github.mqzn.commands.base.*;
 import io.github.mqzn.commands.base.context.Context;
 import io.github.mqzn.commands.base.cooldown.CommandCooldown;
 import io.github.mqzn.commands.base.manager.CommandManager;
-import io.github.mqzn.commands.base.syntax.ArgumentSyntaxUtility;
+import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility;
 import io.github.mqzn.commands.base.syntax.CommandSyntaxBuilder;
 import io.github.mqzn.commands.base.syntax.SubCommandBuilder;
 import io.github.mqzn.commands.base.syntax.SyntaxFlags;
@@ -124,7 +124,7 @@ public final class AnnotationParser<S> {
 		
 		SubCommand[] subs = annotatedCommand.getClass().getAnnotationsByType(SubCommand.class);
 		for (SubCommand subCommand : subs) {
-			builder = this.loadSub(annotatedCommand.getClass(), cmdAnnotation, subCommand, builder);
+			builder = this.loadSub(cmdAnnotation, subCommand, builder);
 		}
 		
 		Method[] methods = annotatedCommand.getClass().getDeclaredMethods();
@@ -173,8 +173,7 @@ public final class AnnotationParser<S> {
 		manager.registerCommand(builder.build());
 	}
 	
-	private <C> io.github.mqzn.commands.base.Command.Builder<S> loadSub(Class<?> commandClass,
-	                                                                    Command cmd,
+	private <C> io.github.mqzn.commands.base.Command.Builder<S> loadSub(Command cmd,
 	                                                                    SubCommand subCommand,
 	                                                                    io.github.mqzn.commands.base.Command.Builder<S> builder) {
 		
@@ -422,8 +421,6 @@ public final class AnnotationParser<S> {
 		
 		boolean hasChildren = subClassInfo.children().length > 0;
 		boolean hasParent = !subClassInfo.parent().equals(Object.class);
-		
-		boolean found = false;
 		
 		
 		if (hasChildren) {

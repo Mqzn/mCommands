@@ -1,10 +1,11 @@
 package io.github.mqzn.commands.base.syntax.tree
 
 import io.github.mqzn.commands.arguments.Argument
+import io.github.mqzn.commands.arguments.ArgumentStringArray
 import io.github.mqzn.commands.base.Command
 import io.github.mqzn.commands.base.context.DelegateCommandContext
 import io.github.mqzn.commands.base.manager.flags.ContextFlagRegistry
-import io.github.mqzn.commands.base.syntax.ArgumentSyntaxUtility
+import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility
 import io.github.mqzn.commands.base.syntax.CommandSyntax
 import io.github.mqzn.commands.base.syntax.SubCommandSyntax
 import io.github.mqzn.commands.help.SubCommandHelp
@@ -109,7 +110,6 @@ class CommandTree<S : Any> private constructor(private val command: Command<S>) 
     @Synchronized
     fun traverse(context: DelegateCommandContext<S>): CommandSearchResult<S> {
         val root = findRoot(context) ?: return CommandSearchResult(null, CommandSearchResultState.NOT_FOUND)
-
         if (matchesContext(root.data, context))
             return CommandSearchResult(root.data, CommandSearchResultState.FOUND)
 
@@ -176,7 +176,6 @@ class CommandTree<S : Any> private constructor(private val command: Command<S>) 
                 && previousParent.matches(nextNode.data.parent)
             ) {
 
-                println("Last arg matching")
                 return CommandSearchResult(
                     nextNode.data,
                     CommandSearchResultState.FOUND_INCOMPLETE
@@ -207,10 +206,11 @@ class CommandTree<S : Any> private constructor(private val command: Command<S>) 
     private fun matchesContext(subCommand: SubCommandSyntax<S>, commandContext: DelegateCommandContext<S>): Boolean {
         //getting the previous parent
         val matchesLength = matchesContextLength(subCommand, commandContext)
-        if (subCommand.isOrphan) return matchesLength
+        if (subCommand.isOrphan) {
+            return matchesLength
+        }
 
         val previousParent = getPreviousParent(subCommand, commandContext)
-        println("Previous parent for ${subCommand.name} = ${previousParent?.name}")
         return previousParent != null && previousParent.matches(subCommand.parent) && matchesLength
     }
 
@@ -247,8 +247,6 @@ class CommandTree<S : Any> private constructor(private val command: Command<S>) 
         val subPosition = getSubCommandPosition(subCommand, commandContext)
         val arguments = subCommand.arguments
 
-        println("Sub ${subCommand.key()} args: $arguments")
-
         val flagsUsed = usedFlagsInContext(commandContext)
         val flagsCount = subCommand.flags.count()
         val minSyntaxLength = arguments.stream()
@@ -257,14 +255,19 @@ class CommandTree<S : Any> private constructor(private val command: Command<S>) 
 
         val maxSyntaxLength = arguments.size + if (flagsUsed) flagsCount else 0
 
-        val greedyIndex = arguments.indexOfFirst { arg -> arg.useRemainingSpace() }.or(-1)
-        var rawArgsLength = commandContext.rawArguments.size
+        val greedyIndex = arguments.indexOfFirst { arg -> arg.useRemainingSpace() || arg is ArgumentStringArray }
+        val rawArgsLength = commandContext.rawArguments.size
+
         if (greedyIndex != -1) {
-            val originalRawLength = rawArgsLength
-            rawArgsLength = originalRawLength - (originalRawLength - greedyIndex)
+            //if greedy was used
+            val shiftedGreedyIndex = subPosition+greedyIndex+1
+            val greedyRawLength = rawArgsLength-shiftedGreedyIndex
+            val beforeGreedyArgRawLength = (rawArgsLength-greedyRawLength)
+            return (beforeGreedyArgRawLength + 1) in (minSyntaxLength+beforeGreedyArgRawLength)..(maxSyntaxLength+beforeGreedyArgRawLength)
         }
 
         val rawLength = rawArgsLength - subPosition - 1
+
         return rawLength in minSyntaxLength..maxSyntaxLength
     }
 

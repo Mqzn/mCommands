@@ -1,8 +1,9 @@
-package io.github.mqzn.commands.base.syntax;
+package io.github.mqzn.commands.utilities;
 
 import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.arguments.ArgumentLiteral;
 import io.github.mqzn.commands.base.manager.CommandManager;
+import io.github.mqzn.commands.base.syntax.CommandAliases;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

@@ -2,7 +2,7 @@ package io.github.mqzn.commands.exceptions.types;
 
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.manager.CommandManager;
-import io.github.mqzn.commands.base.syntax.ArgumentSyntaxUtility;
+import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.exceptions.CommandException;
 import org.jetbrains.annotations.NotNull;
@@ -21,5 +21,9 @@ public final class SyntaxAmbiguityException extends CommandException {
 				.collect(Collectors.toSet())), command.name());
 		
 	}
-	
+	public <S> SyntaxAmbiguityException(String message, Command<S> command) {
+		
+		super(message, command.name());
+		
+	}
 }

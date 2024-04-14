@@ -2,6 +2,7 @@ package io.github.mqzn.commands.test;
 
 import io.github.mqzn.commands.annotations.AnnotationParser;
 import io.github.mqzn.commands.test.annotations.TestAnnotatedCommand;
+import io.github.mqzn.commands.test.buggyexamples.ParentCmd;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -58,6 +59,27 @@ public final class TestBootstrap {
 		
 		String[] split = syntax.split(Pattern.quote(" "));
 		System.out.println(Arrays.toString(split));
+	}
+	
+	@Test
+	public void subcommandGreedyArgParse() {
+		parser.parse(new ParentCmd());
+		
+		var cmd = commandManager.getCommand("parent");
+		Assertions.assertNotNull(cmd);
+		
+		Assertions.assertFalse(cmd.getSubCommand("greedy").isEmpty());
+		String[] args = new String[]{
+			"greedy",
+			"hello",
+			"this",
+			"is",
+			"a",
+			"greedy",
+			"string"
+		};
+		
+		commandManager.executeCommand(cmd, sender, args);
 	}
 	
 	

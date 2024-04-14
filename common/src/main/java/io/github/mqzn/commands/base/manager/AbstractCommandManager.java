@@ -1,5 +1,6 @@
 package io.github.mqzn.commands.base.manager;
 
+import io.github.mqzn.commands.arguments.ArgumentStringArray;
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.CommandRequirement;
 import io.github.mqzn.commands.base.SenderWrapper;
@@ -19,6 +20,7 @@ import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import io.github.mqzn.commands.exceptions.types.SyntaxAmbiguityException;
 import io.github.mqzn.commands.help.CommandHelpProvider;
 import io.github.mqzn.commands.help.UnknownPageCaption;
+import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.*;
@@ -176,6 +178,15 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 		
 		CommandTree.CommandSearchResult<S> result = findSyntax(command, context);
 		
+		//Debug start
+		System.out.println("result-state = " + result.state.name());
+		if(result.data == null) {
+			System.out.println("DATA IS NULL");
+		}else {
+			System.out.println("result-data = " + (result.data.isSubCommand() ? ((SubCommandSyntax<S>) result.data).getName() : ""));
+		}
+		
+		//Debug end
 		if (result.state == CommandTree.CommandSearchResultState.NOT_FOUND) {
 			CaptionKey key = args.length == 1 && args[0].equalsIgnoreCase("help") ? CaptionKey.NO_HELP_TOPIC_AVAILABLE : CaptionKey.UNKNOWN_COMMAND;
 			captionRegistry.sendCaption(sender, context, key);
@@ -276,6 +287,7 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 	public <C extends Command<S>> void registerCommand(C command) {
 		
 		synchronized (bootstrap) {
+			
 			List<CommandSyntax<S>> check = this.findAmbiguity(command);
 			
 			if (!check.isEmpty()) {
@@ -287,6 +299,20 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 					return;
 				}
 				
+			}
+			
+			for(var syntax : command.syntaxes()) {
+				long numberOfGreedyArguments = syntax.getArguments().stream()
+					.filter(arg -> arg.useRemainingSpace() || arg instanceof ArgumentStringArray)
+					.count();
+				if (numberOfGreedyArguments > 1) {
+					try {
+						throw new SyntaxAmbiguityException("Found more than one greedy argument in one syntax : " + ArgumentSyntaxUtility.format(this,command.name(), syntax.getArguments()), command);
+					}catch (SyntaxAmbiguityException ex) {
+						ex.printStackTrace();
+					}
+					return;
+				}
 			}
 			
 			commands.put(command.name(), command);
