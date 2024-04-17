@@ -28,6 +28,8 @@ public class CommandSyntaxPageDisplayer<S> implements ItemPageTextDisplayer<S, C
 	
 	@NotNull
 	protected final CommandHelpStyle<S> provider;
+	
+	@NotNull
 	protected final Command<S> command;
 	
 	public CommandSyntaxPageDisplayer(@NotNull CommandManager<?, S> manager,
