@@ -10,8 +10,6 @@ import java.util.function.UnaryOperator;
 
 public final class ArgumentEnum<E extends Enum<E>> extends AbstractArgument<E> {
 	
-	public final static int NOT_ENUM_VALUE_ERROR = 1;
-	
 	private final Class<E> enumClass;
 	private final E[] values;
 	private Format format = Format.DEFAULT;

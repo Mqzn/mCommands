@@ -23,6 +23,7 @@ import io.github.mqzn.commands.help.UnknownPageCaption;
 import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -57,8 +58,6 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 	@NotNull
 	private final CommandExceptionHandler<S> exceptionHandler;
 	
-	@NotNull
-	private final CommandExecutionCoordinator<S> coordinator;
 	
 	@NotNull
 	private final Map<String, Command<S>> commands;
@@ -79,11 +78,10 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 	private CommandHelpProvider<S> commandHelpProvider;
 	
 	public AbstractCommandManager(@NotNull B bootstrap,
-	                              @NotNull SenderWrapper<S> wrapper, @NotNull CommandExecutionCoordinator.Type coordinator) {
+	                              @NotNull SenderWrapper<S> wrapper) {
 		this.bootstrap = bootstrap;
 		this.wrapper = wrapper;
 		this.commands = new HashMap<>();
-		this.coordinator = coordinator == CommandExecutionCoordinator.Type.ASYNC ? CommandExecutionCoordinator.async(this) : CommandExecutionCoordinator.sync(this);
 		this.typeRegistry = new ArgumentTypeRegistry();
 		try {
 			this.flagRegistry = FlagRegistry.create();
@@ -103,9 +101,6 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 		
 	}
 	
-	public AbstractCommandManager(@NotNull B bootstrap, @NotNull SenderWrapper<S> wrapper) {
-		this(bootstrap, wrapper, CommandExecutionCoordinator.Type.SYNC);
-	}
 	
 	@Override
 	public @NotNull B getBootstrap() {
@@ -178,15 +173,6 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 		
 		CommandTree.CommandSearchResult<S> result = findSyntax(command, context);
 		
-		//Debug start
-		System.out.println("result-state = " + result.state.name());
-		if(result.data == null) {
-			System.out.println("DATA IS NULL");
-		}else {
-			System.out.println("result-data = " + (result.data.isSubCommand() ? ((SubCommandSyntax<S>) result.data).getName() : ""));
-		}
-		
-		//Debug end
 		if (result.state == CommandTree.CommandSearchResultState.NOT_FOUND) {
 			CaptionKey key = args.length == 1 && args[0].equalsIgnoreCase("help") ? CaptionKey.NO_HELP_TOPIC_AVAILABLE : CaptionKey.UNKNOWN_COMMAND;
 			captionRegistry.sendCaption(sender, context, key);
@@ -197,7 +183,7 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 			if (result.data instanceof SubCommandSyntax<S> subCmd) {
 				var subInfo = subCmd.getInfo();
 				
-				if (subInfo != null && !wrapper.hasPermission(sender, subInfo.permission()))
+				if (subInfo != null && !subCmd.checkHasPermission(wrapper, sender))
 					captionRegistry.sendCaption(sender, context, CaptionKey.NO_PERMISSION);
 				else
 					subCmd.defaultExecution(sender, context);
@@ -216,9 +202,14 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 			return;
 		}
 		
+		if (!syntax.checkHasPermission(this.wrapper, sender)) {
+			captionRegistry.sendCaption(sender, context, CaptionKey.NO_PERMISSION);
+			return;
+		}
+		
 		if (this.wrapper.canBeSender(syntax.getSenderClass())) {
 			
-			coordinator.coordinateExecution(sender, syntax, commandContext)
+			command.coordinator().coordinateExecution(sender, syntax, commandContext)
 				.whenComplete((v, ex) -> log("%s has executed the command '%s'", wrapper.senderName(sender), commandContext.rawFormat()));
 			
 			return;
@@ -232,7 +223,7 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 			throw new UnknownCommandSenderType(syntax.getSenderClass());
 		}
 		
-		coordinator.coordinateExecution(customSender, syntax, commandContext)
+		command.coordinator().coordinateExecution(customSender, syntax, commandContext)
 			.whenComplete((v, ex) -> log("%s has executed the command '%s'", wrapper.senderName(sender), commandContext.rawFormat()));
 		
 	}
@@ -301,14 +292,14 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 				
 			}
 			
-			for(var syntax : command.syntaxes()) {
+			for (var syntax : command.syntaxes()) {
 				long numberOfGreedyArguments = syntax.getArguments().stream()
 					.filter(arg -> arg.useRemainingSpace() || arg instanceof ArgumentStringArray)
 					.count();
 				if (numberOfGreedyArguments > 1) {
 					try {
-						throw new SyntaxAmbiguityException("Found more than one greedy argument in one syntax : " + ArgumentSyntaxUtility.format(this,command.name(), syntax.getArguments()), command);
-					}catch (SyntaxAmbiguityException ex) {
+						throw new SyntaxAmbiguityException("Found more than one greedy argument in one syntax : " + ArgumentSyntaxUtility.format(this, command.name(), syntax.getArguments()), command);
+					} catch (SyntaxAmbiguityException ex) {
 						ex.printStackTrace();
 					}
 					return;
@@ -379,8 +370,14 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 		return allSuggestions.stream().distinct()
 			.filter((suggestion) -> {
 				SubCommandSyntax<S> subCmd = command.tree().searchForSub(suggestion);
-				if (subCmd != null) return wrapper.hasPermission(sender, subCmd.getName());
-				return true;
+				if (subCmd == null) return true;
+				
+				var info = subCmd.getInfo();
+				if (info == null) return true;
+				
+				var perm = info.permission();
+				
+				return perm == null || perm.isEmpty() || wrapper.hasPermission(sender, perm);
 			})
 			.collect(Collectors.toList());
 	}

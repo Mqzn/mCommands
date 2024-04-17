@@ -10,15 +10,12 @@ public final class BungeeSubCommandBuilder<C> extends SubCommandBuilder<CommandS
 	}
 	
 	/**
-	 *
-	 *
-	 * @param manager the bungee command-manager
+	 * @param manager     the bungee command-manager
 	 * @param senderClass the type of the sender to use
-	 * @param label the command label
-	 * @param name the name of the subcommand
-	 *
+	 * @param label       the command label
+	 * @param name        the name of the subcommand
+	 * @param <C>         the type of the sender to use while building the subcommand's syntax
 	 * @return the builder of subcommands in the bungee-cord platform
-	 * @param <C> the type of the sender to use while building the subcommand's syntax
 	 */
 	public static <C> BungeeSubCommandBuilder<C> builder(BungeeCommandManager manager,
 	                                                     @NotNull Class<C> senderClass,

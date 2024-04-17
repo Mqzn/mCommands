@@ -33,7 +33,7 @@ open class CooldownCaption<S> : Caption<S> {
         return cooldownMessage(timeData.left, timeData.right, context)
     }
 
-    open fun cooldownMessage(time: Long, unit: TimeUnit, context: Context<S>) : TextComponent {
+    open fun cooldownMessage(time: Long, unit: TimeUnit, context: Context<S>): TextComponent {
         return Message.prefixed(Message.EXECUTION_ERROR)
             .append(
                 Component.text(

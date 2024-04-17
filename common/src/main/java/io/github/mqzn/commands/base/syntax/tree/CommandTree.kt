@@ -5,10 +5,10 @@ import io.github.mqzn.commands.arguments.ArgumentStringArray
 import io.github.mqzn.commands.base.Command
 import io.github.mqzn.commands.base.context.DelegateCommandContext
 import io.github.mqzn.commands.base.manager.flags.ContextFlagRegistry
-import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility
 import io.github.mqzn.commands.base.syntax.CommandSyntax
 import io.github.mqzn.commands.base.syntax.SubCommandSyntax
 import io.github.mqzn.commands.help.SubCommandHelp
+import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility
 import java.util.*
 
 /**
@@ -23,11 +23,11 @@ class CommandTree<S : Any> private constructor(private val command: Command<S>) 
 
     private val subCommands: MutableMap<SubCommandKey<S>, SubCommandSyntax<S>> = HashMap()
     private val roots: MutableMap<String, CommandNode<S>> = HashMap()
-    private var subtree: CommandSubTree<S>
+    private var subtree: SubCommandArgumentTree<S>
 
     init {
         init()
-        subtree = CommandSubTree.wrap(command, this)
+        subtree = SubCommandArgumentTree.wrap(command, this)
     }
 
     fun getRoots(): MutableMap<String, CommandNode<S>> = roots
@@ -260,10 +260,10 @@ class CommandTree<S : Any> private constructor(private val command: Command<S>) 
 
         if (greedyIndex != -1) {
             //if greedy was used
-            val shiftedGreedyIndex = subPosition+greedyIndex+1
-            val greedyRawLength = rawArgsLength-shiftedGreedyIndex
-            val beforeGreedyArgRawLength = (rawArgsLength-greedyRawLength)
-            return (beforeGreedyArgRawLength + 1) in (minSyntaxLength+beforeGreedyArgRawLength)..(maxSyntaxLength+beforeGreedyArgRawLength)
+            val shiftedGreedyIndex = subPosition + greedyIndex + 1
+            val greedyRawLength = rawArgsLength - shiftedGreedyIndex
+            val beforeGreedyArgRawLength = (rawArgsLength - greedyRawLength)
+            return (beforeGreedyArgRawLength + 1) in (minSyntaxLength + beforeGreedyArgRawLength)..(maxSyntaxLength + beforeGreedyArgRawLength)
         }
 
         val rawLength = rawArgsLength - subPosition - 1

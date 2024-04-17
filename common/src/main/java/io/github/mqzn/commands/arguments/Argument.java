@@ -16,71 +16,146 @@ import java.util.Optional;
  */
 public interface Argument<T> {
 	
+	/**
+	 * @param id the name of the argument
+	 * @return creates a literal argument
+	 */
 	static ArgumentLiteral literal(String id) {
 		return new ArgumentLiteral(id);
 	}
 	
+	/**
+	 * @param id the name of the argument
+	 * @return creates a word argument
+	 */
 	static ArgumentWord word(String id) {
 		return new ArgumentWord(id);
 	}
 	
+	/**
+	 * @param id the name of the argument
+	 * @return creates a boolean(true/false) argument
+	 */
 	static ArgumentBoolean Boolean(String id) {
 		return new ArgumentBoolean(id);
 	}
 	
+	/**
+	 * @param id the name of the argument
+	 * @return creates an integer argument
+	 */
 	static ArgumentInteger integer(String id) {
 		return new ArgumentInteger(id);
 	}
 	
+	/**
+	 * @param id the name of the argument
+	 * @return creates a double argument
+	 */
 	static ArgumentDouble Double(String id) {
 		return new ArgumentDouble(id);
 	}
 	
+	/**
+	 * @param id the name of the argument
+	 * @return creates a float argument
+	 */
 	static ArgumentFloat Float(String id) {
 		return new ArgumentFloat(id);
 	}
 	
+	/**
+	 * @param id the name of the argument
+	 * @return creates a long argument
+	 */
 	static ArgumentLong Long(String id) {
 		return new ArgumentLong(id);
 	}
 	
+	/**
+	 * @param id the name of the argument
+	 * @return creates an array argument from a greedy/long string
+	 */
 	static ArgumentStringArray Array(String id) {
 		return new ArgumentStringArray(id);
 	}
 	
+	/**
+	 * @param id the name of the argument
+	 * @return creates an enum-related argument
+	 */
 	static <E extends Enum<E>> ArgumentEnum<E> Enum(String id, Class<E> enumClass) {
 		return new ArgumentEnum<>(id, enumClass);
 	}
 	
-	
+	/**
+	 * @param data the data of the argument
+	 * @return creates a literal argument
+	 * @see ArgumentData
+	 */
 	static ArgumentLiteral literal(@NotNull ArgumentData data) {
 		return new ArgumentLiteral(data);
 	}
 	
+	/**
+	 * @param data the data of the argument
+	 * @return creates a word/string argument
+	 * @see ArgumentData
+	 */
 	static ArgumentWord word(@NotNull ArgumentData data) {
 		return new ArgumentWord(data);
 	}
 	
+	/**
+	 * @param data the data of the argument
+	 * @return creates a boolean(true/false) argument
+	 * @see ArgumentData
+	 */
 	static ArgumentBoolean Boolean(@NotNull ArgumentData data) {
 		return new ArgumentBoolean(data);
 	}
 	
+	/**
+	 * @param data the data of the argument
+	 * @return creates an integer argument
+	 * @see ArgumentData
+	 */
 	static ArgumentInteger integer(@NotNull ArgumentData data) {
 		return new ArgumentInteger(data);
 	}
 	
+	/**
+	 * @param data the data of the argument
+	 * @return creates a double argument
+	 * @see ArgumentData
+	 */
 	static ArgumentDouble Double(@NotNull ArgumentData data) {
 		return new ArgumentDouble(data);
 	}
 	
+	/**
+	 * @param data the data of the argument
+	 * @return creates a float argument
+	 * @see ArgumentData
+	 */
 	static ArgumentFloat Float(@NotNull ArgumentData data) {
 		return new ArgumentFloat(data);
 	}
 	
-	static ArgumentLong Long(ArgumentData id) {
-		return new ArgumentLong(id);
+	/**
+	 * @param data the data of the argument
+	 * @return creates a long argument
+	 * @see ArgumentData
+	 */
+	static ArgumentLong Long(ArgumentData data) {
+		return new ArgumentLong(data);
 	}
 	
+	/**
+	 * @param data the data of the argument
+	 * @return creates an enum argument
+	 * @see ArgumentData
+	 */
 	static <E extends Enum<E>> ArgumentEnum<E> Enum(ArgumentData data, Class<E> enumClass) {
 		return new ArgumentEnum<>(data, enumClass);
 	}
@@ -134,31 +209,90 @@ public interface Argument<T> {
 	@SuppressWarnings("UnusedReturnValue")
 	@NotNull Argument<T> setDefaultValue(T value);
 	
+	/**
+	 * Parses the raw input into it's argument type
+	 * The argument type must be registered and defined by the user
+	 *
+	 * @param sender  the sender of the command
+	 * @param command the command
+	 * @param input   the raw argument
+	 * @param <S>     the sender type
+	 * @return the parsed object from raw
+	 * @throws ArgumentParseException when it fails to parse the raw argument
+	 */
 	<S> T parse(@UnknownNullability S sender,
 	            @NotNull String command,
 	            @NotNull String input) throws ArgumentParseException;
 	
+	/**
+	 * @return whether this argument is optional or not
+	 */
 	default boolean isOptional() {
 		return false;
 	}
 	
+	/**
+	 * Sets the argument to be optional or not
+	 *
+	 * @param optional whether it's gonna be optional or not
+	 */
 	void setOptional(boolean optional);
 	
+	/**
+	 * Adds a suggestion object into the argument for TAB-completion
+	 *
+	 * @param suggestion the suggestion to add
+	 * @return builder-pattern
+	 */
 	Argument<T> suggest(@NotNull T suggestion);
 	
+	/**
+	 * Sets the description of the argument
+	 *
+	 * @param description the new description of the argument
+	 * @return builder-pattern
+	 */
 	Argument<T> description(@Nullable String description);
 	
+	/**
+	 * @return the suggestions of this argument
+	 */
 	@NotNull List<T> suggestions();
 	
+	/**
+	 * Suggests multiple suggestions for this argument
+	 *
+	 * @param suggestions the suggestions to add
+	 * @return builder-pattern
+	 */
 	@SuppressWarnings("unchecked")
 	Argument<T> suggest(@NotNull T... suggestions);
 	
+	/**
+	 * changes the type of argument's object to a string
+	 *
+	 * @param obj the object type of the argument
+	 * @return object as string
+	 */
 	String toString(T obj);
 	
+	/**
+	 * Alternative types that relate to similar data-type of the argument
+	 * example-> boolean.class refers to Boolean.class
+	 *
+	 * @return the alternative data-types of this argument's data-types
+	 */
 	default Class<?>[] alternativeTypes() {
 		return new Class[0];
 	}
 	
+	/**
+	 * A dynamic suggestion is a type of suggestion in TAB-completion
+	 * in which, the suggestion go through modifications and changes of its value
+	 * through the app's run-time, so requires fetching/loading it actively.
+	 *
+	 * @return whether this argument is based on dynamic suggestions or not
+	 */
 	default boolean isSuggestionDynamic() {
 		return false;
 	}

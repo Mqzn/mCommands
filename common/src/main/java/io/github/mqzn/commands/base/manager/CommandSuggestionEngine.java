@@ -3,9 +3,9 @@ package io.github.mqzn.commands.base.manager;
 import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.arguments.ArgumentLiteral;
 import io.github.mqzn.commands.base.Command;
-import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.base.syntax.SubCommandSyntax;
+import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

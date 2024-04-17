@@ -4,8 +4,19 @@ import io.github.mqzn.commands.arguments.Argument
 import io.github.mqzn.commands.base.Command
 import java.util.*
 
+/**
+ * This class represents the tree of subcommands arguments relations
+ * it's very beneficial in cases of complex inheritance between subcommands;
+ * while loading/parsing a single subcommand , it's essential to know 2 sets of arguments, which are
+ * the arguments of the subcommand being loaded specifically AND the all arguments related to the subcommand being loaded.
+ * All arguments related to the subcommand are loaded using the parents of this subcommand
+ *
+ * @see CommandTree
+ * @author Mqzen
+ *
+ */
 @Suppress("UNUSED")
-class CommandSubTree<S : Any> private constructor(
+class SubCommandArgumentTree<S : Any> private constructor(
     private val command: Command<S>,
     private val tree: CommandTree<S>,
 ) {
@@ -15,50 +26,12 @@ class CommandSubTree<S : Any> private constructor(
     init {
         initPathways()
         loadParentalPathway()
-        //debug()
     }
 
     private fun initPathways() {
         for (root in tree.getRoots().values)
             loadRootArguments(root, root)
     }
-
-    private fun loadParentalPathway() {
-        for ((_, nodePathwayMapping) in data) {
-            for ((key, pathway) in nodePathwayMapping) {
-                val subCommand = tree.getSubCommand(key) ?: continue
-                if (subCommand.isOrphan) continue
-
-                var parentName: String? = key.parent!!
-                var parentSub = tree.searchForSub(parentName!!)
-                while (parentSub != null) {
-
-                    for (arg in parentSub.arguments.reversed()) pathway.addFirstArg(arg)
-
-                    pathway.addFirstArg(
-                        Argument.literal(parentName)
-                            .aliases(*parentSub.aliases.array)
-                    )
-
-                    parentName = parentSub.parent
-                    if (parentName == null) break
-                    parentSub = tree.searchForSub(parentName)
-                }
-
-            }
-        }
-    }
-
-    /*private fun debug() {
-        for(map in data.values) {
-            for(key in map.keys) {
-                val pathway: Pathway = map[key] !!
-                print("Pathway of key $key = $pathway")
-            }
-        }
-
-    }*/
-
 
     private fun loadRootArguments(
         root: CommandTree.CommandNode<S>,
@@ -101,6 +74,32 @@ class CommandSubTree<S : Any> private constructor(
 
     }
 
+    private fun loadParentalPathway() {
+        for ((_, nodePathwayMapping) in data) {
+            for ((key, pathway) in nodePathwayMapping) {
+                val subCommand = tree.getSubCommand(key) ?: continue
+                if (subCommand.isOrphan) continue
+
+                var parentName: String? = key.parent!!
+                var parentSub = tree.searchForSub(parentName!!)
+                while (parentSub != null) {
+
+                    for (arg in parentSub.arguments.reversed()) pathway.addFirstArg(arg)
+
+                    pathway.addFirstArg(
+                        Argument.literal(parentName)
+                            .aliases(*parentSub.aliases.array)
+                    )
+
+                    parentName = parentSub.parent
+                    if (parentName == null) break
+                    parentSub = tree.searchForSub(parentName)
+                }
+
+            }
+        }
+    }
+
     fun getSubCommandArguments(key: CommandTree.SubCommandKey<S>): LinkedList<Argument<*>>? {
         for (mapping in data.values) {
             val pathway: Pathway = mapping[key] ?: continue
@@ -114,8 +113,8 @@ class CommandSubTree<S : Any> private constructor(
         fun <S : Any> wrap(
             command: Command<S>,
             tree: CommandTree<S>,
-        ): CommandSubTree<S> {
-            return CommandSubTree(command, tree)
+        ): SubCommandArgumentTree<S> {
+            return SubCommandArgumentTree(command, tree)
         }
     }
 

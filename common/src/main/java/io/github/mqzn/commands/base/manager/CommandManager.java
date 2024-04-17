@@ -7,13 +7,13 @@ import io.github.mqzn.commands.base.caption.CaptionKey;
 import io.github.mqzn.commands.base.caption.CaptionRegistry;
 import io.github.mqzn.commands.base.context.Context;
 import io.github.mqzn.commands.base.context.DelegateCommandContext;
-import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility;
 import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.base.syntax.SubCommandSyntax;
 import io.github.mqzn.commands.base.syntax.tree.CommandTree;
 import io.github.mqzn.commands.exceptions.CommandExceptionHandler;
 import io.github.mqzn.commands.help.CommandHelpProvider;
 import io.github.mqzn.commands.help.CommandHelpStyle;
+import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility;
 import io.github.mqzn.commands.utilities.text.PaginatedText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -198,7 +198,7 @@ public interface CommandManager<B, S> {
 	 * @see SuggestionProvider
 	 */
 	@NotNull SuggestionProviderRegistry suggestionProviderRegistry();
-
+	
 	@Nullable Long getCommandCooldown(String senderName);
 	
 	void log(String msg, Object... args);

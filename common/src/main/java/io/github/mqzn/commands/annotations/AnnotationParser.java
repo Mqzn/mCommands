@@ -9,14 +9,15 @@ import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.arguments.ArgumentData;
 import io.github.mqzn.commands.arguments.ArgumentNumber;
 import io.github.mqzn.commands.base.*;
+import io.github.mqzn.commands.base.context.CommandArgs;
 import io.github.mqzn.commands.base.context.Context;
 import io.github.mqzn.commands.base.cooldown.CommandCooldown;
 import io.github.mqzn.commands.base.manager.CommandManager;
-import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility;
 import io.github.mqzn.commands.base.syntax.CommandSyntaxBuilder;
 import io.github.mqzn.commands.base.syntax.SubCommandBuilder;
 import io.github.mqzn.commands.base.syntax.SyntaxFlags;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
+import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility;
 import io.github.mqzn.commands.utilities.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,7 +51,9 @@ public final class AnnotationParser<S> {
 	 * command manager !
 	 *
 	 * @param annotatedCommand the command instance to register
-	 * @param <C>              the type of the command class
+	 * @param <C>              the type of the custom sender
+	 * @param <E>              ignore this, it's used for casting
+	 * @param <CO>             the annotated command class type
 	 */
 	@SuppressWarnings("unchecked")
 	public <E extends Enum<E>, C, CO> void parse(CO annotatedCommand) {
@@ -80,7 +83,6 @@ public final class AnnotationParser<S> {
 			}
 		}
 		
-		
 		if (!checkAnnotation(annotatedCommand)) {
 			throw new IllegalStateException(
 				String.format("Failed to load command class `%s`, the class is NOT annotated with `@Command`",
@@ -92,7 +94,8 @@ public final class AnnotationParser<S> {
 		assert cmdAnnotation != null;
 		
 		io.github.mqzn.commands.base.Command.Builder<S> builder = io.github.mqzn.commands.base.Command.builder(manager, cmdAnnotation.name())
-			.info(new CommandInfo(cmdAnnotation.permission().isEmpty() ? null : cmdAnnotation.permission(), cmdAnnotation.description(), cmdAnnotation.aliases()));
+			.info(new CommandInfo(cmdAnnotation.permission().isEmpty() ? null : cmdAnnotation.permission(), cmdAnnotation.description(), cmdAnnotation.aliases()))
+			.coordination(cmdAnnotation.executionType());
 		
 		if (annotatedCommand.getClass().isAnnotationPresent(Cooldown.class)) {
 			Cooldown cooldown = annotatedCommand.getClass().getAnnotation(Cooldown.class);
@@ -130,16 +133,17 @@ public final class AnnotationParser<S> {
 		Method[] methods = annotatedCommand.getClass().getDeclaredMethods();
 		for (var method : methods) {
 			if (!checkMethod(method)) {
-				if (method.getParameters().length == 1 && method.isAnnotationPresent(Default.class)) {
+				if (method.getParameters().length == 2 && method.isAnnotationPresent(Default.class)) {
 					
 					//default Execution
 					builder
 						.defaultExecutor(
-							(sender, context) -> invokeMethod(annotatedCommand, method, sender));
+							(sender, context) -> invokeMethod(annotatedCommand, method, sender, CommandArgs.create(context)));
 				}
 				
 				continue;
 			}
+			
 			ExecutionMeta executionMetaMeta = method.getAnnotation(ExecutionMeta.class);
 			assert executionMetaMeta != null;
 			
@@ -309,7 +313,7 @@ public final class AnnotationParser<S> {
 	private boolean checkMethod(Method method) {
 		
 		Parameter[] parameters = method.getParameters();
-		if (parameters.length == 0) {
+		if (parameters.length < 2) {
 			return false;
 		}
 		
@@ -319,7 +323,12 @@ public final class AnnotationParser<S> {
 		
 		if (!this.isSenderParam(meta, parameters[0]))
 			throw new IllegalArgumentException(
-				String.format("First parameter in method '%s' is not a valid command sender instance !", method.getName())
+				String.format("First parameter in method '%s' is not a valid context instance !", method.getName())
+			);
+		
+		if (!this.isCommandArgsParam(parameters[1]))
+			throw new IllegalArgumentException(
+				String.format("Second parameter in method '%s' is not of CommandArgs type", method.getName())
 			);
 		
 		if (Modifier.isStatic(method.getModifiers()))
@@ -328,7 +337,7 @@ public final class AnnotationParser<S> {
 			);
 		
 		
-		for (int i = 1; i < parameters.length; i++) {
+		for (int i = 2; i < parameters.length; i++) {
 			Parameter parameter = parameters[i];
 			if (parameter.isAnnotationPresent(Arg.class) && parameter.isAnnotationPresent(Flag.class)) {
 				throw new IllegalArgumentException(String.format(
@@ -496,9 +505,11 @@ public final class AnnotationParser<S> {
 		
 		var parameters = method.getParameters();
 		Object[] values = new Object[parameters.length];
-		values[0] = sender;
 		
-		for (int p = 1; p < parameters.length; p++) {
+		values[0] = sender;
+		values[1] = CommandArgs.create(context);
+		
+		for (int p = 2; p < parameters.length; p++) {
 			Parameter parameter = parameters[p];
 			
 			Object value;
@@ -604,7 +615,7 @@ public final class AnnotationParser<S> {
 		Argument<?>[] arguments = new Argument[split.length];
 		Parameter[] parameters = method.getParameters();
 		
-		for (int i = 0, p = 1; i < arguments.length && p < parameters.length; i++, p++) {
+		for (int i = 0, p = 2; i < arguments.length && p < parameters.length; i++, p++) {
 			
 			Parameter parameter = parameters[p];
 			Arg argAnnotation = parameter.getAnnotation(Arg.class);
@@ -687,8 +698,7 @@ public final class AnnotationParser<S> {
 		
 		for (Parameter parameter : method.getParameters()) {
 			
-			if (isSenderParam(executionMetaMeta, parameter)) continue;
-			
+			if (isSenderParam(executionMetaMeta, parameter) || isCommandArgsParam(parameter)) continue;
 			String flag = getFlagFromParameter(parameter);
 			
 			String exceptionMessage = null;
@@ -712,7 +722,7 @@ public final class AnnotationParser<S> {
 		Argument<?>[] args = new Argument[split.length];
 		Parameter[] typeParameters = method.getParameters();
 		
-		for (int i = 0, p = 1; i < split.length; i++, p++) {
+		for (int i = 0, p = 2; i < split.length; i++, p++) {
 			String arg = split[i];
 			
 			if (ArgumentSyntaxUtility.isArgLiteral(arg)) {
@@ -818,10 +828,14 @@ public final class AnnotationParser<S> {
 	
 	
 	private boolean isSenderParam(ExecutionMeta meta, Parameter parameter) {
-		
 		return manager.getSenderWrapper().canBeSender(parameter.getType())
 			|| (manager.senderProviderRegistry().hasProviderFor(parameter.getType())
 			&& meta.senderType().isAssignableFrom(parameter.getType()));
+	}
+	
+	private boolean isCommandArgsParam(Parameter parameter) {
+		return (parameter.getType() == CommandArgs.class ||
+			parameter.getType().isInstance(CommandArgs.class));
 	}
 	
 	@SuppressWarnings("unchecked")

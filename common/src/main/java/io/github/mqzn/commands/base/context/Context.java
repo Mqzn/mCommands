@@ -3,6 +3,7 @@ package io.github.mqzn.commands.base.context;
 import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.manager.flags.ContextFlagRegistry;
+import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import io.github.mqzn.commands.exceptions.types.ArgumentParseException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -120,6 +121,11 @@ public interface Context<S> {
 	 * of the command executed by the command sender
 	 */
 	@NotNull ContextFlagRegistry<S> flags();
+	
+	/**
+	 * @return The syntax used in the context of the command
+	 */
+	@NotNull CommandSyntax<S> syntaxUsed();
 	
 	/**
 	 * The length of the args used in the raw context

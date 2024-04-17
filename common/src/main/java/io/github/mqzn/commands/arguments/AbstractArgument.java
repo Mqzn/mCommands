@@ -85,28 +85,48 @@ public abstract class AbstractArgument<T> implements Argument<T> {
 	}
 	
 	
+	/**
+	 * @return the default value of the argument if it's not set
+	 * by default it's going to be null
+	 */
 	@Override
 	public @Nullable T defaultValue() {
 		return defaultValue;
 	}
 	
+	/**
+	 * @param value the new default value
+	 * @return builder pattern
+	 */
 	@Override
 	public @NotNull Argument<T> setDefaultValue(@Nullable T value) {
 		this.defaultValue = value;
 		return this;
 	}
 	
+	/**
+	 * @return whether this argument is optional or not
+	 */
 	@Override
 	public boolean isOptional() {
 		return optional;
 	}
 	
-	
+	/**
+	 * Sets the argument to be optional or not
+	 *
+	 * @param optional whether it's going to be optional or not
+	 */
 	@Override
 	public void setOptional(boolean optional) {
 		this.optional = optional;
 	}
 	
+	/**
+	 * Sets it automatically as optional (true)
+	 *
+	 * @return builder-pattern
+	 */
 	public Argument<T> asOptional() {
 		setOptional(true);
 		return this;
@@ -124,24 +144,44 @@ public abstract class AbstractArgument<T> implements Argument<T> {
 		return useRemainingSpace;
 	}
 	
+	/**
+	 * Sets the description of the argument
+	 *
+	 * @param description the new description of the argument
+	 * @return builder-pattern
+	 */
 	@Override
 	public Argument<T> description(@Nullable String description) {
 		this.description = description;
 		return this;
 	}
 	
+	/**
+	 * Adds a suggestion object into the argument for TAB-completion
+	 *
+	 * @param suggestion the suggestion to add
+	 * @return builder-pattern
+	 */
 	@Override
 	public Argument<T> suggest(@NotNull T suggestion) {
 		suggestions.add(suggestion);
 		return this;
 	}
 	
+	/**
+	 * @return the suggestions of this argument
+	 */
 	@Override
 	public @NotNull List<T> suggestions() {
 		return suggestions;
 	}
 	
-	
+	/**
+	 * Suggests multiple suggestions for this argument
+	 *
+	 * @param suggestions the suggestions to add
+	 * @return builder-pattern
+	 */
 	@Override
 	@SafeVarargs
 	public final Argument<T> suggest(@NotNull T... suggestions) {
@@ -151,16 +191,22 @@ public abstract class AbstractArgument<T> implements Argument<T> {
 		return this;
 	}
 	
+	/**
+	 * changes the type of argument's object to a string
+	 *
+	 * @param obj the object type of the argument
+	 * @return object as string
+	 */
+	@Override
+	public String toString(T obj) {
+		return obj.toString();
+	}
 	
 	@Override
 	public String toString() {
 		return id + ":" + type.getSimpleName();
 	}
 	
-	@Override
-	public String toString(T obj) {
-		return obj.toString();
-	}
 	
 	@Override
 	public boolean equals(Object o) {

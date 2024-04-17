@@ -5,7 +5,6 @@ import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.context.CommandContext;
 import io.github.mqzn.commands.base.context.DelegateCommandContext;
 import io.github.mqzn.commands.base.manager.CommandManager;
-import io.github.mqzn.commands.base.manager.flags.ContextFlagRegistry;
 import io.github.mqzn.commands.base.syntax.tree.CommandTree;
 import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility;
 import net.kyori.adventure.text.Component;
@@ -16,8 +15,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
+
+@SuppressWarnings("unused")
 public class SubCommandSyntax<S> extends CommandSyntax<S> {
 	
 	@NotNull
@@ -54,13 +54,6 @@ public class SubCommandSyntax<S> extends CommandSyntax<S> {
 		this.commandAliases = commandAliases;
 		this.defaultExecution = defaultExecution;
 		
-	}
-	
-	public static <S> List<String> getSubCommandsUsed(CommandTree<S> tree, DelegateCommandContext<S> context) {
-		return context.getRawArguments().stream()
-			.filter((raw) -> !ContextFlagRegistry.isRawArgumentFlag(raw)
-				&& tree.searchForSub(raw) != null)
-			.collect(Collectors.toList());
 	}
 	
 	public void addChild(SubCommandSyntax<S> subCommand) {

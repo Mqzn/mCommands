@@ -5,6 +5,7 @@ import io.github.mqzn.commands.arguments.ArgumentInteger;
 import io.github.mqzn.commands.base.caption.CaptionKey;
 import io.github.mqzn.commands.base.context.Context;
 import io.github.mqzn.commands.base.cooldown.CommandCooldown;
+import io.github.mqzn.commands.base.manager.CommandExecutionCoordinator;
 import io.github.mqzn.commands.base.manager.CommandManager;
 import io.github.mqzn.commands.base.manager.CommandSuggestionEngine;
 import io.github.mqzn.commands.base.syntax.CommandExecution;
@@ -118,6 +119,14 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 	Optional<SubCommandSyntax<S>> getSubCommand(@Nullable String name);
 	
 	/**
+	 * Fetches the execution coordinator
+	 *
+	 * @return the execution coordinator of this command
+	 */
+	CommandExecutionCoordinator<S> coordinator();
+	
+	
+	/**
 	 * An internal builder class for the command
 	 * class {@link Command<S>}
 	 *
@@ -134,6 +143,7 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 		
 		@NotNull
 		private final String name;
+		
 		@NotNull
 		private final Set<CommandRequirement<S>> requirements = new HashSet<>();
 		@NotNull
@@ -142,6 +152,8 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 		private CommandCooldown cooldown = CommandCooldown.EMPTY;
 		@NotNull
 		private CommandInfo info = CommandInfo.EMPTY_INFO;
+		
+		private CommandExecutionCoordinator.Type executionType = CommandExecutionCoordinator.Type.SYNC;
 		
 		private CommandExecution<S, S> defaultExecutor;
 		
@@ -164,6 +176,11 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 		@SafeVarargs
 		public final Builder<S> syntax(@NotNull CommandSyntax<S>... syntaxes) {
 			this.syntaxes.addAll(Arrays.asList(syntaxes));
+			return this;
+		}
+		
+		public Builder<S> coordination(@NotNull CommandExecutionCoordinator.Type type) {
+			this.executionType = type;
 			return this;
 		}
 		
@@ -207,7 +224,8 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 				syntaxes.add(helpSyntax);
 			}
 			
-			return new ImmutableCommandImpl<>(manager, name, info, cooldown, requirements, syntaxes, defaultExecutor);
+			return new ImmutableCommandImpl<>(manager, name, info, cooldown,
+				requirements, syntaxes, executionType, defaultExecutor);
 		}
 		
 		
@@ -238,12 +256,16 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 			@NotNull
 			private final List<@NotNull CommandSyntax<S>> syntaxes;
 			
+			@NotNull
+			private final CommandExecutionCoordinator<S> coordinator;
+			
 			ImmutableCommandImpl(@NotNull CommandManager<?, S> manager,
 			                     @NotNull String name,
 			                     @NotNull CommandInfo info,
 			                     @NotNull CommandCooldown cooldown,
 			                     @NotNull Set<CommandRequirement<S>> requirements,
 			                     @NotNull List<CommandSyntax<S>> syntaxes,
+			                     @NotNull CommandExecutionCoordinator.Type coordinationType,
 			                     @Nullable CommandExecution<S, S> execution) {
 				this.manager = manager;
 				this.name = name;
@@ -254,9 +276,9 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 				this.syntaxes = syntaxes;
 				Collections.sort(syntaxes);
 				
+				this.coordinator = CommandExecutionCoordinator.fromType(this, coordinationType);
 				this.execution = execution;
 				this.tree = CommandTree.create(this);
-				//this.helpTree = CommandHelpTree.create(this);
 				this.suggestionsEngine = CommandSuggestionEngine.create(this);
 			}
 			
@@ -325,6 +347,17 @@ public sealed interface Command<S> permits Command.Builder.ImmutableCommandImpl 
 					.filter(syntax -> syntax instanceof SubCommandSyntax<S> sub && sub.getName().equalsIgnoreCase(name))
 					.map((syntax) -> (SubCommandSyntax<S>) syntax)
 					.findFirst();
+			}
+			
+			/**
+			 * Fetches the execution coordinator
+			 *
+			 * @return the execution coordinator of this command
+			 * @see CommandExecutionCoordinator
+			 */
+			@Override
+			public CommandExecutionCoordinator<S> coordinator() {
+				return coordinator;
 			}
 			
 			@Override

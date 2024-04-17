@@ -2,13 +2,10 @@ package io.github.mqzn.commands.test;
 
 import io.github.mqzn.commands.annotations.AnnotationParser;
 import io.github.mqzn.commands.test.annotations.TestAnnotatedCommand;
-import io.github.mqzn.commands.test.buggyexamples.ParentCmd;
+import io.github.mqzn.commands.utilities.ArgumentSyntaxUtility;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-import java.util.regex.Pattern;
 
 @TestOnly
 public final class TestBootstrap {
@@ -34,6 +31,10 @@ public final class TestBootstrap {
 		
 		var cmd = commandManager.getCommand("testa");
 		Assertions.assertNotNull(cmd);
+		for (var syntax : cmd.syntaxes()) {
+			System.out.println(ArgumentSyntaxUtility.format(commandManager, cmd.name(), syntax.getArguments()));
+		}
+		System.out.println("Syntaxes loaded : " + cmd.syntaxes().size());
 		
 		commandManager.executeCommand(cmd, sender, args);
 	}
@@ -43,41 +44,11 @@ public final class TestBootstrap {
 		Assertions.assertDoesNotThrow(() -> parser.parse(new TestAnnotatedCommand()));
 		
 		String[] args = new String[]{
-			"disband"
+			"clear"
 		};
 		
 		var cmd = commandManager.getCommand("testa");
 		Assertions.assertNotNull(cmd);
-		
-		commandManager.executeCommand(cmd, sender, args);
-	}
-	
-	@Test
-	public void syntaxParsingTest() {
-		
-		String syntax = "disband ";
-		
-		String[] split = syntax.split(Pattern.quote(" "));
-		System.out.println(Arrays.toString(split));
-	}
-	
-	@Test
-	public void subcommandGreedyArgParse() {
-		parser.parse(new ParentCmd());
-		
-		var cmd = commandManager.getCommand("parent");
-		Assertions.assertNotNull(cmd);
-		
-		Assertions.assertFalse(cmd.getSubCommand("greedy").isEmpty());
-		String[] args = new String[]{
-			"greedy",
-			"hello",
-			"this",
-			"is",
-			"a",
-			"greedy",
-			"string"
-		};
 		
 		commandManager.executeCommand(cmd, sender, args);
 	}

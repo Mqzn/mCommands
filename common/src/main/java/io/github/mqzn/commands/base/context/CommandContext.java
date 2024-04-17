@@ -43,11 +43,13 @@ public final class CommandContext<S> implements Context<S> {
 		contextFlagRegistry = ContextFlagRegistry.create(manager, this);
 	}
 	
+	
 	public static <S> CommandContext<S> create(@NotNull CommandManager<?, S> manager,
 	                                           @NotNull CommandSyntax<S> syntax,
 	                                           @NotNull DelegateCommandContext<S> context) {
 		return new CommandContext<>(manager, syntax, context);
 	}
+	
 	
 	/**
 	 * Parses the arguments into the used syntax
@@ -145,6 +147,14 @@ public final class CommandContext<S> implements Context<S> {
 	@Override
 	public @NotNull ContextFlagRegistry<S> flags() {
 		return contextFlagRegistry;
+	}
+	
+	/**
+	 * @return The syntax used in the context of the command
+	 */
+	@Override
+	public @NotNull CommandSyntax<S> syntaxUsed() {
+		return syntax;
 	}
 	
 	/**

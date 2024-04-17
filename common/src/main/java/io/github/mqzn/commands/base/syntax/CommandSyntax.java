@@ -3,6 +3,7 @@ package io.github.mqzn.commands.base.syntax;
 import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.arguments.ArgumentLiteral;
 import io.github.mqzn.commands.base.Information;
+import io.github.mqzn.commands.base.SenderWrapper;
 import io.github.mqzn.commands.base.context.CommandContext;
 import io.github.mqzn.commands.base.context.DelegateCommandContext;
 import io.github.mqzn.commands.base.manager.AmbiguityChecker;
@@ -121,16 +122,16 @@ public class CommandSyntax<S> implements TextConvertible<S>, Comparable<CommandS
 		
 		int greedyIndex = -1;
 		for (int i = 0; i < arguments.size(); i++) {
-			if(arguments.get(i).useRemainingSpace()) {
+			if (arguments.get(i).useRemainingSpace()) {
 				greedyIndex = i;
 				break;
 			}
 		}
 		
 		int rawLength = commandContext.getRawArguments().size();
-		if(greedyIndex != -1) {
+		if (greedyIndex != -1) {
 			final int originalRawLength = rawLength;
-			rawLength = originalRawLength-(originalRawLength-greedyIndex);
+			rawLength = originalRawLength - (originalRawLength - greedyIndex);
 		}
 		
 		if (rawLength < minSyntaxLength || rawLength > maxSyntaxLength) return false;
@@ -242,6 +243,13 @@ public class CommandSyntax<S> implements TextConvertible<S>, Comparable<CommandS
 			return 1;
 		
 		return args.size() - otherArgs.size();
+	}
+	
+	public boolean checkHasPermission(@NotNull SenderWrapper<S> wrapper, S sender) {
+		if (info == null || info.permission() == null
+			|| info.permission().isEmpty() || info.permission().isBlank()) return true;
+		
+		return wrapper.hasPermission(sender, info.permission());
 	}
 	
 }

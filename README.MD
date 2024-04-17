@@ -44,6 +44,7 @@ dependencies {
 ### Common
 
 The main platform that contain the core of the library
+
 ```gradle
 implementation 'io.github.mqzn:mCommands-common:<LATEST_VERSION>'
 ```

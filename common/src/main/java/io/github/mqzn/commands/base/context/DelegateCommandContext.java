@@ -4,6 +4,7 @@ import io.github.mqzn.commands.arguments.Argument;
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.manager.CommandManager;
 import io.github.mqzn.commands.base.manager.flags.ContextFlagRegistry;
+import io.github.mqzn.commands.base.syntax.CommandSyntax;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,8 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public final class DelegateCommandContext<S> implements Context<S> {
-	
-	private final static int CAPACITY_ARGUMENTS = 45; // 45-50
 	
 	@NotNull
 	private final S sender;
@@ -25,7 +24,7 @@ public final class DelegateCommandContext<S> implements Context<S> {
 	private final String rawFormatted;
 	
 	@NotNull
-	private final List<String> rawArguments = new ArrayList<>(CAPACITY_ARGUMENTS);
+	private final List<String> rawArguments = new ArrayList<>();
 	
 	private int flagsUsedInRaw = 0;
 	
@@ -125,6 +124,14 @@ public final class DelegateCommandContext<S> implements Context<S> {
 	 */
 	@Override
 	public @NotNull ContextFlagRegistry<S> flags() {
+		throw new UnsupportedOperationException("This cannot be done using a delegate context !");
+	}
+	
+	/**
+	 * @return The syntax used in the context of the command
+	 */
+	@Override
+	public @NotNull CommandSyntax<S> syntaxUsed() {
 		throw new UnsupportedOperationException("This cannot be done using a delegate context !");
 	}
 	
