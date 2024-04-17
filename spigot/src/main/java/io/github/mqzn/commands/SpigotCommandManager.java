@@ -6,7 +6,6 @@ import io.github.mqzn.commands.arguments.ArgumentUUID;
 import io.github.mqzn.commands.arguments.ArgumentWorld;
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.manager.AbstractCommandManager;
-import io.github.mqzn.commands.base.manager.CommandExecutionCoordinator;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -28,8 +27,8 @@ public final class SpigotCommandManager extends AbstractCommandManager<Plugin, C
 	@NotNull
 	private final SimpleCommandMap cmdMap;
 	
-	public SpigotCommandManager(@NotNull Plugin plugin, @NotNull CommandExecutionCoordinator.Type coordinator) {
-		super(plugin, new SpigotSenderWrapper(plugin), coordinator);
+	public SpigotCommandManager(@NotNull Plugin plugin) {
+		super(plugin, new SpigotSenderWrapper(plugin));
 		this.plugin = plugin;
 		try {
 			Field commandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
@@ -42,12 +41,6 @@ public final class SpigotCommandManager extends AbstractCommandManager<Plugin, C
 		this.registerCaptions();
 		this.registerTypes();
 	}
-	
-	
-	public SpigotCommandManager(@NotNull Plugin plugin) {
-		this(plugin, CommandExecutionCoordinator.Type.SYNC);
-	}
-	
 	
 	@Override
 	public @NotNull Plugin getBootstrap() {

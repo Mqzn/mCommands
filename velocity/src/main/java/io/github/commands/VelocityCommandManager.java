@@ -15,14 +15,6 @@ public final class VelocityCommandManager extends AbstractCommandManager<ProxySe
 	@NotNull
 	private final Object bootstrapObj;
 	
-	public VelocityCommandManager(@NotNull Object bootstrapObj, @NotNull ProxyServer plugin,
-	                              CommandExecutionCoordinator.@NotNull Type coordinator) {
-		super(plugin, new VelocitySenderWrapper(), coordinator);
-		this.bootstrapObj = bootstrapObj;
-		this.registerCaptions();
-		this.registerTypes();
-	}
-	
 	public VelocityCommandManager(@NotNull Object bootstrapObj, @NotNull ProxyServer plugin) {
 		super(plugin, new VelocitySenderWrapper());
 		this.bootstrapObj = bootstrapObj;

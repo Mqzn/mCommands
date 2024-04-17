@@ -3,7 +3,6 @@ package io.github.mqzn.commands;
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.SenderWrapper;
 import io.github.mqzn.commands.base.manager.AbstractCommandManager;
-import io.github.mqzn.commands.base.manager.CommandExecutionCoordinator;
 import net.kyori.adventure.text.TextComponent;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ServerTextChannel;
@@ -23,9 +22,8 @@ public final class JCordCommandManager extends AbstractCommandManager<DiscordApi
 	public JCordCommandManager(@NotNull DiscordApi bootstrap,
 	                           char commandPrefix,
 	                           @NotNull Server server,
-	                           @NotNull ServerTextChannel commandsChannel,
-	                           CommandExecutionCoordinator.@NotNull Type coordinator) {
-		super(bootstrap, new MemberWrapper(server, commandsChannel), coordinator);
+	                           @NotNull ServerTextChannel commandsChannel) {
+		super(bootstrap, new MemberWrapper(server, commandsChannel));
 		this.commandStarter = commandPrefix;
 	}
 	
