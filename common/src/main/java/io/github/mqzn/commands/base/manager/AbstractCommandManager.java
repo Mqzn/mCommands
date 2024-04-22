@@ -210,7 +210,12 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 		if (this.wrapper.canBeSender(syntax.getSenderClass())) {
 			
 			command.coordinator().coordinateExecution(sender, syntax, commandContext)
-				.whenComplete((v, ex) -> log("%s has executed the command '%s'", wrapper.senderName(sender), commandContext.rawFormat()));
+				.exceptionally((ex) -> {
+					assert ex != null;
+					exceptionHandler.handleException(ex, sender, commandContext);
+					return null;
+				})
+				.whenComplete((executionResult, ex) -> log("(%s) %s has executed the command '%s'", executionResult.name(), wrapper.senderName(sender), commandContext.rawFormat()));
 			
 			return;
 		}
@@ -224,7 +229,12 @@ public abstract class AbstractCommandManager<B, S> implements CommandManager<B, 
 		}
 		
 		command.coordinator().coordinateExecution(customSender, syntax, commandContext)
-			.whenComplete((v, ex) -> log("%s has executed the command '%s'", wrapper.senderName(sender), commandContext.rawFormat()));
+			.exceptionally((ex) -> {
+				assert ex != null;
+				exceptionHandler.handleException(ex, sender, commandContext);
+				return null;
+			})
+			.whenComplete((executionResult, ex) -> log("(%s) %s has executed the command '%s'", executionResult.name(), wrapper.senderName(sender), commandContext.rawFormat()));
 		
 	}
 	

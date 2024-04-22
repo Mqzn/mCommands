@@ -7,7 +7,6 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import io.github.commands.arguments.ArgumentOnlinePlayer;
 import io.github.mqzn.commands.base.Command;
 import io.github.mqzn.commands.base.manager.AbstractCommandManager;
-import io.github.mqzn.commands.base.manager.CommandExecutionCoordinator;
 import org.jetbrains.annotations.NotNull;
 
 public final class VelocityCommandManager extends AbstractCommandManager<ProxyServer, CommandSource> {

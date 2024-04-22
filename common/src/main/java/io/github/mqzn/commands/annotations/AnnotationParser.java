@@ -138,7 +138,7 @@ public final class AnnotationParser<S> {
 					//default Execution
 					builder
 						.defaultExecutor(
-							(sender, context) -> invokeMethod(annotatedCommand, method, sender, CommandArgs.create(context)));
+							(sender, context) -> invokeMethod(annotatedCommand, method, context, CommandArgs.create(context)));
 				}
 				
 				continue;
@@ -148,8 +148,8 @@ public final class AnnotationParser<S> {
 			assert executionMetaMeta != null;
 			
 			var loadedData = loadMethodParameters(manager, cmdAnnotation.name(), executionMetaMeta, annotatedCommand.getClass(), method);
-			var arguments = loadedData.right;
-			var flags = loadedData.left;
+			var arguments = loadedData.getRight();
+			var flags = loadedData.getLeft();
 			
 			
 			if (executionMetaMeta.senderType() != Object.class)
@@ -167,7 +167,7 @@ public final class AnnotationParser<S> {
 				.flags(flags)
 				.execute((sender, context) -> {
 					Object[] valuesToUse = readValues(method, sender, context);
-					invokeMethod(annotatedCommand, method, valuesToUse);
+					invokeMethod(annotatedCommand, method, context, valuesToUse);
 				});
 			
 			builder.syntax(syntaxBuilder.build());
@@ -261,7 +261,7 @@ public final class AnnotationParser<S> {
 			
 			subBuilder = subBuilder
 				.defaultExecution(
-					(sender, context) -> invokeMethod(subCommandInstance, defaultExecutionMethod, sender));
+					(sender, context) -> invokeMethod(subCommandInstance, defaultExecutionMethod, context));
 		}
 		
 		Method executeMethod = Arrays.stream(subClass.getDeclaredMethods())
@@ -296,7 +296,7 @@ public final class AnnotationParser<S> {
 			
 			subBuilder = subBuilder.execute((sender, context) -> {
 				Object[] valuesToUse = readValues(executeMethod, sender, context);
-				invokeMethod(subCommandInstance, executeMethod, valuesToUse);
+				invokeMethod(subCommandInstance, executeMethod, context, valuesToUse);
 			});
 		}
 		
@@ -574,7 +574,7 @@ public final class AnnotationParser<S> {
 		if (parent.equals(Object.class)) {
 			
 			var data = loadMethodParameters(manager, commandName, executionMeta, subCommandClass, method);
-			var args = data.right;
+			var args = data.getRight();
 			
 			Argument<?>[] modifiedArgs = new Argument[args.length + 1];
 			modifiedArgs[0] = Argument.literal(info.name())
@@ -582,7 +582,7 @@ public final class AnnotationParser<S> {
 			
 			if (args.length - 1 >= 0) System.arraycopy(args, 0, modifiedArgs, 1, args.length - 1);
 			
-			return new ResolvedSubCommandMethod(args, modifiedArgs, data.left);
+			return new ResolvedSubCommandMethod(args, modifiedArgs, data.getLeft());
 		}
 		
 		String[] split = executionMeta.syntax().isEmpty() ? new String[0] : executionMeta.syntax().split(Pattern.quote(" "));
@@ -669,7 +669,7 @@ public final class AnnotationParser<S> {
 		};
 		
 		var data = loadMethodParameters(manager, commandName, newExecutionMeta, subCommandClass, method);
-		return new ResolvedSubCommandMethod(arguments, data.right, data.left);
+		return new ResolvedSubCommandMethod(arguments, data.getRight(), data.getLeft());
 	}
 	
 	
@@ -823,7 +823,7 @@ public final class AnnotationParser<S> {
 		}
 		
 		
-		return Pair.Companion.of(flags, args);
+		return Pair.of(flags, args);
 	}
 	
 	
@@ -863,11 +863,11 @@ public final class AnnotationParser<S> {
 		return String.format("Subcommand class '%s' is NOT annotated with @%s", subClass.getName(), annotation.getSimpleName());
 	}
 	
-	private <T> void invokeMethod(T instance, Method method, Object... objects) {
+	private <T> void invokeMethod(T instance, Method method, Context<S> context, Object... objects) {
 		try {
 			method.invoke(instance, objects);
-		} catch (IllegalAccessException | InvocationTargetException e) {
-			throw new RuntimeException(e);
+		} catch (Exception ex) {
+			manager.exceptionHandler().handleException(ex, context.sender(), context);
 		}
 	}
 	

@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'io.github.mqzn'
-version '1.1.5'
+version '1.1.6'
 
 repositories {
     mavenCentral()
@@ -27,8 +27,8 @@ dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.17.1-R0.1-SNAPSHOT'
     implementation project(":common")
 
-    implementation "net.kyori:adventure-api:4.13.1"
-    implementation "net.kyori:adventure-platform-bukkit:4.3.0"
+    compileOnly "net.kyori:adventure-api:4.13.1"
+    compileOnly "net.kyori:adventure-platform-bukkit:4.3.0"
 }
 
 def targetJavaVersion = 17

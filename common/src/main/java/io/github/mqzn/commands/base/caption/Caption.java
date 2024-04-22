@@ -1,7 +1,6 @@
 package io.github.mqzn.commands.base.caption;
 
 import io.github.mqzn.commands.base.context.Context;
-import io.github.mqzn.commands.exceptions.CommandException;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.jetbrains.annotations.NotNull;
@@ -16,13 +15,13 @@ public interface Caption<S> {
 	
 	@NotNull CaptionKey key();
 	
-	@NotNull <E extends CommandException> TextComponent message(S sender, Context<S> context, E exception);
+	@NotNull TextComponent message(S sender, Context<S> context, Throwable exception);
 	
 	interface CaptionResult<S> {
 		
 		@NotNull TextComponent messageResult(@NotNull S sender,
 		                                     @NotNull Context<S> context,
-		                                     @Nullable CommandException exception);
+		                                     @Nullable Throwable exception);
 		
 	}
 	
@@ -52,9 +51,9 @@ public interface Caption<S> {
 			
 			
 			@Override
-			public @NotNull <E extends CommandException> TextComponent message(@NotNull S sender,
-			                                                                   @NotNull Context<S> context,
-			                                                                   @Nullable E exception) {
+			public @NotNull TextComponent message(@NotNull S sender,
+			                                      @NotNull Context<S> context,
+			                                      @Nullable Throwable exception) {
 				return messageCreator.messageResult(sender, context, exception);
 			}
 			

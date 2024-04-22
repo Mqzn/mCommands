@@ -2,7 +2,6 @@ package io.github.mqzn.commands.base.caption;
 
 import io.github.mqzn.commands.base.context.Context;
 import io.github.mqzn.commands.base.manager.CommandManager;
-import io.github.mqzn.commands.exceptions.CommandException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,10 +33,10 @@ public class CaptionRegistry<S> {
 		return captions.get(key);
 	}
 	
-	public <E extends CommandException> void sendCaption(@NotNull S sender,
-	                                                     @NotNull Context<S> commandContext,
-	                                                     @Nullable E exception,
-	                                                     @NotNull CaptionKey key) {
+	public void sendCaption(@NotNull S sender,
+	                        @NotNull Context<S> commandContext,
+	                        @Nullable Throwable exception,
+	                        @NotNull CaptionKey key) {
 		var caption = getCaption(key);
 		
 		if (caption == null) return;
@@ -48,12 +47,13 @@ public class CaptionRegistry<S> {
 		this.sendCaption(sender, commandContext, null, key);
 	}
 	
-	public <E extends CommandException> void sendCaption(@NotNull S sender,
-	                                                     @NotNull Context<S> commandContext,
-	                                                     @Nullable E exception,
-	                                                     @NotNull Caption<S> caption) {
+	public void sendCaption(@NotNull S sender,
+	                        @NotNull Context<S> commandContext,
+	                        @Nullable Throwable exception,
+	                        @NotNull Caption<S> caption) {
 		var text = caption.message(sender, commandContext, exception);
 		manager.getSenderWrapper().sendMessage(sender, text);
 	}
+	
 	
 }

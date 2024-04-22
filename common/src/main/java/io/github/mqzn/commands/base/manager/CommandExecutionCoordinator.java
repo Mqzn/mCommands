@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
 
-public abstract class CommandExecutionCoordinator<S> {
+public sealed abstract class CommandExecutionCoordinator<S> {
 	
 	@NotNull
 	protected final Command<S> command;
@@ -79,7 +79,7 @@ public abstract class CommandExecutionCoordinator<S> {
 	}
 	
 	
-	static class SyncCommandCoordinator<S> extends CommandExecutionCoordinator<S> {
+	final static class SyncCommandCoordinator<S> extends CommandExecutionCoordinator<S> {
 		public SyncCommandCoordinator(Command<S> manager) {
 			super(manager);
 		}
