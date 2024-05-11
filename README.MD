@@ -7,7 +7,8 @@
 
 
 An advanced general purpose command dispatching framework
-designed using OOP concepts.
+designed using OOP concepts.The library is user-friendly and provides 
+high performance along with a high quality of production code.
 
 This library utilizes [Kyori Adventure](https://github.com/KyoriPowered/adventure) for
 messages and text styles
@@ -26,7 +27,7 @@ dependencies {
 
 ## Installation
 
-We have our own repo in maven central
+mCommands has its own repo in maven central
 so all you have to do is like this:
 
 ```gradle 
@@ -66,8 +67,13 @@ to declare and register bungeecord commands.
 implementation 'io.github.mqzn:mCommands-bungee:<LATEST_VERSION>'
 ```
 
-## Quick Usage Overview
+## Wiki
+If you want to learn how to fully utilize the amazing potential of this library.
+you must read the wiki pages starting from [here](https://github.com/Mqzn/mCommands/wiki)
+You will also need the wiki in order to make something cool like the example below:
 
+# Code Example
+Here's a quick example on how to create a command using mCommands.
 ```java
 public final class SpigotPluginTest extends JavaPlugin {
 	
@@ -92,11 +98,6 @@ public final class SpigotPluginTest extends JavaPlugin {
 	}
 
 }
-
-
 ```
 
-## Wiki
-
-Wiki for mCommands is available [here](https://github.com/Mqzn/mCommands/wiki)
 
