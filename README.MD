@@ -72,7 +72,7 @@ If you want to learn how to fully utilize the amazing potential of this library.
 you must read the wiki pages starting from [here](https://github.com/Mqzn/mCommands/wiki)
 You will also need the wiki in order to make something cool like the example below:
 
-# Code Example
+### Code Example
 Here's a quick example on how to create a command using mCommands.
 ```java
 public final class SpigotPluginTest extends JavaPlugin {
