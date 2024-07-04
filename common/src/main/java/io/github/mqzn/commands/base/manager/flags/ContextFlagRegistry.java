@@ -54,18 +54,13 @@ public final class ContextFlagRegistry<S> {
 		List<Argument<?>> argumentList = (syntax instanceof SubCommandSyntax<S> sub) ? command.tree().getParentalArguments(sub.key())
 			: syntax.getArguments();
 		
-		for (int i = 0, r = 0; i < argumentList.size(); i++, r++) {
-			
-			Argument<?> argument = argumentList.get(i);
-			if (argument.useRemainingSpace()) continue;
-			
+		for (int r = 0; r < argumentList.size()+commandContext.flagsUsed(); r++) {
 			String raw = commandContext.getRawArgument(r);
+			
 			if (raw == null)
 				break;
 			
-			
 			if (isRawArgumentFlag(raw)) {
-				
 				var extracted = extractFlagsUsed(sender, raw);
 				boolean foundOneAtLeast = !extracted.isEmpty();
 				
@@ -76,8 +71,6 @@ public final class ContextFlagRegistry<S> {
 				
 				for (CommandFlag flag : extracted)
 					this.flagsUsed.put(flag.name(), flag);
-				
-				i--;
 			}
 			
 		}

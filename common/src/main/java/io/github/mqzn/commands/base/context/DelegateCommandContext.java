@@ -39,8 +39,6 @@ public final class DelegateCommandContext<S> implements Context<S> {
 		this.rawFormatted = manager.commandPrefix() + command.name() + " " + String.join(" ", rawInput);
 		
 		for (var arg : rawInput) if (ContextFlagRegistry.isRawArgumentFlag(arg)) flagsUsedInRaw++;
-		
-		
 	}
 	
 	public static <S> @NotNull DelegateCommandContext<S> create(@NotNull CommandManager<?, S> manager,

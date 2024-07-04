@@ -150,8 +150,7 @@ public final class AnnotationParser<S> {
 			var loadedData = loadMethodParameters(manager, cmdAnnotation.name(), executionMetaMeta, annotatedCommand.getClass(), method);
 			var arguments = loadedData.getRight();
 			var flags = loadedData.getLeft();
-			
-			
+	
 			if (executionMetaMeta.senderType() != Object.class)
 				senderType = executionMetaMeta.senderType();
 			
@@ -518,7 +517,6 @@ public final class AnnotationParser<S> {
 				String flagName = getFlagFromParameter(parameter);
 				assert flagName != null;
 				values[p] = context.flags().isPresent(flagName);
-				
 			} else {
 				
 				assert isParamArgument(parameter);
@@ -585,7 +583,7 @@ public final class AnnotationParser<S> {
 			return new ResolvedSubCommandMethod(args, modifiedArgs, data.getLeft());
 		}
 		
-		String[] split = executionMeta.syntax().isEmpty() ? new String[0] : executionMeta.syntax().split(Pattern.quote(" "));
+		String[] split = executionMeta.syntax().split(Pattern.quote(" "));
 		LinkedList<String> args = new LinkedList<>();
 		
 		args.add(info.name());
@@ -703,7 +701,7 @@ public final class AnnotationParser<S> {
 			
 			String exceptionMessage = null;
 			
-			if (!isParamArgument(parameter))
+			if (!isParamArgument(parameter) && !isParamFlag(parameter))
 				exceptionMessage = String.format("Redundant parameter '%s' in method '%s' with type '%s'",
 					parameter.getName(), method.getName(), parameter.getType().getName());
 			else if (flag != null && !manager.flagRegistry().flagExists(flag))
@@ -715,7 +713,6 @@ public final class AnnotationParser<S> {
 			
 			//adding the collected flag
 			flags.addFlag(flag);
-			
 		}
 		
 		String[] split = syntax.split(Pattern.quote(" "));

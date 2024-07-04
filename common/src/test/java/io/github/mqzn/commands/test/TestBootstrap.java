@@ -1,6 +1,7 @@
 package io.github.mqzn.commands.test;
 
 import io.github.mqzn.commands.annotations.AnnotationParser;
+import io.github.mqzn.commands.base.manager.flags.FlagInfo;
 import io.github.mqzn.commands.test.annotations.TestAnnotatedCommand;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.jupiter.api.Assertions;
@@ -16,6 +17,8 @@ public final class TestBootstrap {
 	
 	public TestBootstrap() {
 		commandManager = new TestCommandManager(this);
+		commandManager.flagRegistry().registerFlag(FlagInfo.builder("silent")
+			.aliases("s").build());
 		commandManager.exceptionHandler().registerCallback(CustomException.class, (exception, commandSender, context) -> System.out.println("Handling exception: " + exception.getClass().getName()));
 		//commandManager.senderProviderRegistry().registerSenderProvider(ClientSender.class, (provider) -> provider);
 		parser = new AnnotationParser<>(commandManager);
@@ -26,10 +29,11 @@ public final class TestBootstrap {
 		
 		parser.parse(new TestAnnotatedCommand());
 		String[] args = new String[]{
-			"disband"
+			"mqzen",
+			"-s"
 		};
 		
-		var cmd = commandManager.getCommand("testa");
+		var cmd = commandManager.getCommand("punish");
 		Assertions.assertNotNull(cmd);
 		commandManager.executeCommand(cmd, sender, args);
 	}
@@ -66,7 +70,7 @@ public final class TestBootstrap {
 		Assertions.assertDoesNotThrow(() -> parser.parse(new TestAnnotatedCommand()));
 		
 		String[] args = new String[]{
-			"clear"
+			"execute"
 		};
 		
 		var cmd = commandManager.getCommand("testa");

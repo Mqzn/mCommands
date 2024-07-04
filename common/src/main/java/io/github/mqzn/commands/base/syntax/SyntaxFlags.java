@@ -19,6 +19,7 @@ public final class SyntaxFlags implements Iterable<String> {
 	
 	
 	public void addFlag(String flag) {
+		if(flag == null) return;
 		flags.add(flag);
 	}
 	
@@ -27,7 +28,7 @@ public final class SyntaxFlags implements Iterable<String> {
 	}
 	
 	public boolean hasFlag(String flag) {
-		return flags.contains(flag);
+		return flag != null && flags.contains(flag);
 	}
 	
 	/**
