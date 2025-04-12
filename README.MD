@@ -1,10 +1,12 @@
-# mCommands
-
 <div align="center">
-  <a href="https://www.codefactor.io/repository/github/mqzn/mcommands"><img src="https://www.codefactor.io/repository/github/mqzn/mcommands/badge" alt="CodeFactor" /></a> 
-  <img src="https://github.com/Mqzn/mCommands/blob/master/img.png" alt="mCommands logo">
+  <a href="https://www.codefactor.io/repository/github/mqzn/mcommands">
+    <img src="https://www.codefactor.io/repository/github/mqzn/mcommands/badge" alt="CodeFactor" width="100" height="20" />
+  </a>
+  <img src="https://github.com/Mqzn/mCommands/blob/master/img.png" alt="mCommands logo" width="200" height="150">
 </div>
 
+# mCommands (NO LONGER MAINTAINED, DONT RECOMMEND TO USE !)
+**I Recommend Going for [Imperat](https://github.com/VelixDevelopments/Imperat)**
 
 An advanced general purpose command dispatching framework
 designed using OOP concepts.The library is user-friendly and provides 
